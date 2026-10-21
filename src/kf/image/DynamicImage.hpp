@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    image/DynamicImage.hpp
 /// @brief   Image with runtime dimensions and sub‑region support.
@@ -38,11 +39,11 @@ template<implements<pixel::PixelTag> P> struct DynamicImage final : Image<Dynami
         units::Pixels width, units::Pixels height,
         units::Pixels offset_x, units::Pixels offset_y) noexcept {
 
-        if (buffer.size() >= PixelImpl::bufferSize(width, height)) { return Error::BufferTooSmall; }
+        if (buffer.length() < PixelImpl::bufferSize(width, height)) { return error(Error::BufferTooSmall); }
 
-        if (width < 1 or height < 1) { return Error::SizeTooSmall; }
+        if (width < 1 or height < 1) { return error(Error::SizeTooSmall); }
 
-        return DynamicImage{buffer, stride, width, height, offset_x, offset_y};
+        return ok(DynamicImage{buffer, stride, width, height, offset_x, offset_y});
     }
 
     /// @brief Creates DynamicImage without validation

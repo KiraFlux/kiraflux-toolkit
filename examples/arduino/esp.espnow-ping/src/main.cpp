@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
 // KiraFlux-Toolkit Example 'network/espnow-ping'
 
 #include <kf/BytesView.hpp>
@@ -41,6 +45,7 @@ kf::Option<Espnow::Peer> createPeer(kf::Init &init, MacAddress const &mac_addres
 void onReceive(kf::Init &init, MacAddress const &mac, kf::Slice<kf::u8 const> data) {
     if (target_peer.isSome() and target_peer.unwrap().mac() == mac) {
         init.logger.info("target: got {} bytes", data.length());
+        return;
     }
 
     init.logger.debug("(unknown): from {} got {} bytes", mac, data.length());

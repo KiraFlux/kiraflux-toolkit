@@ -1,35 +1,43 @@
 {
   "name": "KiraFlux-Toolkit",
-  "version": "0.3.4",
-  "description": "an experimental header-only C++20 framework for ESP32 that explores zero-overhead static polymorphism through CRTP, mixins, and type-safe error handling",
+  "version": "0.3.5",
+  "description": "Header-only C++20 library for ESP32 (Arduino). CRTP static polymorphism with selective dynamic polymorphism, no exceptions, type-safe error handling via Result and Option. Modules for GPIO, buses (I2C/SPI/UART), drivers (SSD1306, ST7735, servo, motor, quadrature encoder), sensors, graphics, and a widget-based UI.",
   "keywords": [
-    "experimental",
-    "embedded",
+    "header-only",
     "crtp",
+    "static-polymorphism",
     "c++20",
     "arduino",
     "esp32",
+    "gpio",
+    "i2c",
+    "spi",
+    "drivers",
     "graphics",
-    "gfx",
     "ui",
-    "drivers"
+    "widgets"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/KiraFlux/KiraFlux-Toolkit.git"
+    "url": "https://github.com/KiraFlux/kiraflux-toolkit.git"
   },
+  "homepage": "https://github.com/KiraFlux/kiraflux-toolkit",
   "authors": [
     {
       "name": "KiraFlux",
-      "email": "kiraflux@duck.com"
+      "email": "kiraflux@duck.com",
+      "maintainer": true
     }
   ],
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "frameworks": "arduino",
   "platforms": [
     "espressif32"
   ],
   "dependencies": {},
+  "test_dependencies": {
+    "throwtheswitch/Unity": "^2.6.0"
+  },
   "export": {
     "include": "src/kf"
   }

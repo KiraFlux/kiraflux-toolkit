@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    gfx/fonts/gyver_5x7.hpp
 /// @brief   Gyver 5×7 English font for OLED displays.

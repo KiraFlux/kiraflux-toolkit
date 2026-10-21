@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    ui/widget/ComboBox.hpp
 /// @brief   Selection from a fixed list of options with value callback.

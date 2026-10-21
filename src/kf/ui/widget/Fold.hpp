@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    ui/widget/Fold.hpp
 /// @brief   Collapsible section that shows/hides child widgets on click.
@@ -16,7 +17,7 @@
 #include "kf/ui/Request.hpp"
 #include "kf/ui/Style.hpp"
 
-namespace ui::widget {
+namespace kf::ui::widget {
 
 /// @brief Collapsible section: click to show/hide child widgets
 /// @note Stores a view of child widgets; returns them only when expanded.
@@ -81,4 +82,4 @@ private:
     bool _expanded{false};
 };
 
-}// namespace ui::widget
+}// namespace kf::ui::widget

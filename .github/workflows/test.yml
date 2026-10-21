@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 KiraFlux
+# SPDX-License-Identifier: GPL-3.0-or-later
+# KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
 name: Unit Tests
 
 env:
@@ -5,8 +9,9 @@ env:
 
 on:
   push:
+    branches: [dev, main]
   pull_request:
-    branches: [main]
+    branches: [dev, main]
 
 jobs:
   test:
@@ -14,5 +19,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-platformio
-      - name: Run all unit tests
-        run: pio test -e native
+      - name: Run unit tests (native)
+        run: ./kf test

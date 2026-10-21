@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    image/ViewportImage.hpp
 /// @brief   Image with optional transpose (swap width/height).
@@ -29,7 +30,7 @@ template<implements<pixel::PixelTag> P, usize W, usize H> struct ViewportImage f
 
     /// @brief Is image is actually transposed?
     [[nodiscard]] constexpr bool transposed() const noexcept {
-        return W == _logical_width;
+        return W != _logical_width;
     }
 
 private:

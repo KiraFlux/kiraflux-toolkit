@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
 // KiraFlux-Toolkit Example 'arduino/esp.nvs'
 
 #include <kf/esp/NVS.hpp>
@@ -54,6 +58,8 @@ void kf::main(kf::Init &init) {
         } else {
             init.logger.info("Default config saved");
         }
+
+        (void) my_nvs.commit();
     }
 
     // --- Use the config ---

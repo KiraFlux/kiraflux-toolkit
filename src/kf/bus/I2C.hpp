@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    bus/I2C.hpp
 /// @brief   I2C bus and node abstraction
@@ -280,17 +281,17 @@ private:
             return Error::create(Error::BeginFailed);
         }
 
-        if (not this->config().clock_hz.isSome()) {
+        if (this->config().clock_hz.isSome()) {
             if (not _wire.setClock(this->config().clock_hz.unwrap())) {
                 return Error::create(Error::ClockConfigFailed);
             }
         }
 
-        if (not this->config().timeout_ms.isSome()) {
+        if (this->config().timeout_ms.isSome()) {
             _wire.setTimeOut(static_cast<u16>(this->config().timeout_ms.unwrap()));// TwoWire::setTimeout
         }
 
-        if (not this->config().buffer_size.isSome()) {
+        if (this->config().buffer_size.isSome()) {
             if (_wire.setBufferSize(this->config().buffer_size.unwrap()) != this->config().buffer_size.unwrap()) {
                 return Error::create(Error::BufferSizeConfigFailed);
             }

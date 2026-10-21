@@ -1,5 +1,6 @@
-# Copyright (c) 2026 KiraFlux
-# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 KiraFlux
+# SPDX-License-Identifier: GPL-3.0-or-later
+# KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 #
 # Makefile for PlatformIO projects (ESP32 / native)
 # Provides shortcuts for build, run, upload, monitor, clean, and port detection.

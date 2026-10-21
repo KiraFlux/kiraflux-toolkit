@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    pixel/Pixel.hpp
 /// @brief   CRTP base for pixel formats with buffer size, set/fill/copy.
@@ -77,7 +78,7 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
         PositionType dest_y) noexcept {
         if (source_width <= 0 or source_height <= 0 or dest_stride <= 0) { return; }
 
-        auto const dst_total_h = dest_buffer.size() / dest_stride;
+        auto const dst_total_h = dest_buffer.length() / dest_stride;
         if (dest_y >= dst_total_h) { return; }
 
         auto copy_width = source_width;
@@ -94,7 +95,7 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
 
         if (copy_width <= 0 or copy_height <= 0) { return; }
 
-        usize const src_pixels = source_buffer.size();
+        usize const src_pixels = source_buffer.length();
         if (static_cast<usize>(source_width) * source_height > src_pixels) {
             copy_height = math::min(copy_height, static_cast<PositionType>(src_pixels / source_width));
             if (copy_height <= 0) { return; }

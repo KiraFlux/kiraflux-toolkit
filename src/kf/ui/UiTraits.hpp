@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    ui/UiTraits.hpp
 /// @brief   UI traits defining Widget, Renderer, Event, and adjusters.
@@ -81,7 +82,7 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
     private:
         KF_IMPL_ADJUSTER(ArithmeticPositiveOnlyAdjuster<T>, T);
         static constexpr T adjustImpl(T value, T step, int direction) noexcept {
-            return max(0, ArithmeticAdjuster<T>::adjust(value, step, direction));
+            return math::max<T>(0, ArithmeticAdjuster<T>::adjust(value, step, direction));
         }
     };
 
@@ -90,7 +91,7 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
     private:
         KF_IMPL_ADJUSTER(GeometricAdjuster<T>, T);
         static constexpr T adjustImpl(T value, T step, int direction) noexcept {
-            return (direction == 0) ? value : ((direction > 0) ? (value * step) : math::max(value / step, internal::step_adjuster_min_step<T>::value));
+            return (direction == 0) ? value : ((direction > 0) ? (value * step) : math::max<T>(value / step, internal::step_adjuster_min_step<T>::value));
         }
     };
 };

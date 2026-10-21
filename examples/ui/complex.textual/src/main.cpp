@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
 #include <kf/main.hpp>
 
 #include <kf/Array.hpp>
@@ -235,7 +239,7 @@ void kf::main(kf::Init &init) {
             auto const &selected_widget = active_page.unwrap().selectedWidget();
 
             if (selected_widget.isSome()) {
-                init.logger.info("hint: {}", selected_widget.unwrap().hint().data());
+                init.logger.info("hint: {}", selected_widget.unwrap().hint());
             }
         }
     });

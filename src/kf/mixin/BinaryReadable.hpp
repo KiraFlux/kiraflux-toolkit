@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    mixin/BinaryReadable.hpp
 /// @brief   Adds readByte/readBuffer/readPacket for binary streams.
@@ -21,7 +22,7 @@ struct BinaryReadableTag {};
 /// @note Derived classes must implement:
 ///
 ///       - `auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error>`
-///         Read up to buffer.size() bytes into the given buffer. Returns a slice of actually read data
+///         Read up to buffer.length() bytes into the given buffer. Returns a slice of actually read data
 ///
 ///       - `template<typename T> auto readPacketImpl() noexcept -> Result<T, Error>`
 ///         Read a trivially copyable object of type T (size fixed at compile time)

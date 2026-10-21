@@ -1,5 +1,6 @@
-﻿// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+﻿// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    driver/display/SSD1306.hpp
 /// @brief   SSD1306 OLED driver (128×64, I2C, monochrome).
@@ -170,7 +171,7 @@ private:
             // Set full display window
             ColumnAddr,
             0,
-            internal::SSD1306Image::comptime_width,
+            internal::SSD1306Image::comptime_width - 1,
             PageAddr,
             0,
             PixelImpl::pages(internal::SSD1306Image::comptime_height) - 1,

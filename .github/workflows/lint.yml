@@ -1,6 +1,15 @@
+# SPDX-FileCopyrightText: 2026 KiraFlux
+# SPDX-License-Identifier: GPL-3.0-or-later
+# KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
 name: Lint
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
+  push:
+    branches: [dev, main]
   pull_request:
     branches: [dev, main]
 
@@ -10,7 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-platformio
-      - name: Install clang-tidy
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+      - name: Install clang tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang clang-tools
       - name: Run linter
-        run: python3 kf.py lint --all
+        run: ./kf lint --all

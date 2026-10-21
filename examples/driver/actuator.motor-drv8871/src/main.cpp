@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
 // KiraFlux-Toolkit Example 'actuator/DRV8871'
 
 #include <kf/driver/actuator/DRV8871.hpp>

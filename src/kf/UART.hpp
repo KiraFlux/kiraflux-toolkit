@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file UART.hpp
 
@@ -240,13 +241,13 @@ private:
 
     KF_IMPL_BINARY_READABLE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error> {
+    auto readBufferImpl(Bytes buffer) const noexcept -> Result<BytesView, Error> {
         (void) buffer;
 
         return error(Error::ReadFailed);
     }
 
-    template<typename T> auto readPacketImpl() noexcept -> Result<T, Error> {
+    template<typename T> auto readPacketImpl() const noexcept -> Result<T, Error> {
         return error(Error::ReadFailed);
     }
 
@@ -257,19 +258,19 @@ private:
 
     KF_IMPL_BINARY_WRITABLE(Self, internal::UartWriteResult);
 
-    auto writeBufferImpl(BytesView buffer) noexcept -> internal::UartWriteResult {
+    auto writeBufferImpl(BytesView buffer) const noexcept -> internal::UartWriteResult {
         (void) buffer;
 
         return ok();
     }
 
-    auto writePacketImpl(trivial auto const &packet) noexcept -> internal::UartWriteResult {
+    auto writePacketImpl(trivial auto const &packet) const noexcept -> internal::UartWriteResult {
         (void) packet;
 
         return ok();
     }
 
-    auto writeMixedImpl(trivial auto const &header, BytesView buffer) noexcept -> internal::UartWriteResult {
+    auto writeMixedImpl(trivial auto const &header, BytesView buffer) const noexcept -> internal::UartWriteResult {
         (void) header;
         (void) buffer;
 
