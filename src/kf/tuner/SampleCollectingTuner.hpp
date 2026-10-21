@@ -16,17 +16,17 @@ namespace kf::tuner {
 /// @tparam T    Configuration type that will be updated after calculation.
 /// @note The derived class must provide:
 ///
-///       - `void resetImpl() noexcept`   – called when collection begins.
+///       - `void reset_impl() noexcept`   – called when collection begins.
 ///
-///       - `void pollImpl(kf::units::Milliseconds now) noexcept`    – called for each sample; should process the current sample (e.g., update min/max/sum).
+///       - `void poll_impl(kf::units::Milliseconds now) noexcept`    – called for each sample; should process the current sample (e.g., update min/max/sum).
 ///
-///       - `void calculateImpl(T&) noexcept` – called after all samples are collected; updates the configuration.
+///       - `void calculate_impl(T&) noexcept` – called after all samples are collected; updates the configuration.
 ///
 /// @note This class manages a state machine (Idle -> Running -> Calculating -> Idle).
 ///          After `reset()`, the caller must repeatedly call `poll()` until `running()` returns false.
-///          The `poll()` implementation of this class will invoke the derived class's `pollImpl()`
+///          The `poll()` implementation of this class will invoke the derived class's `poll_impl()`
 ///          for each sample and, once the required number of samples is reached, transition to
-///          the Calculating state and call `calculateImpl()`.
+///          the Calculating state and call `calculate_impl()`.
 template<typename Impl, typename T> struct SampleCollectingTuner : Tuner<SampleCollectingTuner<Impl, T>> {
     using ConfigType = T;
 
@@ -49,19 +49,19 @@ private:
 
     KF_IMPL_TUNER(SampleCollectingTuner<Impl, T>);
 
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _state = State::Running;
         _samples_processed = 0;
-        impl().resetImpl();
+        impl().reset_impl();
     }
 
-    void pollImpl(kf::units::Milliseconds now) noexcept {
+    void poll_impl(kf::units::Milliseconds now) noexcept {
         switch (_state) {
             case State::Idle://
                 return;
 
             case State::Running: {
-                impl().pollImpl(now);
+                impl().poll_impl(now);
                 _samples_processed += 1;
 
                 if (_samples_processed >= samples_total) {
@@ -71,14 +71,14 @@ private:
                 return;
 
             case State::Calculating: {
-                impl().calculateImpl(_config);
+                impl().calculate_impl(_config);
                 _state = State::Idle;
             }
                 return;
         }
     }
 
-    [[nodiscard]] bool runningImpl() const noexcept {
+    [[nodiscard]] bool running_impl() const noexcept {
         return _state != State::Idle;
     }
 

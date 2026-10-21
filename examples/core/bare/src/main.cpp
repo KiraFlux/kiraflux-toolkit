@@ -43,33 +43,33 @@ void kf::main(kf::Init &init) {
 
     // --- Using the I/O interface ---
 
-    // The 'io' member provides readByte(), writeByte(),
-    // readBuffer(), writeBuffer(), and availability checks.
+    // The 'io' member provides read_byte(), write_byte(),
+    // read_buffer(), write_buffer(), and availability checks.
 
     // Write a simple message as bytes.
-    // For text, you can also use writeBuffer() with a string view.
+    // For text, you can also use write_buffer() with a string view.
 
     init.logger.debug("Writing 'Hello, World!' as bytes...");
 
     u8 const msg[] = "Hello, World!\n";
-    (void) init.io.writeBuffer({msg});
+    (void) init.io.write_buffer({msg});
 
     for (u8 i = 0x20; i < 0x80; i += 1) {
-        (void) init.io.writeByte(i);
+        (void) init.io.write_byte(i);
     }
 
     // --- Simple echo loop ---
 
     // This loop reads bytes from the input and echoes them back.
-    // It demonstrates non‑blocking I/O with availableForRead().
+    // It demonstrates non‑blocking I/O with available_for_read().
 
     init.logger.info("Entering echo loop. Type something...");
 
     while (true) {
-        if (init.io.availableForRead() > 0) {
-            auto const read = init.io.readByte();
+        if (init.io.available_for_read() > 0) {
+            auto const read = init.io.read_byte();
 
-            if (read.isOk()) {
+            if (read.is_ok()) {
                 u8 byte = read.ok();
 
                 if (byte >= 0x20 and byte < 0x7F) {

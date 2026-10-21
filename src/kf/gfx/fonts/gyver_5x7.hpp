@@ -10,7 +10,7 @@
 
 namespace kf::gfx::fonts {
 
-// Char map from: https://github.com/GyverLibs/GyverOLED/blob/main/src/charMap.h
+// Char map from: https://github.com/GyverLibs/GyverOLED/blob/main/src/char_map.h
 static constexpr u8 gyver_5x7_en_data[] = {
     0x00,
     0x00,

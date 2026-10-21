@@ -29,7 +29,7 @@ template<implements<pixel::PixelTag> P, units::Pixels W, units::Pixels H> struct
     using BufferType = typename PixelImpl::BufferType;
     using ColorType = typename PixelImpl::ColorType;
 
-    using BufferStorage = Array<BufferType, PixelImpl::bufferSize(W, H)>;
+    using BufferStorage = Array<BufferType, PixelImpl::buffer_size(W, H)>;
 
     static constexpr usize comptime_width{W}, comptime_height{H};
 
@@ -45,19 +45,19 @@ private:
 
     KF_IMPL_IMAGE(StaticImage<P, W, H>, P);
 
-    constexpr units::Pixels getWidthImpl() const noexcept {
+    constexpr units::Pixels get_width_impl() const noexcept {
         return W;
     }
 
-    constexpr units::Pixels getHeightImpl() const noexcept {
+    constexpr units::Pixels get_height_impl() const noexcept {
         return H;
     }
 
-    constexpr units::Pixels getStrideImpl() const noexcept {
-        return getWidthImpl();
+    constexpr units::Pixels get_stride_impl() const noexcept {
+        return get_width_impl();
     }
 
-    constexpr Slice<BufferType> getBufferImpl() noexcept {
+    constexpr Slice<BufferType> get_buffer_impl() noexcept {
         return _buffer.slice();
     }
 };

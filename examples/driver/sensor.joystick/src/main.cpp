@@ -20,7 +20,7 @@ using Direction = JoystickListener::Direction;
 
 // --- Helper: convert direction to string ---
 
-char const *stringFromDirection(Direction dir) {
+char const *string_from_direction(Direction dir) {
     switch (dir) {
         case Direction::Center: return "Center";
         case Direction::Up: return "Up";
@@ -101,7 +101,7 @@ void kf::main(kf::Init &init) {
     // Set up listener callback.
     // The listener will call this function when direction changes.
     my_listener.callback([&](Direction direction) {
-        init.logger.info("Direction: {}", stringFromDirection(direction));
+        init.logger.info("Direction: {}", string_from_direction(direction));
     });
 
     // Timer for periodic logging of raw values (debug only).
@@ -121,8 +121,8 @@ void kf::main(kf::Init &init) {
         if (log_timer.expired(now)) {
             log_timer.start(now);
 
-            int x_raw = joystick.axis_x.readRaw();
-            int y_raw = joystick.axis_y.readRaw();
+            int x_raw = joystick.axis_x.read_raw();
+            int y_raw = joystick.axis_y.read_raw();
 
             auto const [x, y, magnitude] = joystick.read();// normalized to unit circle
 

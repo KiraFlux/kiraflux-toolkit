@@ -34,7 +34,7 @@ struct NvsError : mixin::Representable<NvsError, StringView> {
         Unknown,
     } kind;
 
-    [[nodiscard]] static constexpr auto fromEsp(esp_err_t const e) -> ResultErrorWrapper<NvsError> {
+    [[nodiscard]] static constexpr auto from_esp(esp_err_t const e) -> ResultErrorWrapper<NvsError> {
         switch (e) {
             case ESP_ERR_NVS_NOT_FOUND:
                 return {{.kind = NotFound}};
@@ -58,7 +58,7 @@ private:
     case __v: return #__v
 
     KF_IMPL_REPRESENTABLE(NvsError, StringView);
-    StringView reprImpl() const noexcept {
+    StringView repr_impl() const noexcept {
 
         switch (kind) {
             CASE_RETURN(NvsError::InvalidLength);
@@ -101,7 +101,7 @@ struct NVS final :
     /// @brief Get blob value
     /// @param key blob entry key
     /// @param buffer blob destination buffer
-    [[nodiscard]] ResultType getBlob(char const *key, Bytes buffer) noexcept {
+    [[nodiscard]] ResultType get_blob(char const *key, Bytes buffer) noexcept {
         auto len = buffer.length();
         auto const result = wrap(nvs_get_blob(_handle.unwrap(), key, static_cast<void *>(buffer.data()), &len));
 
@@ -115,7 +115,7 @@ struct NVS final :
     /// @brief Set blob value
     /// @param key blob entry key
     /// @param buffer blob source buffer
-    [[nodiscard]] ResultType setBlob(char const *key, BytesView buffer) noexcept {
+    [[nodiscard]] ResultType set_blob(char const *key, BytesView buffer) noexcept {
         return wrap(nvs_set_blob(_handle.unwrap(), key, buffer.data(), buffer.length()));
     }
 
@@ -132,13 +132,13 @@ private:
         if (ESP_OK == e) {
             return ok();
         } else {
-            return Error::fromEsp(e);
+            return Error::from_esp(e);
         }
     }
 
     KF_IMPL_INITABLE(NVS, Result<void, Error>());
-    auto initImpl() noexcept -> Result<void, Error> {
-        if (_handle.isSome()) {
+    auto init_impl() noexcept -> Result<void, Error> {
+        if (_handle.is_some()) {
             // Already initialised
             return ok();
         }
@@ -152,18 +152,18 @@ private:
             // NVS partition was truncated, need to erase and retry
             e = nvs_flash_erase();
             if (e != ESP_OK) {
-                return Error::fromEsp(e);
+                return Error::from_esp(e);
             }
             e = nvs_flash_init();
         }
 
         if (e != ESP_OK) {
-            return Error::fromEsp(e);
+            return Error::from_esp(e);
         }
 
         e = nvs_open(_namespace, NVS_READWRITE, &handle);
         if (ESP_OK != e) {
-            return Error::fromEsp(e);
+            return Error::from_esp(e);
         }
 
         _handle = some(handle);
@@ -171,8 +171,8 @@ private:
     }
 
     KF_IMPL_QUITABLE(NVS);
-    void quitImpl() noexcept {
-        if (_handle.isSome()) {
+    void quit_impl() noexcept {
+        if (_handle.is_some()) {
             nvs_close(_handle.unwrap());
             _handle.reset();
         }

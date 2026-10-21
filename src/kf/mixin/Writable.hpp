@@ -36,7 +36,7 @@ template<typename Impl, typename T> struct WritableBase : mixin::WritableTag<T> 
     /// @param value Value to write (perfect-forwarded)
     /// @return `true` if write successful, `false` otherwise
     [[nodiscard]] constexpr bool write(auto &&value) noexcept {
-        return static_cast<Impl *>(this)->writeImpl(std::forward<decltype(value)>(value));
+        return static_cast<Impl *>(this)->write_impl(std::forward<decltype(value)>(value));
     }
 };
 
@@ -56,7 +56,7 @@ struct FormatResult {
     u8 anchor_indices[max_tokens];
     u8 count;
 
-    constexpr void putAnchor(u8 position, u8 arg_index) noexcept {
+    constexpr void put_anchor(u8 position, u8 arg_index) noexcept {
         anchor_indices[count] = arg_index;
         tokens[count] = {
             .start = position,
@@ -67,7 +67,7 @@ struct FormatResult {
         count += 1;
     }
 
-    constexpr void putLiteral(u8 start, u8 length) noexcept {
+    constexpr void put_literal(u8 start, u8 length) noexcept {
         tokens[count] = {
             .start = start,
             .length = length,
@@ -110,14 +110,14 @@ template<typename... Args> struct BasicFormatString {
         while (i < format_literal_length and result.count < FormatResult::max_tokens) {
             //  {{
             if (fmt[i] == anchor_begin_char and (i + 1) < format_literal_length and fmt[i + 1] == anchor_begin_char) {
-                result.putLiteral(i, 2);
+                result.put_literal(i, 2);
                 i += 2;
                 continue;
             }
 
             //  }}
             if (fmt[i] == anchor_end_char and (i + 1) < format_literal_length and fmt[i + 1] == anchor_end_char) {
-                result.putLiteral(i, 2);
+                result.put_literal(i, 2);
                 i += 2;
                 continue;
             }
@@ -128,7 +128,7 @@ template<typename... Args> struct BasicFormatString {
 
                 if (i < format_literal_length and fmt[i] == anchor_end_char) {
                     // {} — Anchor
-                    result.putAnchor(start, arg_index);
+                    result.put_anchor(start, arg_index);
                     arg_index += 1;
                     i += 1;
                     continue;
@@ -143,7 +143,7 @@ template<typename... Args> struct BasicFormatString {
                     i += 1;
                 }
 
-                result.putLiteral(start, i - start);
+                result.put_literal(start, i - start);
             } else {
 
                 // Literal
@@ -152,7 +152,7 @@ template<typename... Args> struct BasicFormatString {
                     i += 1;
                 }
 
-                result.putLiteral(start, i - start);
+                result.put_literal(start, i - start);
             }
         }
         return result;
@@ -181,25 +181,25 @@ template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Imp
     }
 
     [[nodiscard]] constexpr usize append(bool value) noexcept {
-        return appendNullTerminatedString(value ? "true" : "false");
+        return append_null_terminated_string(value ? "true" : "false");
     }
 
     [[nodiscard]] constexpr usize append(c_string auto const &value) noexcept {
-        return appendNullTerminatedString(static_cast<char const *>(value));
+        return append_null_terminated_string(static_cast<char const *>(value));
     }
 
     [[nodiscard]] constexpr usize append(integer_type auto value) noexcept {
-        return appendInteger(value);
+        return append_integer(value);
     }
 
     [[nodiscard]] constexpr usize append(float_type auto value, usize precision = 3) noexcept {
-        return appendReal(value, precision);
+        return append_real(value, precision);
     }
 
     [[nodiscard]] constexpr usize append(enum_type auto value) noexcept {
         return (
-            appendNullTerminatedString("enum(") +
-            appendInteger(static_cast<usize>(value)) +
+            append_null_terminated_string("enum(") +
+            append_integer(static_cast<usize>(value)) +
             append(')'));
     }
 
@@ -208,12 +208,12 @@ template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Imp
     }
 
     [[nodiscard]] constexpr usize append(implements<ReprToTag> auto const &value) noexcept {
-        return value.reprTo(*this);
+        return value.repr_to(*this);
     }
 
     // concrete append algorithms
 
-    [[nodiscard]] constexpr usize appendNullTerminatedString(char const *str, usize max_length = static_cast<usize>(-1)) noexcept {
+    [[nodiscard]] constexpr usize append_null_terminated_string(char const *str, usize max_length = static_cast<usize>(-1)) noexcept {
         usize write_count = 0;
 
         if (nullptr != str) {
@@ -235,23 +235,23 @@ template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Imp
         return write_count;
     }
 
-    [[nodiscard]] constexpr usize appendInteger(i64 value) noexcept {
+    [[nodiscard]] constexpr usize append_integer(i64 value) noexcept {
         char buffer[21];
         auto const result = std::to_chars(buffer, buffer + sizeof(buffer), value);
         if (result.ec == std::errc{}) {
-            return appendNullTerminatedString(buffer, static_cast<usize>(result.ptr - buffer));
+            return append_null_terminated_string(buffer, static_cast<usize>(result.ptr - buffer));
         } else {
-            return appendNullTerminatedString("err");
+            return append_null_terminated_string("err");
         }
     }
 
-    [[nodiscard]] constexpr usize appendReal(f64 value, usize precision) noexcept {
+    [[nodiscard]] constexpr usize append_real(f64 value, usize precision) noexcept {
         if (math::isnan(value)) {
-            return appendNullTerminatedString("nan");
+            return append_null_terminated_string("nan");
         }
 
         if (math::isinf(value)) {
-            return appendNullTerminatedString(value < 0 ? "-inf" : "+inf");
+            return append_null_terminated_string(value < 0 ? "-inf" : "+inf");
         }
 
         char buffer[64];
@@ -262,9 +262,9 @@ template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Imp
             static_cast<int>(precision));
 
         if (result.ec == std::errc{}) {
-            return appendNullTerminatedString(buffer, static_cast<usize>(result.ptr - buffer));
+            return append_null_terminated_string(buffer, static_cast<usize>(result.ptr - buffer));
         } else {
-            return appendNullTerminatedString("err");
+            return append_null_terminated_string("err");
         }
     }
 
@@ -273,7 +273,7 @@ template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Imp
     /// @param fmt format string implicit consteval-constructed from literal
     /// @param ...args format arguments
     /// @note For argument placement use `{}` as anchor
-    template<typename... Args> [[nodiscard]] constexpr usize appendFormat(internal::FormatString<Args...> const &fmt, Args const &...args) noexcept {
+    template<typename... Args> [[nodiscard]] constexpr usize append_format(internal::FormatString<Args...> const &fmt, Args const &...args) noexcept {
         auto const tuple = std::forward_as_tuple(args...);
         usize write_count = 0;
 
@@ -283,7 +283,7 @@ template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Imp
             if (token.kind == internal::FormatToken::Literal) {
                 write_count += this->append(StringView{fmt.str + token.start, token.length});
             } else if constexpr (sizeof...(Args) > 0) {
-                write_count += applyArg<0>(fmt.result.anchor_indices[i], tuple);
+                write_count += apply_arg<0>(fmt.result.anchor_indices[i], tuple);
             }
         }
 
@@ -291,11 +291,11 @@ template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Imp
     }
 
 private:
-    template<usize I, typename... Args> [[nodiscard]] constexpr usize applyArg(usize index, std::tuple<Args const &...> const &tuple) {
+    template<usize I, typename... Args> [[nodiscard]] constexpr usize apply_arg(usize index, std::tuple<Args const &...> const &tuple) {
         if (I == index) {
             return append(std::get<I>(tuple));
         } else if constexpr (I + 1 < sizeof...(Args)) {
-            return applyArg<I + 1>(index, tuple);
+            return apply_arg<I + 1>(index, tuple);
         }
         return 0;
     }

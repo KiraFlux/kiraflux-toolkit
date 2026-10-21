@@ -87,7 +87,7 @@ template<implements<UiTraitsTag> U, typename T> struct ComboBox :
     /// @note If no matching item is found, the selection remains unchanged
     /// @note undefined behavior if `config().items` is empty
     void value(T const &new_value) noexcept {
-        for (auto i = 0u; i < totalItems(); i += 1) {
+        for (auto i = 0u; i < total_items(); i += 1) {
             if (this->config().items[i].value() == new_value) {
                 _cursor = i;
                 return;
@@ -103,17 +103,17 @@ template<implements<UiTraitsTag> U, typename T> struct ComboBox :
 
     /// @brief Change selection based on direction
     /// @param value Navigation direction (positive/negative)
-    Request onEventValue(typename U::EventImpl::Value event_value) noexcept override {
-        moveCursor(event_value);
+    Request on_event_value(typename U::EventImpl::Value event_value) noexcept override {
+        move_cursor(event_value);
         this->invoke(this->config().items[_cursor]);
 
         return Request::Redraw;
     }
 
-    void doRender(typename U::RendererImpl &render) const noexcept override {
+    void do_render(typename U::RendererImpl &render) const noexcept override {
         auto const &item = this->config().items[_cursor];
 
-        render.beginBlock(Block::Alternative);
+        render.begin_block(Block::Alternative);
 
         render.foreground(item.foreground());
         render.background(item.background());
@@ -123,21 +123,21 @@ template<implements<UiTraitsTag> U, typename T> struct ComboBox :
         render.foreground(this->foreground());
         render.background(this->background());
 
-        render.endBlock(Block::Alternative);
+        render.end_block(Block::Alternative);
     }
 
 private:
     isize _cursor{0};
 
     /// @brief Move selection cursor with circular wrapping
-    void moveCursor(isize delta) noexcept {
-        auto const n = totalItems();
+    void move_cursor(isize delta) noexcept {
+        auto const n = total_items();
         if (n > 0) {
             _cursor = (_cursor + delta + n) % n;
         }
     }
 
-    constexpr usize totalItems() const noexcept {
+    constexpr usize total_items() const noexcept {
         return this->config().items.length();
     }
 };

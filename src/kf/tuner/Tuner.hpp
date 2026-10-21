@@ -16,11 +16,11 @@ struct TunerTag {};
 /// @tparam Impl Derived class implementing the actual tuning logic.
 /// @note Derived classes must provide:
 ///
-///       - `bool runningImpl() const noexcept`
+///       - `bool running_impl() const noexcept`
 ///
-///       - `void resetImpl() noexcept` (from mixin::Resettable)
+///       - `void reset_impl() noexcept` (from mixin::Resettable)
 ///
-///       - `void pollImpl(kf::units::Milliseconds now) noexcept` (from mixin::Poll)
+///       - `void poll_impl(kf::units::Milliseconds now) noexcept` (from mixin::Poll)
 template<typename Impl> struct Tuner :
 
     TunerTag,
@@ -32,7 +32,7 @@ template<typename Impl> struct Tuner :
 
     /// @brief Check if the tuner is still running (collecting or calculating).
     [[nodiscard]] bool running() const noexcept {
-        return static_cast<Impl const *>(this)->runningImpl();
+        return static_cast<Impl const *>(this)->running_impl();
     }
 };
 

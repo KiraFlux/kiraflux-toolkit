@@ -38,12 +38,12 @@ void kf::main(kf::Init &init) {
     auto first = s.first(2);
     auto last = s.last(2);
     auto mid = s.sub(1, some<usize>(3));
-    auto from2 = s.fromOffset(2);
+    auto from2 = s.from_offset(2);
 
-    init.logger.debug("first(2): {}", first);     // {10, 20}
-    init.logger.debug("last(2): {}", last);       // {40, 50}
-    init.logger.debug("sub(1,3): {}", mid);       // {20, 99, 40}
-    init.logger.debug("fromOffset(2): {}", from2);// {99, 40, 50}
+    init.logger.debug("first(2): {}", first);      // {10, 20}
+    init.logger.debug("last(2): {}", last);        // {40, 50}
+    init.logger.debug("sub(1,3): {}", mid);        // {20, 99, 40}
+    init.logger.debug("from_offset(2): {}", from2);// {99, 40, 50}
 
     // --- 5. Const slice (Sequence works with const T) ---
     int const carr[] = {7, 8, 9};

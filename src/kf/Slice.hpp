@@ -40,7 +40,7 @@ template<typename T> struct Slice : Sequence<Slice<T>, T> {
             return {};
         }
 
-        usize len = count.unwrapOr(_length - offset);
+        usize len = count.unwrap_or(_length - offset);
 
         if (len > _length - offset) {
             len = _length - offset;
@@ -73,7 +73,7 @@ template<typename T> struct Slice : Sequence<Slice<T>, T> {
     /// @param offset Starting position (must be <= length())
     /// @return Slice from offset to end of original slice
     /// @note No bounds checking - caller must ensure offset <= length()
-    [[nodiscard]] constexpr Slice fromOffset(usize offset) const noexcept {
+    [[nodiscard]] constexpr Slice from_offset(usize offset) const noexcept {
         return sub(offset, some(_length - offset));
     }
 
@@ -87,11 +87,11 @@ private:
 
     KF_IMPL_SEQUENCE(Slice<T>, T);
 
-    constexpr T *getDataImpl() noexcept {
+    constexpr T *get_data_impl() noexcept {
         return _ptr;
     }
 
-    constexpr usize lengthImpl() const noexcept {
+    constexpr usize length_impl() const noexcept {
         return _length;
     }
 };

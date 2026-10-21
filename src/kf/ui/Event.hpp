@@ -51,15 +51,15 @@ template<usize N> struct Event : EventTag {
         return (raw & sign_bit_mask) ? static_cast<Value>(raw | ~value_mask) : raw;
     }
 
-    [[nodiscard]] static constexpr Event pageCursorMove(Value offset) noexcept {
+    [[nodiscard]] static constexpr Event page_cursor_move(Value offset) noexcept {
         return Event{Kind::PageCursorMove, offset};
     }
 
-    [[nodiscard]] static constexpr Event widgetClick() noexcept {
+    [[nodiscard]] static constexpr Event widget_click() noexcept {
         return Event{Kind::WidgetClick};
     }
 
-    [[nodiscard]] static constexpr Event widgetValue(Value value) noexcept {
+    [[nodiscard]] static constexpr Event widget_value(Value value) noexcept {
         return Event{Kind::WidgetValue, value};
     }
 

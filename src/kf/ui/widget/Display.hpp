@@ -43,7 +43,7 @@ template<implements<UiTraitsTag> U, typename T> struct Display :
         _value = new_value;
     }
 
-    void doRender(typename U::RendererImpl &render) const noexcept override {
+    void do_render(typename U::RendererImpl &render) const noexcept override {
         render.value(_value);
     }
 

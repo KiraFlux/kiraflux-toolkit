@@ -49,16 +49,16 @@ void kf::main(kf::Init &init) {
     // --- Safe division, normalization, zero check ---
 
     auto norm = v1.normalized();
-    if (norm.isSome()) {
+    if (norm.is_some()) {
         init.logger.debug("normalized: {}", norm.unwrap());
     }
 
     auto zero_vec = Vector3f::zero();
-    init.logger.debug("isZero(zero) = {}", zero_vec.isZero());
+    init.logger.debug("is_zero() = {}", zero_vec.is_zero());
 
     // --- All methods from Vector2 are also available ---
 
-    // length, divChecked, etc. (not repeated for brevity).
+    // length, div_checked, etc. (not repeated for brevity).
     init.logger.debug("length: {}", v1.length());
 
     // --- Different scalar types ---

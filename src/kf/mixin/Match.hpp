@@ -11,7 +11,7 @@ namespace kf::mixin {
 struct MatchTag {};
 
 /// @brief Adds `match(T) -> bool` to check if the object matches a given value.
-/// @tparam Impl Match implementation class with `bool matchImpl(T value) noexcept` method
+/// @tparam Impl Match implementation class with `bool match_impl(T value) noexcept` method
 /// @tparam T   The type of the matched value.
 template<typename Impl, typename T> struct Match : MatchTag {
 
@@ -21,7 +21,7 @@ template<typename Impl, typename T> struct Match : MatchTag {
     /// @param value The value to match against.
     /// @return `true` if the object matches, `false` otherwise.
     [[nodiscard]] bool match(MatchingType value) const noexcept {
-        return static_cast<Impl const *>(this)->matchImpl(value);
+        return static_cast<Impl const *>(this)->match_impl(value);
     }
 };
 

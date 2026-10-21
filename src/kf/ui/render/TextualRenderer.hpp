@@ -51,7 +51,7 @@ struct PlainTextRendererCursor {
 
     /// @brief Check if we can write more characters in current row
     /// @param row_max_length Maximum columns per row
-    [[nodiscard]] bool canWrite(Glyph row_max_length) const noexcept {
+    [[nodiscard]] bool can_write(Glyph row_max_length) const noexcept {
         return col < row_max_length;
     }
 
@@ -85,7 +85,7 @@ struct TextualRenderer :
         mixin::Configured<Config>::Configured{config}, _buffer{source} {}
 
     /// @brief Helper to write character with cursor tracking
-    void writeChar(char ch) noexcept {
+    void write_char(char ch) noexcept {
         if (_buffer.full() or _cursor.row >= this->config().rows_total) { return; }
 
         if (ch == '\n') {
@@ -94,7 +94,7 @@ struct TextualRenderer :
             return;
         }
 
-        if (_cursor.canWrite(this->config().row_max_length)) {
+        if (_cursor.can_write(this->config().row_max_length)) {
             _cursor.advance(1, this->config().row_max_length);
             (void) _buffer.append(ch);
             return;
@@ -102,24 +102,24 @@ struct TextualRenderer :
     }
 
     /// @brief Write string with cursor tracking
-    void writeString(StringView str) noexcept {
+    void write_string(StringView str) noexcept {
         for (char ch: str) {
-            writeChar(ch);
+            write_char(ch);
         }
     }
 
-    void writeReal(f64 real, u8 rounding) noexcept {
+    void write_real(f64 real, u8 rounding) noexcept {
         char buffer[24];
 
         String temp{{buffer}};
         (void) temp.append(real, rounding);
 
-        writeString(temp.view());
+        write_string(temp.view());
     }
 
-    void fillSpace(usize spaces) noexcept {
+    void fill_space(usize spaces) noexcept {
         for (usize i = 0; i < spaces; i += 1) {
-            writeChar(' ');
+            write_char(' ');
         }
     }
 
@@ -131,82 +131,82 @@ private:
 
     KF_IMPL_RENDERER(TextualRenderer);
 
-    void beginFrameImpl() noexcept {
+    void begin_frame_impl() noexcept {
         _buffer.reset();
         _cursor.reset();
     }
 
-    void endFrameImpl() noexcept {
+    void end_frame_impl() noexcept {
         this->invoke(_buffer.view());
     }
 
-    usize beginPageImpl(StringView title, Layout layout) noexcept {
+    usize begin_page_impl(StringView title, Layout layout) noexcept {
         _layout = layout;
 
         if (this->config().title_centered) {
-            fillSpace(math::max(0, (int(this->config().row_max_length) - int(title.length())) / 2));
+            fill_space(math::max(0, (int(this->config().row_max_length) - int(title.length())) / 2));
         }
-        writeString(title);
-        writeChar('\n');
+        write_string(title);
+        write_char('\n');
 
         return this->config().rows_total - _cursor.row;
     }
 
-    void endPageImpl() noexcept {}
+    void end_page_impl() noexcept {}
 
-    void beginWidgetImpl(usize, bool is_focused, usize offset) noexcept {
-        writeChar(is_focused ? '*' : ' ');
-        writeChar(' ');
+    void begin_widget_impl(usize, bool is_focused, usize offset) noexcept {
+        write_char(is_focused ? '*' : ' ');
+        write_char(' ');
 
         if (_layout == Layout::Vertical) {
-            fillSpace(this->config().offset_size * offset);
+            fill_space(this->config().offset_size * offset);
         }
     }
 
-    void endWidgetImpl() noexcept {
-        writeChar((_layout == Layout::Horizontal) ? ' ' : '\n');
+    void end_widget_impl() noexcept {
+        write_char((_layout == Layout::Horizontal) ? ' ' : '\n');
     }
 
-    void beginBlockImpl(Block block_type) noexcept {
-        writeChar((block_type == Block::Standard) ? '[' : '<');
+    void begin_block_impl(Block block_type) noexcept {
+        write_char((block_type == Block::Standard) ? '[' : '<');
     }
 
-    void endBlockImpl(Block block_type) noexcept {
-        writeChar((block_type == Block::Standard) ? ']' : '>');
+    void end_block_impl(Block block_type) noexcept {
+        write_char((block_type == Block::Standard) ? ']' : '>');
     }
 
-    void decorationImpl(Decoration decoration) noexcept {
+    void decoration_impl(Decoration decoration) noexcept {
         switch (decoration) {
             case Decoration::Space:
-                writeChar(' ');
+                write_char(' ');
                 return;
 
             case Decoration::Colon:
-                writeString(": ");
+                write_string(": ");
                 return;
 
             case Decoration::LongArrowRight:
-                writeString("->");
+                write_string("->");
                 return;
 
             case Decoration::LongArrowLeft:
-                writeString("<-");
+                write_string("<-");
                 return;
 
             case Decoration::ShortArrowLeft:
-                writeChar('>');
+                write_char('>');
                 return;
 
             case Decoration::ShortArrowRight:
-                writeChar('<');
+                write_char('<');
                 return;
 
             case Decoration::ShortArrowUp:
-                writeChar('A');
+                write_char('A');
                 return;
 
             case Decoration::ShortArrowDown:
-                writeChar('V');
+                write_char('V');
                 return;
 
             default:
@@ -214,50 +214,50 @@ private:
         }
     }
 
-    void checkboxImpl(bool enabled) noexcept {
+    void checkbox_impl(bool enabled) noexcept {
         constexpr StringView on{"==[ 1 ]"}, off{"[ 0 ]--"};
-        writeString(enabled ? on : off);
+        write_string(enabled ? on : off);
     }
 
-    void sliderImpl(f32 fill) noexcept {
+    void slider_impl(f32 fill) noexcept {
         usize const start_col = _cursor.col;
         usize const inner_width = this->config().row_max_length - start_col - 1;// -1 for closing char
         usize const fill_chars = fill * inner_width;
 
-        writeChar('[');
+        write_char('[');
 
         for (auto i = 0; i < fill_chars; i += 1) {
-            writeChar('=');
+            write_char('=');
         }
 
-        writeChar('@');
+        write_char('@');
 
         for (auto i = _cursor.col - start_col; i < inner_width; i += 1) {
-            writeChar('-');
+            write_char('-');
         }
 
-        writeChar(']');
+        write_char(']');
     }
 
     // Value rendering implementations
 
-    void valueImpl(NoneType) noexcept {
-        writeString("none");
+    void value_impl(NoneType) noexcept {
+        write_string("none");
     }
 
-    void valueImpl(auto value) noexcept {
+    void value_impl(auto value) noexcept {
 
         using T = decltype(value);
 
         if constexpr (std::is_same_v<T, char>) {
-            writeChar(value);
+            write_char(value);
         } else if constexpr (std::is_same_v<bool, T>) {
             constexpr StringView label_true{"true"}, label_false{"false"};
-            writeString(value ? label_true : label_false);
+            write_string(value ? label_true : label_false);
         } else if constexpr (std::is_same_v<f64, T>) {
-            writeReal(value, this->config().double_places);
+            write_real(value, this->config().double_places);
         } else if constexpr (std::is_same_v<f32, T>) {
-            writeReal(value, this->config().float_places);
+            write_real(value, this->config().float_places);
         } else if constexpr (std::is_integral_v<T>) {
 
             char buffer[21];
@@ -265,23 +265,23 @@ private:
             String temp{{buffer}};
             (void) temp.append(static_cast<i64>(value));
 
-            writeString(temp.view());
+            write_string(temp.view());
         }
     }
 
-    void valueImpl(StringView str) noexcept {
-        writeString(str);
+    void value_impl(StringView str) noexcept {
+        write_string(str);
     }
 
     // Semantic color (No-Op in plain text)
 
-    void setForegroundImpl(Color) noexcept {}
+    void set_foreground_impl(Color) noexcept {}
 
-    void setBackgroundImpl(Color) noexcept {}
+    void set_background_impl(Color) noexcept {}
 
     // Properties
 
-    constexpr Layout getLayoutImpl() const noexcept {
+    constexpr Layout get_layout_impl() const noexcept {
         return _layout;
     }
 };

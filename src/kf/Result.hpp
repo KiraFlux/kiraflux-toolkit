@@ -21,13 +21,13 @@ namespace internal {
 template<typename Impl, trivial E> struct ResultErrorController {
 
     /// @brief Check if result contains an error
-    [[nodiscard]] constexpr bool isError() const noexcept {
-        return static_cast<Impl const *>(this)->isErrorImpl();
+    [[nodiscard]] constexpr bool is_error() const noexcept {
+        return static_cast<Impl const *>(this)->is_error_impl();
     }
 
     /// @brief Get the stored error (panic if not error)
     [[nodiscard]] E const &error() const noexcept {
-        if (isError()) { return static_cast<Impl const *>(this)->getErrorImpl(); }
+        if (is_error()) { return static_cast<Impl const *>(this)->get_error_impl(); }
         abort();
     }
 };
@@ -82,16 +82,16 @@ template<typename T, typename E> struct Result final :
     }
 
     /// @brief Check if result contains a value (success)
-    [[nodiscard]] constexpr bool isOk() const noexcept { return _is_ok; }
+    [[nodiscard]] constexpr bool is_ok() const noexcept { return _is_ok; }
 
     /// @brief Get the stored value (abort if is error)
     [[nodiscard]] T &ok() & noexcept {
-        if (this->isError()) { abort(); }
+        if (this->is_error()) { abort(); }
         return _ok;
     }
 
     [[nodiscard]] T ok() && noexcept {
-        if (this->isError()) { abort(); }
+        if (this->is_error()) { abort(); }
         return std::move(_ok);
     }
 
@@ -121,7 +121,7 @@ template<typename T, typename E> struct Result final :
     /// @param f Mapping function: E -> W
     /// @return Result<T, W> containing the mapped error on failure,
     ///         otherwise the original success value.
-    [[nodiscard]] auto mapError(auto &&f) const noexcept -> Result<T, decltype(f(std::declval<E>()))> {
+    [[nodiscard]] auto map_error(auto &&f) const noexcept -> Result<T, decltype(f(std::declval<E>()))> {
         if (_is_ok) {
             return {internal::ResultValueWrapper<T>{_ok}};
         } else {
@@ -138,18 +138,18 @@ private:
 
     friend struct ::kf::internal::ResultErrorController<Result<T, E>, E>;
 
-    [[nodiscard]] bool isErrorImpl() const noexcept {
+    [[nodiscard]] bool is_error_impl() const noexcept {
         return not _is_ok;
     }
 
-    [[nodiscard]] E const &getErrorImpl() const noexcept {
+    [[nodiscard]] E const &get_error_impl() const noexcept {
         return _error;
     }
 
     KF_IMPL_REPR_TO(Result<void, E>);
-    constexpr usize reprToImpl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
         usize ret = 0;
-        if (this->isError()) {
+        if (this->is_error()) {
             ret += char_writable.append("error(");
             ret += char_writable.append(_error);
         } else {
@@ -191,7 +191,7 @@ template<typename E> struct Result<void, E> final :
     constexpr void ok() const noexcept {}
 
     /// @brief Check if result is successful
-    [[nodiscard]] constexpr bool isOk() const noexcept {
+    [[nodiscard]] constexpr bool is_ok() const noexcept {
         return not _is_error;
     }
 
@@ -199,7 +199,7 @@ template<typename E> struct Result<void, E> final :
     /// @param f Mapping function: E -> W
     /// @return Result<T, W> containing the mapped error on failure,
     ///         otherwise the original success value.
-    [[nodiscard]] auto mapError(auto &&f) const noexcept -> Result<void, decltype(f(std::declval<E>()))> {
+    [[nodiscard]] auto map_error(auto &&f) const noexcept -> Result<void, decltype(f(std::declval<E>()))> {
         if (_is_error) {
             return {internal::ResultErrorWrapper<decltype(f(std::declval<E>()))>{f(_error)}};
         } else {
@@ -213,17 +213,17 @@ private:
 
     friend struct ::kf::internal::ResultErrorController<Result<void, E>, E>;
 
-    [[nodiscard]] bool isErrorImpl() const noexcept {
+    [[nodiscard]] bool is_error_impl() const noexcept {
         return _is_error;
     }
 
-    [[nodiscard]] E const &getErrorImpl() const noexcept {
+    [[nodiscard]] E const &get_error_impl() const noexcept {
         return _error;
     }
 
     KF_IMPL_REPR_TO(Result<void, E>);
-    constexpr usize reprToImpl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
-        if (this->isError()) {
+    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+        if (this->is_error()) {
             return (
                 char_writable.append("error(") +
                 char_writable.append(_error) +
@@ -264,7 +264,7 @@ constexpr auto error(auto &&error) noexcept -> internal::ResultErrorWrapper<std:
     ({                                                                                                                      \
         auto result = (__expression__);                                                                                     \
         static_assert(std::is_base_of_v<::kf::ResultTag, std::decay_t<decltype(result)>>, "KF_TRY requires a Result type"); \
-        if (result.isError()) {                                                                                             \
+        if (result.is_error()) {                                                                                            \
             return ::kf::error(result.error());                                                                             \
         }                                                                                                                   \
         result.ok();                                                                                                        \

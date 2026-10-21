@@ -40,7 +40,7 @@ void kf::main(kf::Init &init) {
     }
 
     // Maximum duty cycle value (1023 for 10-bit resolution).
-    gpio::PwmOutput::Duty const max_duty = my_pwm_config.maxDuty();
+    gpio::PwmOutput::Duty const max_duty = my_pwm_config.max_duty();
 
     auto current_duty = 0;
 
@@ -67,5 +67,5 @@ void kf::main(kf::Init &init) {
     // Alternative: setting pulse width directly in microseconds.
     // This is convenient for servo motors (typical range: 500–2500 us).
     // Uncomment the line below to set a fixed pulse width (e.g., 500 us).
-    // my_pwm_output.writePulse(500);
+    // my_pwm_output.write_pulse(500);
 }

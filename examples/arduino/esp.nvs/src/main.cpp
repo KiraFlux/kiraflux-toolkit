@@ -27,18 +27,18 @@ void kf::main(kf::Init &init) {
 
     // Initialize NVS (opens the namespace)
     auto init_result = my_nvs.init();
-    if (init_result.isError()) {
+    if (init_result.is_error()) {
         init.logger.error("NVS init failed: {}", init_result.error());
         return;
     }
 
     // Try to load existing config from NVS
-    auto load_result = my_nvs.getBlob(
+    auto load_result = my_nvs.get_blob(
         "app_config",
         {reinterpret_cast<u8 *>(&my_app_config), sizeof(my_app_config)});
 
     // If config is missing, corrupted, or magic mismatch – reset to defaults
-    if (load_result.isError() or my_app_config.magic != 0xAA'BB'CC'DD) {
+    if (load_result.is_error() or my_app_config.magic != 0xAA'BB'CC'DD) {
         // Default values
         my_app_config = {
             .magic = 0xAA'BB'CC'DD,
@@ -49,11 +49,11 @@ void kf::main(kf::Init &init) {
         };
 
         // Write defaults back to NVS
-        auto save_result = my_nvs.setBlob(
+        auto save_result = my_nvs.set_blob(
             "app_config",
             {reinterpret_cast<u8 const *>(&my_app_config), sizeof(my_app_config)});
 
-        if (save_result.isError()) {
+        if (save_result.is_error()) {
             init.logger.error("Failed to save config: {}", save_result.error());
         } else {
             init.logger.info("Default config saved");

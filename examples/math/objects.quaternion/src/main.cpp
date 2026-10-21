@@ -22,15 +22,15 @@ void kf::main(kf::Init &init) {
 
     // Rotation of 90° around Z axis (common for yaw).
     auto axis = Vector3f::create(0.0f, 0.0f, 1.0f);
-    auto q_axis = Quaternionf::fromAxisAngle(axis, pi / 2.0f);
+    auto q_axis = Quaternionf::from_axis_angle(axis, pi / 2.0f);
     init.logger.debug("axis-angle (Z, 90°): {}", q_axis);
 
     // --- Euler angles (ZYX) ---
 
     // roll, pitch, yaw in radians; intuitive for robotics.
     auto euler_in = Vector3f::create(0.1f, 0.2f, 0.3f);
-    auto q_euler = Quaternionf::fromEulers(euler_in);
-    init.logger.debug("fromEulers (roll=0.1, pitch=0.2, yaw=0.3): {}", q_euler);
+    auto q_euler = Quaternionf::from_eulers(euler_in);
+    init.logger.debug("from_eulers (roll=0.1, pitch=0.2, yaw=0.3): {}", q_euler);
 
     // --- Conjugate ---
 
@@ -42,7 +42,7 @@ void kf::main(kf::Init &init) {
 
     // Returns Option to handle zero norm (shouldn't happen for valid quaternions).
     auto inv = q_axis.inverse();
-    if (inv.isSome()) {
+    if (inv.is_some()) {
         init.logger.debug("inverse: {}", inv.unwrap());
     }
 
@@ -50,7 +50,7 @@ void kf::main(kf::Init &init) {
 
     // Ensures unit norm (numerical stability); returns Option if zero.
     auto norm = q_axis.normalized();
-    if (norm.isSome()) {
+    if (norm.is_some()) {
         init.logger.debug("normalized: {}", norm.unwrap());
     }
 
@@ -64,8 +64,8 @@ void kf::main(kf::Init &init) {
     // --- Euler angles extraction ---
 
     // Convert back to roll-pitch-yaw (useful for debugging orientation).
-    auto euler_out = q_axis.toEulers();
-    init.logger.debug("toEulers(): (roll={}, pitch={}, yaw={})",
+    auto euler_out = q_axis.to_eulers();
+    init.logger.debug("to_eulers(): (roll={}, pitch={}, yaw={})",
                       euler_out.x, euler_out.y, euler_out.z);
 
     // --- Multiplication (composition) ---
@@ -80,9 +80,9 @@ void kf::main(kf::Init &init) {
 
     // --- Length and squared length ---
 
-    // length() returns norm; lengthSquared() avoids sqrt (performance).
+    // length() returns norm; length_squared() avoids sqrt (performance).
     init.logger.debug("length: {}", q_axis.length());
-    init.logger.debug("lengthSquared: {}", q_axis.lengthSquared());
+    init.logger.debug("length_squared: {}", q_axis.length_squared());
 
     // --- Different scalar types ---
 

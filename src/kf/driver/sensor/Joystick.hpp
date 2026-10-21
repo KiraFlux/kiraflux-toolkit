@@ -55,17 +55,17 @@ template<implements<SensorDriverTag> I> struct Joystick final : SensorDriver<Joy
 
         KF_IMPL_TUNER(Tuner);
 
-        constexpr void resetImpl() noexcept {
+        constexpr void reset_impl() noexcept {
             _tuner_x.reset();
             _tuner_y.reset();
         }
 
-        void pollImpl(units::Milliseconds now) noexcept {
+        void poll_impl(units::Milliseconds now) noexcept {
             _tuner_x.poll(now);
             _tuner_y.poll(now);
         }
 
-        bool runningImpl() const noexcept {
+        bool running_impl() const noexcept {
             return _tuner_x.running() or _tuner_y.running();
         }
     };
@@ -79,12 +79,12 @@ template<implements<SensorDriverTag> I> struct Joystick final : SensorDriver<Joy
 private:
     KF_IMPL_SENSOR_DRIVER(Self, Value, void);
 
-    void initImpl() noexcept {
+    void init_impl() noexcept {
         axis_x.init();
         axis_y.init();
     }
 
-    [[nodiscard]] Value readImpl() noexcept {
+    [[nodiscard]] Value read_impl() noexcept {
         // Output is normalized to unit circle (clamped at magnitude 1.0)
 
         auto const x = axis_x.read();

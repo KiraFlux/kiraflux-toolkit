@@ -49,15 +49,15 @@ void kf::main(kf::Init &init) {
 
     // --- Safe division (avoids division by zero) ---
 
-    // divChecked returns Option to handle zero denominator without exceptions.
-    auto ok = vf.divChecked(2.0f);
-    auto zero = vf.divChecked(0.0f);
+    // div_checked returns Option to handle zero denominator without exceptions.
+    auto ok = vf.div_checked(2.0f);
+    auto zero = vf.div_checked(0.0f);
 
-    if (ok.isSome()) {
-        init.logger.debug("divChecked(2) = {}", ok.unwrap());
+    if (ok.is_some()) {
+        init.logger.debug("div_checked(2) = {}", ok.unwrap());
     }
-    if (zero.isNone()) {
-        init.logger.warn("divChecked(0) -> None (division by zero)");
+    if (zero.is_none()) {
+        init.logger.warn("div_checked(0) -> None (division by zero)");
     }
 
     // --- Dot product ---
@@ -70,7 +70,7 @@ void kf::main(kf::Init &init) {
 
     // Returns Option to handle zero-length vectors (prevents NaN).
     auto norm = vf.normalized();
-    if (norm.isSome()) {
+    if (norm.is_some()) {
         init.logger.debug("normalized: {}", norm.unwrap());
     } else {
         init.logger.warn("zero vector cannot be normalized");
@@ -78,10 +78,10 @@ void kf::main(kf::Init &init) {
 
     // --- Zero detection ---
 
-    // isZero() checks both components; avoids manual comparison.
+    // is_zero() checks both components; avoids manual comparison.
     auto zero_vec = Vector2f::zero();
-    init.logger.debug("isZero(zero) = {}", zero_vec.isZero());
-    init.logger.debug("isZero(vf) = {}", vf.isZero());
+    init.logger.debug("is_zero(zero) = {}", zero_vec.is_zero());
+    init.logger.debug("is_zero(vf) = {}", vf.is_zero());
 
     // --- Zero vector factory ---
 

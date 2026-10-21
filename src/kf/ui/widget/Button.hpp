@@ -36,17 +36,17 @@ template<implements<UiTraitsTag> U> struct Button :
         U::Widget{style}, mixin::Labeled::Labeled{label} {}
 
     /// @brief Handle button click event
-    Request onClick() noexcept override {
+    Request on_click() noexcept override {
         this->invoke();
 
         return Request::Nothing;
     }
 
     /// @brief Render button with block styling
-    void doRender(typename U::RendererImpl &render) const noexcept override {
-        render.beginBlock();
+    void do_render(typename U::RendererImpl &render) const noexcept override {
+        render.begin_block();
         render.value(this->label());
-        render.endBlock();
+        render.end_block();
     }
 };
 

@@ -26,26 +26,26 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
 
     static constexpr auto bits_per_pixel{bits};
 
-    [[nodiscard]] static constexpr usize bufferSize(usize width, usize height) noexcept {
-        return Impl::getBufferSizeImpl(width, height);
+    [[nodiscard]] static constexpr usize buffer_size(usize width, usize height) noexcept {
+        return Impl::get_buffer_size_impl(width, height);
     }
 
     // conventions
 
-    [[nodiscard]] static constexpr ColorType fromRgb(u8 r, u8 g, u8 b) noexcept {
-        return Impl::fromRgbImpl(r, g, b);
+    [[nodiscard]] static constexpr ColorType from_rgb(u8 r, u8 g, u8 b) noexcept {
+        return Impl::from_rgb_impl(r, g, b);
     }
 
     // draw
 
     /// @brief set pixel color
-    static void setPixel(
+    static void set_pixel(
         Slice<BufferType> buffer,
         PositionType stride,
         PositionType abs_x,
         PositionType abs_y,
         ColorType color) noexcept {
-        Impl::setPixelImpl(
+        Impl::set_pixel_impl(
             buffer, stride,
             abs_x, abs_y,
             color);
@@ -60,7 +60,7 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
         PositionType width,
         PositionType height,
         ColorType color) noexcept {
-        Impl::fillImpl(
+        Impl::fill_impl(
             buffer, stride,
             offset_x, offset_y,
             width, height,
@@ -101,7 +101,7 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
             if (copy_height <= 0) { return; }
         }
 
-        Impl::copyImpl(source_buffer, source_width, source_height, dest_buffer, dest_stride, dest_x, dest_y, copy_width, copy_height);
+        Impl::copy_impl(source_buffer, source_width, source_height, dest_buffer, dest_stride, dest_x, dest_y, copy_width, copy_height);
     }
 
 protected:

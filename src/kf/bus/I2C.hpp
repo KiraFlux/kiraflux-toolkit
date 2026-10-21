@@ -59,7 +59,7 @@ struct IicError : mixin::Representable<IicError, StringView> {
 
 private:
     KF_IMPL_REPRESENTABLE(IicError, StringView);
-    constexpr StringView reprImpl() const noexcept {
+    constexpr StringView repr_impl() const noexcept {
         switch (kind) {
             CASE_RETURN(IicError::ClockConfigFailed);
             CASE_RETURN(IicError::BufferSizeConfigFailed);
@@ -116,7 +116,7 @@ template<typename Impl> struct IicBusBase :
 /// @tparam B The bus implementation type (I2C)
 /// @note This class is movable but not copyable. It holds a reference to the underlying TwoWire instance
 ///       and manages the I2C address and transaction state. All I/O operations are blocking
-///       The node is created via `I2C::createNode()` and must remain valid while the bus exists
+///       The node is created via `I2C::create_node()` and must remain valid while the bus exists
 template<typename B> struct IicNodeImpl : IicNodeBase<IicNodeImpl<B>> {
     using Self = IicNodeImpl<B>;
 
@@ -131,19 +131,19 @@ private:
 
     KF_IMPL_BUS_NODE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error> {
+    auto read_buffer_impl(Bytes buffer) noexcept -> Result<BytesView, Error> {
         usize const received = request(buffer.length());
 
         if (received == 0) {
             return Error::create(Error::Timeout);
         }
 
-        readBytesUnchecked(buffer.data(), received);
+        read_bytes_unchecked(buffer.data(), received);
 
         return ok(BytesView{buffer.data(), received});
     }
 
-    template<trivial T> auto readPacketImpl() noexcept -> Result<T, Error> {
+    template<trivial T> auto read_packet_impl() noexcept -> Result<T, Error> {
         constexpr usize requested = sizeof(T);
 
         usize const received = request(requested);
@@ -153,7 +153,7 @@ private:
         }
 
         if (received != requested) {
-            discardReceiveBuffer();
+            discard_receive_buffer();
             return Error::create(Error::IncompletePacket);
         }
 
@@ -161,28 +161,28 @@ private:
             return ok(static_cast<T>(_wire.read()));
         } else {
             T packet;
-            readBytesUnchecked(reinterpret_cast<u8 *>(&packet), requested);
+            read_bytes_unchecked(reinterpret_cast<u8 *>(&packet), requested);
             return ok(packet);
         }
     }
 
-    IicWriteResult writeBufferImpl(BytesView buffer) noexcept {
-        beginTransmission();
-        usize const written = writeBytes(buffer.data(), buffer.length());
-        return endTransmission(written, buffer.length());
+    IicWriteResult write_buffer_impl(BytesView buffer) noexcept {
+        begin_transmission();
+        usize const written = write_bytes(buffer.data(), buffer.length());
+        return end_transmission(written, buffer.length());
     }
 
-    IicWriteResult writePacketImpl(trivial auto const &packet) noexcept {
-        beginTransmission();
-        usize const written = writePacketUnchecked(packet);
-        return endTransmission(written, sizeof(decltype(packet)));
+    IicWriteResult write_packet_impl(trivial auto const &packet) noexcept {
+        begin_transmission();
+        usize const written = write_packet_unchecked(packet);
+        return end_transmission(written, sizeof(decltype(packet)));
     }
 
-    IicWriteResult writeMixedImpl(trivial auto const &header, BytesView buffer) noexcept {
-        beginTransmission();
-        usize const header_written = writePacketUnchecked(header);
-        usize const buffer_written = writeBytes(buffer.data(), buffer.length());
-        return endTransmission(header_written + buffer_written, sizeof(decltype(header)) + buffer.length());
+    IicWriteResult write_mixed_impl(trivial auto const &header, BytesView buffer) noexcept {
+        begin_transmission();
+        usize const header_written = write_packet_unchecked(header);
+        usize const buffer_written = write_bytes(buffer.data(), buffer.length());
+        return end_transmission(header_written + buffer_written, sizeof(decltype(header)) + buffer.length());
     }
 
     /// @brief Request `requested` bytes from the I2C device
@@ -193,13 +193,13 @@ private:
 
     /// @brief Read raw bytes from the internal Wire buffer after a successful request
     /// @warning Assumes that exactly `length` bytes are available; call only after checking request() result
-    void readBytesUnchecked(u8 *buffer, usize length) noexcept {
+    void read_bytes_unchecked(u8 *buffer, usize length) noexcept {
         (void) _wire.readBytes(buffer, length);
     }
 
     /// @brief Discard any remaining bytes in the receive buffer (flush)
     /// @note Used after a partial read or error to prepare for the next transaction
-    void discardReceiveBuffer() noexcept {
+    void discard_receive_buffer() noexcept {
         auto const to_discard = _wire.available();
         for (auto i = 0; i < to_discard; i += 1) {
             (void) _wire.read();
@@ -208,13 +208,13 @@ private:
 
     /// @brief Begin an I2C transmission (send START condition)
     /// @note Must be called before writing any data
-    void beginTransmission() noexcept {
+    void begin_transmission() noexcept {
         _wire.beginTransmission(this->config().address);
     }
 
     /// @brief Write raw bytes to the I2C device (must be between begin/endTransmission)
     /// @return number of bytes actually placed in the internal transmit buffer (may be less than `length` if buffer full)
-    [[nodiscard]] usize writeBytes(u8 const *buffer, usize length) noexcept {
+    [[nodiscard]] usize write_bytes(u8 const *buffer, usize length) noexcept {
         return _wire.write(buffer, length);
     }
 
@@ -223,7 +223,7 @@ private:
     /// @param to_write Total number of bytes that were intended to be written
     /// @return Success or specific I2C error
     /// @note Possible errors: AddressNack, DataNack, Timeout, BufferTooLong, Unknown
-    [[nodiscard]] IicWriteResult endTransmission(usize written, usize to_write) noexcept {
+    [[nodiscard]] IicWriteResult end_transmission(usize written, usize to_write) noexcept {
         u8 const code = _wire.endTransmission();
 
         if (written != to_write) { return Error::create(Error::BufferTooLong); }
@@ -240,13 +240,13 @@ private:
     }
 
     /// @brief Write a single‑byte packet without checking (used internally for small writes)
-    [[nodiscard]] usize writePacketUnchecked(u8 packet) noexcept {
+    [[nodiscard]] usize write_packet_unchecked(u8 packet) noexcept {
         return _wire.write(packet);
     }
 
     /// @brief Write a multi‑byte packet without checking (used internally)
-    [[nodiscard]] usize writePacketUnchecked(auto const &packet) noexcept {
-        return writeBytes(reinterpret_cast<u8 const *>(&packet), sizeof(decltype(packet)));
+    [[nodiscard]] usize write_packet_unchecked(auto const &packet) noexcept {
+        return write_bytes(reinterpret_cast<u8 const *>(&packet), sizeof(decltype(packet)));
     }
 };
 
@@ -266,7 +266,7 @@ private:
     TwoWire _wire;
 
     [[nodiscard]] static constexpr int uncast(Option<gpio::GpioNumber> g) noexcept {
-        if (g.isNone()) {
+        if (g.is_none()) {
             return -1;
         } else {
             return static_cast<int>(g.unwrap());
@@ -281,17 +281,17 @@ private:
             return Error::create(Error::BeginFailed);
         }
 
-        if (this->config().clock_hz.isSome()) {
+        if (this->config().clock_hz.is_some()) {
             if (not _wire.setClock(this->config().clock_hz.unwrap())) {
                 return Error::create(Error::ClockConfigFailed);
             }
         }
 
-        if (this->config().timeout_ms.isSome()) {
-            _wire.setTimeOut(static_cast<u16>(this->config().timeout_ms.unwrap()));// TwoWire::setTimeout
+        if (this->config().timeout_ms.is_some()) {
+            _wire.setTimeout(static_cast<u16>(this->config().timeout_ms.unwrap()));// TwoWire::setTimeout
         }
 
-        if (this->config().buffer_size.isSome()) {
+        if (this->config().buffer_size.is_some()) {
             if (_wire.setBufferSize(this->config().buffer_size.unwrap()) != this->config().buffer_size.unwrap()) {
                 return Error::create(Error::BufferSizeConfigFailed);
             }
@@ -300,7 +300,7 @@ private:
         return ok();
     }
 
-    void quitImpl() noexcept {
+    void quit_impl() noexcept {
         (void) _wire.end();// just ignore
     }
 };
@@ -319,23 +319,23 @@ template<typename B> struct IicNodeImpl : IicNodeBase<IicNodeImpl<B>> {
 private:
     KF_IMPL_BUS_NODE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error> {
+    auto read_buffer_impl(Bytes buffer) noexcept -> Result<BytesView, Error> {
         return Error::create(Error::Unknown);
     }
 
-    template<trivial T> auto readPacketImpl() noexcept -> Result<T, Error> {
+    template<trivial T> auto read_packet_impl() noexcept -> Result<T, Error> {
         return Error::create(Error::Unknown);
     }
 
-    auto writeBufferImpl(BytesView buffer) noexcept -> Result<void, Error> {
+    auto write_buffer_impl(BytesView buffer) noexcept -> Result<void, Error> {
         return ok();
     }
 
-    auto writePacketImpl(trivial auto const &packet) noexcept -> Result<void, Error> {
+    auto write_packet_impl(trivial auto const &packet) noexcept -> Result<void, Error> {
         return ok();
     }
 
-    auto writeMixedImpl(trivial auto const &header, BytesView buffer) noexcept -> Result<void, Error> {
+    auto write_mixed_impl(trivial auto const &header, BytesView buffer) noexcept -> Result<void, Error> {
         return ok();
     }
 };
@@ -359,7 +359,7 @@ private:
         return ok();
     }
 
-    void quitImpl() noexcept {}
+    void quit_impl() noexcept {}
 };
 
 #endif

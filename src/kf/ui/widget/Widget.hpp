@@ -37,17 +37,17 @@ template<implements<render::RenderTag> R, implements<EventTag> E> struct Widget 
     using EventImpl = E;
 
     /// @brief Render widget content (must be implemented by derived classes)
-    virtual void doRender(RendererImpl &render) const noexcept = 0;
+    virtual void do_render(RendererImpl &render) const noexcept = 0;
 
     /// @brief Handle click event
     /// @return Action Request after input
-    [[nodiscard]] virtual Request onClick() noexcept {
+    [[nodiscard]] virtual Request on_click() noexcept {
         return Request::Nothing;
     }
 
     /// @brief Handle Event value
     /// @return Action Request after input
-    [[nodiscard]] virtual Request onEventValue(typename EventImpl::Value event_value) noexcept {
+    [[nodiscard]] virtual Request on_event_value(typename EventImpl::Value event_value) noexcept {
         return Request::Nothing;
     }
 
@@ -95,14 +95,14 @@ template<implements<render::RenderTag> R, implements<EventTag> E> struct Widget 
 
     /// @brief External widget rendering with focus handling
     void render(RendererImpl &render, usize index, bool focused) const noexcept {
-        render.beginWidget(index, focused, _offset);
+        render.begin_widget(index, focused, _offset);
 
         render.foreground(_enabled ? this->style().foreground_color : Color::Disabled);
         render.background(_enabled ? this->style().background_color : Color::Disabled);
 
-        doRender(render);
+        do_render(render);
 
-        render.endWidget();
+        render.end_widget();
     }
 
 private:

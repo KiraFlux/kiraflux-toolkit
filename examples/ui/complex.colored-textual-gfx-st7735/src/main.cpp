@@ -183,10 +183,10 @@ struct MainPage : MyUI::Page {
         click_button.callback([this]() {
             logger.info("Test button clicked!");
 
-            if (my_value.isSome()) {
+            if (my_value.is_some()) {
                 my_value.unwrap() += 1;
                 value_display.value(my_value);
-                _ui.requestRender();// add Update Event
+                _ui.request_render();// add Update Event
             }
         });
 
@@ -204,7 +204,7 @@ struct MainPage : MyUI::Page {
         check_box.callback([this](bool state) {
             logger.info("Checkbox changed to: {}", state ? "ON" : "OFF");
 
-            if (my_value.isSome()) {
+            if (my_value.is_some()) {
                 my_value = kf::none;
             } else {
                 my_value = kf::some(12345);
@@ -212,7 +212,7 @@ struct MainPage : MyUI::Page {
 
             value_display.value(my_value);
 
-            requestBuild();
+            request_build();
         });
 
         background_color_combo.callback([this](auto item) {
@@ -233,18 +233,18 @@ struct MainPage : MyUI::Page {
     }
 
     // behavior on entry
-    void onEntry() noexcept override {
+    void on_entry() noexcept override {
         logger.debug("Entry on Main");
     }
 
     // behavior on leave
-    void onExit() noexcept override {
+    void on_exit() noexcept override {
         logger.debug("Exit from Main");
     }
 
 protected:
     // behavior on UI polling
-    void onPoll(kf::units::Milliseconds now) noexcept override {}
+    void on_poll(kf::units::Milliseconds now) noexcept override {}
 };
 
 struct SettingsPage : MyUI::Page {
@@ -316,15 +316,15 @@ struct SettingsPage : MyUI::Page {
 };
 
 // Simple function for conversion from char to event
-Event eventFromChar(char c) {
+Event event_from_char(char c) {
     switch (c) {
-        case 'w': return Event::pageCursorMove(-1);// Up
-        case 's': return Event::pageCursorMove(+1);// Down
-        case 'a': return Event::widgetValue(-1);   // Left
-        case 'd': return Event::widgetValue(1);    // Right
+        case 'w': return Event::page_cursor_move(-1);// Up
+        case 's': return Event::page_cursor_move(+1);// Down
+        case 'a': return Event::widget_value(-1);    // Left
+        case 'd': return Event::widget_value(1);     // Right
         case ' ':
         default:
-            return Event::widgetClick();// Click
+            return Event::widget_click();// Click
     }
 }
 
@@ -383,7 +383,7 @@ void kf::main(kf::Init &init) {
     (void) spi_bus.init();
 
     // display setup
-    if (display.init().isError()) {
+    if (display.init().is_error()) {
         init.logger.error("Failed to init display. halting...");
         return;
     }
@@ -394,7 +394,7 @@ void kf::main(kf::Init &init) {
     static CanvasImpl root_canvas{
         kf::image::DynamicImage<P>{display.image()},
         CanvasImpl::State{
-            .active_font = kf::someRef(kf::gfx::fonts::gyver_5x7_en),
+            .active_font = kf::some_ref(kf::gfx::fonts::gyver_5x7_en),
             .foreground_color = CanvasImpl::PaletteType::white,
             .background_color = CanvasImpl::PaletteType::black,
             .auto_next_line = true,
@@ -424,10 +424,10 @@ void kf::main(kf::Init &init) {
     my_renderer_config.reset();
 
     // override
-    my_renderer_config.textual.float_places = 3;                         // float rendering like:  1234.567
-    my_renderer_config.textual.double_places = 6;                        // double rendering like: 1.234567
-    my_renderer_config.textual.rows_total = root_canvas.heightInGlyphs();// all canvas area
-    my_renderer_config.textual.row_max_length = root_canvas.widthInGlyphs();
+    my_renderer_config.textual.float_places = 3;                           // float rendering like:  1234.567
+    my_renderer_config.textual.double_places = 6;                          // double rendering like: 1.234567
+    my_renderer_config.textual.rows_total = root_canvas.height_in_glyphs();// all canvas area
+    my_renderer_config.textual.row_max_length = root_canvas.width_in_glyphs();
 
     // my_render_config.normal_foreground_palette.normal = Renderer::Config::Palette::Black; // style configuration
     // my_render_config.focused_foreground_palette
@@ -439,15 +439,15 @@ void kf::main(kf::Init &init) {
     main_page.widgets_storage[0] = &settings_page.link();
     settings_page.widgets_storage[0] = &main_page.link();
 
-    my_ui.activePage(main_page);// start ui with main page
-    my_ui.requestRender();      // Force update for first ui rendering
+    my_ui.active_page(main_page);// start ui with main page
+    my_ui.request_render();      // Force update for first ui rendering
 
     while (true) {
 
         // process all incoming keys into UI event queue
-        while (init.io.availableForRead()) {
-            if (auto const read = init.io.readByte(); read.isOk()) {
-                my_ui.addEvent(eventFromChar(read.ok()));
+        while (init.io.available_for_read()) {
+            if (auto const read = init.io.read_byte(); read.is_ok()) {
+                my_ui.add_event(event_from_char(read.ok()));
             }
         }
 

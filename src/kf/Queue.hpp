@@ -67,22 +67,22 @@ template<typename T> struct Queue :
 
     /// @brief Get mutable reference to the front element
     [[nodiscard]] constexpr auto front() noexcept -> Option<T &> {
-        return this->empty() ? none : someRef(_buffer[indexAt(0)]);
+        return this->empty() ? none : some_ref(_buffer[index_at(0)]);
     }
 
     /// @brief Get const reference to the front element
     [[nodiscard]] constexpr auto front() const noexcept -> Option<T const &> {
-        return this->empty() ? none : someRef<T const &>(_buffer[indexAt(0)]);
+        return this->empty() ? none : some_ref<T const &>(_buffer[index_at(0)]);
     }
 
     /// @brief Get mutable reference to the back element
     [[nodiscard]] constexpr auto back() noexcept -> Option<T &> {
-        return this->empty() ? none : someRef(_buffer[indexAt(_length - 1)]);
+        return this->empty() ? none : some_ref(_buffer[index_at(_length - 1)]);
     }
 
     /// @brief Get const reference to the back element
     [[nodiscard]] constexpr auto back() const noexcept -> Option<T const &> {
-        return this->empty() ? none : someRef<T const &>(_buffer[indexAt(_length - 1)]);
+        return this->empty() ? none : some_ref<T const &>(_buffer[index_at(_length - 1)]);
     }
 
 private:
@@ -93,17 +93,17 @@ private:
     /// @brief Compute absolute index for given offset from head
     /// @param offset Distance from head (0 <= offset < count)
     /// @note Call only when this->capacity() > 0
-    [[nodiscard]] constexpr usize indexAt(usize offset) const noexcept {
+    [[nodiscard]] constexpr usize index_at(usize offset) const noexcept {
         return (_head + offset) % this->capacity();
     }
 
     KF_IMPL_LENGTH(Self, usize);
-    constexpr usize lengthImpl() const noexcept {
+    constexpr usize length_impl() const noexcept {
         return _length;
     }
 
     KF_IMPL_READABLE(Self, T);
-    constexpr auto readImpl() noexcept -> Option<T> {
+    constexpr auto read_impl() noexcept -> Option<T> {
         if (this->empty()) {
             return none;
         }
@@ -111,24 +111,24 @@ private:
         auto value = std::move(_buffer[_head]);
         _buffer[_head].~T();
 
-        _head = indexAt(1);
+        _head = index_at(1);
         _length -= 1;
 
         return some(std::move(value));
     }
 
     KF_IMPL_READ_AVAILABLE(Self);
-    usize availableForReadImpl() const noexcept {
+    usize available_for_read_impl() const noexcept {
         return this->length();
     }
 
     KF_IMPL_WRITABLE(Self, T);
-    constexpr bool writeImpl(auto &&item) noexcept {
+    constexpr bool write_impl(auto &&item) noexcept {
         if (this->full()) {
             return false;
         }
 
-        new (&_buffer[indexAt(_length)]) T(std::forward<decltype(item)>(item));
+        new (&_buffer[index_at(_length)]) T(std::forward<decltype(item)>(item));
 
         _length += 1;
 
@@ -136,14 +136,14 @@ private:
     }
 
     KF_IMPL_WRITE_AVAILABLE(Self);
-    usize availableForWriteImpl() const noexcept {
+    usize available_for_write_impl() const noexcept {
         return this->capacity() - this->length();
     }
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         for (auto i = 0u; i < _length; i += 1) {
-            _buffer[indexAt(i)].~T();
+            _buffer[index_at(i)].~T();
         }
 
         _head = 0;

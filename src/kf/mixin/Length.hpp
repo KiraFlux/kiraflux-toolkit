@@ -12,13 +12,13 @@ namespace kf::mixin {
 struct LengthTag {};
 
 /// @brief Adds `length()`
-/// @tparam Impl Length implementation class with `constexpr T lengthImpl() const noexcept` method
+/// @tparam Impl Length implementation class with `constexpr T length_impl() const noexcept` method
 /// @tparam T length value type
 template<typename Impl, typename T> struct Length : LengthTag {
 
     /// @brief Get Length
     [[nodiscard]] constexpr T length() const noexcept {
-        return static_cast<Impl const *>(this)->lengthImpl();
+        return static_cast<Impl const *>(this)->length_impl();
     }
 };
 

@@ -21,7 +21,7 @@ void kf::main(kf::Init &init) {
     // String provides compile-time format string validation via `mixin::Writable<Impl, char>`
     // Use `{}` as anchor, `{{` or `}}` to display literal braces
     // Supported types: StringView, C-strings, integers, floats, booleans, char, and custom types via `Representable`
-    (void) str.appendFormat(
+    (void) str.append_format(
         "{{ hello }} {} {} {} {} {} {} {}\n",
         kf::StringView{"string-view"},
         "c-string",
@@ -38,21 +38,21 @@ void kf::main(kf::Init &init) {
     init.logger.info("view length: {}", str.view().length());
 
     // Null-terminate the string for C-API compatibility (e.g., printf, Serial.print)
-    init.logger.info("c-string: {}", str.cString());
+    init.logger.info("c-string: {}", str.c_string());
 
     // --- Stack<char> inherited behavior ---
 
     // String inherits all methods from Stack<char>:
     // - write, read, reset, top, length, capacity, full, empty, data
-    // - availableForRead, availableForWrite (from ReadAvailable/WriteAvailable mixins)
+    // - available_for_read, available_for_write (from ReadAvailable/WriteAvailable mixins)
     // - Sequence methods: begin, end, operator[], slice, iteration
 
     // Reset clears the string (length becomes 0)
     str.reset();
 
     // Check availability after reset (empty string)
-    init.logger.info("after reset - availableForRead: {}, availableForWrite: {}",
-                     str.availableForRead(), str.availableForWrite());
+    init.logger.info("after reset - available_for_read: {}, available_for_write: {}",
+                     str.available_for_read(), str.available_for_write());
 
     // Append various types (inherited from mixin::Writable<Impl, char>)
     (void) str.append(kf::StringView{"sv"});// any Sequence<char>
@@ -64,16 +64,16 @@ void kf::main(kf::Init &init) {
     (void) str.append('c');                 // char
 
     // Availability after appending content
-    init.logger.info("after append - availableForRead: {} (characters in string), availableForWrite: {} (free space)",
-                     str.availableForRead(), str.availableForWrite());
+    init.logger.info("after append - available_for_read: {} (characters in string), available_for_write: {} (free space)",
+                     str.available_for_read(), str.available_for_write());
 
     // Stack operations: write (push) and read (pop)
     bool const ok = str.write('c');            // writes a character to the stack
     kf::Option<char> const popped = str.read();// reads a character from the stack
 
     // Availability after push/pop
-    init.logger.info("after write+read - availableForRead: {}, availableForWrite: {}",
-                     str.availableForRead(), str.availableForWrite());
+    init.logger.info("after write+read - available_for_read: {}, available_for_write: {}",
+                     str.available_for_read(), str.available_for_write());
 
     // Iteration (inherited from Sequence)
     init.logger.info("iterating over string:");

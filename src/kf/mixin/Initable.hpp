@@ -3,7 +3,7 @@
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    mixin/Initable.hpp
-/// @brief   Adds init() forwarding to initImpl().
+/// @brief   Adds init() forwarding to init_impl().
 
 #pragma once
 
@@ -13,27 +13,27 @@ namespace kf::mixin {
 
 struct InitableTag {};
 
-/// @brief CRTP mixin that adds an `init(Args...)` method forwarding to `initImpl(Args...)`
-/// @tparam Impl       Implementation class (must implement `initImpl(Args...)`)
+/// @brief CRTP mixin that adds an `init(Args...)` method forwarding to `init_impl(Args...)`
+/// @tparam Impl       Implementation class (must implement `init_impl(Args...)`)
 /// @tparam Signature  Function signature `R(Args...)` - return type and arguments
 template<typename Impl, typename Signature> struct Initable;
 
 template<typename Impl, typename... Args> struct Initable<Impl, void(Args...)> : InitableTag {
 
     /// @brief Initializes the object with given arguments
-    /// @param args Arguments forwarded to `initImpl`
+    /// @param args Arguments forwarded to `init_impl`
     template<typename... InitArgs> void init(InitArgs &&...args) noexcept {
-        static_cast<Impl *>(this)->initImpl(std::forward<InitArgs>(args)...);
+        static_cast<Impl *>(this)->init_impl(std::forward<InitArgs>(args)...);
     }
 };
 
 template<typename Impl, typename R, typename... Args> struct Initable<Impl, R(Args...)> : InitableTag {
 
     /// @brief Initializes the object with given arguments
-    /// @param args Arguments forwarded to `initImpl`
-    /// @return Value returned by `initImpl`
+    /// @param args Arguments forwarded to `init_impl`
+    /// @return Value returned by `init_impl`
     template<typename... InitArgs> [[nodiscard]] R init(InitArgs &&...args) noexcept {
-        return static_cast<Impl *>(this)->initImpl(std::forward<InitArgs>(args)...);
+        return static_cast<Impl *>(this)->init_impl(std::forward<InitArgs>(args)...);
     }
 };
 

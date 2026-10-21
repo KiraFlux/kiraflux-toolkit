@@ -68,7 +68,7 @@ inline namespace custom_functions {
 }
 
 /// @brief Linear interpolate value from input (low..high) to output (log..high)
-[[nodiscard]] constexpr auto linearMap(
+[[nodiscard]] constexpr auto linear_map(
     auto const &value,
     auto const &in_low, auto const &in_high,
     auto const &out_low, auto const &out_high) noexcept {
@@ -134,12 +134,12 @@ template<arithmetic T> struct Range final :
 
 private:
     KF_IMPL_LENGTH(Self, Scalar);
-    constexpr Scalar lengthImpl() const noexcept {
+    constexpr Scalar length_impl() const noexcept {
         return end - start;
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize reprToImpl(auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(auto &char_writable) const noexcept {
         return (
             char_writable.append('[') +
             char_writable.append(start) +
@@ -204,14 +204,14 @@ template<arithmetic T> struct Vector2 :
     /// @brief Safe scalar division with zero-check
     /// @param scalar Division factor
     /// @return Option containing divided vector or empty if divisor is zero
-    [[nodiscard]] constexpr auto divChecked(Scalar scalar) const noexcept {
+    [[nodiscard]] constexpr auto div_checked(Scalar scalar) const noexcept {
         return (scalar == 0) ? Option<Self>{none} : some((*this) / scalar);
     }
 
     /// @brief Scalar division
     /// @param scalar Division factor
     /// @return Divided vector
-    /// @warning No zero-check (use divChecked for safe division)
+    /// @warning No zero-check (use div_checked for safe division)
     [[nodiscard]] constexpr auto operator/(Scalar scalar) const noexcept {
         return Self::create(x / scalar, y / scalar);
     }
@@ -237,7 +237,7 @@ template<arithmetic T> struct Vector2 :
     /// @brief Get normalized (unit) vector
     /// @return Option containing unit vector or empty if vector is zero-length
     [[nodiscard]] constexpr auto normalized() const noexcept {
-        return divChecked(this->length());
+        return div_checked(this->length());
     }
 
     /// @brief Calculate dot product with another vector
@@ -249,18 +249,18 @@ template<arithmetic T> struct Vector2 :
 
     /// @brief Check if vector is zero (both components zero)
     /// @return true if both components are zero
-    [[nodiscard]] constexpr bool isZero() const noexcept {
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
         return x == 0 and y == 0;
     }
 
 private:
     KF_IMPL_LENGTH(Self, Scalar);
-    constexpr Scalar lengthImpl() const noexcept {
+    constexpr Scalar length_impl() const noexcept {
         return static_cast<Scalar>(math::hypot(x, y));
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize reprToImpl(auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(auto &char_writable) const noexcept {
         return (
             char_writable.append('(') +
             char_writable.append(x) +
@@ -329,14 +329,14 @@ template<arithmetic T> struct Vector3 :
     /// @brief Safe scalar division with zero-check
     /// @param scalar Division factor
     /// @return Option containing divided vector or empty if divisor is zero
-    [[nodiscard]] constexpr auto divChecked(Scalar scalar) const noexcept {
+    [[nodiscard]] constexpr auto div_checked(Scalar scalar) const noexcept {
         return (scalar == 0) ? Option<Self>{none} : some((*this) / scalar);
     }
 
     /// @brief Scalar division
     /// @param scalar Division factor
     /// @return Divided vector
-    /// @warning No zero-check (use divChecked for safe division)
+    /// @warning No zero-check (use div_checked for safe division)
     [[nodiscard]] constexpr Self operator/(Scalar scalar) const noexcept {
         return Self::create(x / scalar, y / scalar, z / scalar);
     }
@@ -364,7 +364,7 @@ template<arithmetic T> struct Vector3 :
     /// @brief Get normalized (unit) vector
     /// @return Option containing unit vector or empty if vector is zero-length
     [[nodiscard]] constexpr auto normalized() const noexcept {
-        return divChecked(this->length());
+        return div_checked(this->length());
     }
 
     /// @brief Calculate dot product with another vector
@@ -386,18 +386,18 @@ template<arithmetic T> struct Vector3 :
 
     /// @brief Check if vector is zero (all components zero)
     /// @return true if all components are zero
-    [[nodiscard]] constexpr bool isZero() const noexcept {
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
         return x == 0 and y == 0 and z == 0;
     }
 
 private:
     KF_IMPL_LENGTH(Self, Scalar);
-    constexpr Scalar lengthImpl() const noexcept {
+    constexpr Scalar length_impl() const noexcept {
         return static_cast<Scalar>(math::sqrt(x * x + y * y + z * z));
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize reprToImpl(auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(auto &char_writable) const noexcept {
         return (
             char_writable.append('(') +
             char_writable.append(x) +
@@ -452,7 +452,7 @@ template<arithmetic T> struct Quaternion :
     /// @param axis Rotation axis (must be unit length)
     /// @param angle Rotation angle in radians
     /// @return Quaternion representing the rotation
-    [[nodiscard]] static Self fromAxisAngle(implements<Vector3Tag> auto const &axis, Scalar angle) noexcept {
+    [[nodiscard]] static Self from_axis_angle(implements<Vector3Tag> auto const &axis, Scalar angle) noexcept {
         auto const
             s = math::sin(angle * 0.5),
             c = math::cos(angle * 0.5);
@@ -463,7 +463,7 @@ template<arithmetic T> struct Quaternion :
     /// @brief Create quaternion from Euler angles (ZYX order) using any numeric vector type
     /// @param eulers Vector containing (roll, pitch, yaw) in radians
     /// @return Quaternion equivalent to the Euler rotation
-    [[nodiscard]] static Self fromEulers(implements<Vector3Tag> auto const &eulers) noexcept {
+    [[nodiscard]] static Self from_eulers(implements<Vector3Tag> auto const &eulers) noexcept {
         constexpr auto half = static_cast<Scalar>(0.5);
 
         auto const
@@ -490,9 +490,9 @@ template<arithmetic T> struct Quaternion :
     /// @return Vector3<T> containing (roll, pitch, yaw)
     /// @note Uses ZYX extrinsic rotation order (roll around X, pitch around Y, yaw around Z).
     ///       Handles gimbal lock (pitch = +-90 deg) by setting yaw = 0 and adjusting roll.
-    template<typename U = T> [[nodiscard]] Vector3<U> toEulers() const noexcept {
+    template<typename U = T> [[nodiscard]] Vector3<U> to_eulers() const noexcept {
         // sin(pitch) term (sarg)
-        auto const sarg = -2 * (x * z - w * y) / lengthSquared();
+        auto const sarg = -2 * (x * z - w * y) / length_squared();
 
         constexpr auto lim = T{0.99999};
 
@@ -515,7 +515,7 @@ template<arithmetic T> struct Quaternion :
     }
 
     /// @brief Squared length (magnitude squared)
-    [[nodiscard]] constexpr Scalar lengthSquared() const noexcept {
+    [[nodiscard]] constexpr Scalar length_squared() const noexcept {
         return static_cast<Scalar>(x * x + y * y + z * z + w * w);
     }
 
@@ -544,7 +544,7 @@ template<arithmetic T> struct Quaternion :
     /// @brief Inverse of the quaternion
     /// @return Option containing inverse, or empty if zero length (non‑invertible)
     [[nodiscard]] constexpr auto inverse() const noexcept {
-        auto const n2 = lengthSquared();
+        auto const n2 = length_squared();
 
         if (n2 == 0) { return Option<Self>{none}; }
 
@@ -591,12 +591,12 @@ template<arithmetic T> struct Quaternion :
 
 private:
     KF_IMPL_LENGTH(Self, Scalar);
-    constexpr Scalar lengthImpl() const noexcept {
-        return static_cast<Scalar>(math::sqrt(lengthSquared()));
+    constexpr Scalar length_impl() const noexcept {
+        return static_cast<Scalar>(math::sqrt(length_squared()));
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize reprToImpl(auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(auto &char_writable) const noexcept {
         return (
             char_writable.append('(') +
             char_writable.append(x) +

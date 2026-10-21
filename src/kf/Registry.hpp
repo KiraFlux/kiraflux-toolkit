@@ -37,7 +37,7 @@ template<typename T> struct RegistryBase : mixin::Resettable<RegistryBase<T>> {
     template<typename... Args> [[nodiscard]] auto add(Arena &arena, Args &&...args) noexcept -> Option<T &> {
         if (_items.full()) { return none; }
 
-        if (auto maybe_item = arena.create<T>(std::forward<Args>(args)...); maybe_item.isSome()) {
+        if (auto maybe_item = arena.create<T>(std::forward<Args>(args)...); maybe_item.is_some()) {
             (void) _items.write(&maybe_item.unwrap());
             return maybe_item;
         }
@@ -49,7 +49,7 @@ private:
     Stack<T *> _items;
 
     KF_IMPL_RESETTABLE(RegistryBase<T>);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         for (auto item: _items) {
             item->~T();
         }
@@ -69,17 +69,17 @@ template<implements<mixin::MatchTag> T> struct Registry<T> : internal::RegistryB
     using internal::RegistryBase<T>::RegistryBase;
 
     auto get(typename T::MatchingType value) noexcept -> Option<T &> {
-        auto ptr_opt = this->items().firstWhere([value](auto &item) { return item->match(value); });
-        if (ptr_opt.isSome()) {
-            return someRef(*ptr_opt.unwrap());
+        auto ptr_opt = this->items().first_where([value](auto &item) { return item->match(value); });
+        if (ptr_opt.is_some()) {
+            return some_ref(*ptr_opt.unwrap());
         }
         return none;
     }
 
     auto get(typename T::MatchingType value) const noexcept -> Option<T const &> {
-        auto ptr_opt = this->items().firstWhere([value](auto const &item) { return item->match(value); });
-        if (ptr_opt.isSome()) {
-            return someRef<T const &>(*ptr_opt.unwrap());
+        auto ptr_opt = this->items().first_where([value](auto const &item) { return item->match(value); });
+        if (ptr_opt.is_some()) {
+            return some_ref<T const &>(*ptr_opt.unwrap());
         }
         return none;
     }

@@ -35,8 +35,8 @@ struct BusTag {};
 /// @tparam Impl Concrete bus implementation (must inherit from this class).
 /// @tparam NodeImpl Type of node that will be created by the bus (must satisfy BinaryReadable and BinaryWritable).
 /// @tparam ErrorImpl Error type used by bus operations.
-/// @note The bus implementation must provide methods `initImpl()` and `quitImpl()`.
-///       Nodes are created via `createNode` and are expected to be movable.
+/// @note The bus implementation must provide methods `init_impl()` and `quit_impl()`.
+///       Nodes are created via `create_node` and are expected to be movable.
 template<typename Impl, implements<BusNodeTag> NodeImpl, typename ErrorImpl> struct Bus :
 
     BusTag,
@@ -45,7 +45,7 @@ template<typename Impl, implements<BusNodeTag> NodeImpl, typename ErrorImpl> str
     mixin::Quitable<Impl>
 
 {
-    [[nodiscard]] constexpr NodeImpl createNode(typename NodeImpl::Config const &config) noexcept {
+    [[nodiscard]] constexpr NodeImpl create_node(typename NodeImpl::Config const &config) noexcept {
         return NodeImpl{*static_cast<Impl *>(this), config};
     }
 };

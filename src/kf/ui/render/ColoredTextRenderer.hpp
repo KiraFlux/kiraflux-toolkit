@@ -133,94 +133,94 @@ private:
     Wrapped _wrapped;
     bool _focus_active{false};
 
-    void writeColor(Color color, char base_code, Config::Palette const &palette) noexcept {
-        _wrapped.writeChar(base_code + static_cast<char>(palette.get(color)));
+    void write_color(Color color, char base_code, Config::Palette const &palette) noexcept {
+        _wrapped.write_char(base_code + static_cast<char>(palette.get(color)));
     }
 
-    void writeForegroundColor(Color color, Config::Palette const &palette) noexcept {
-        writeColor(color, '\xF0', palette);
+    void write_foreground_color(Color color, Config::Palette const &palette) noexcept {
+        write_color(color, '\xF0', palette);
     }
 
-    void writeBackgroundColor(Color color, Config::Palette const &palette) noexcept {
-        writeColor(color, '\xB0', palette);
+    void write_background_color(Color color, Config::Palette const &palette) noexcept {
+        write_color(color, '\xB0', palette);
     }
 
     KF_IMPL_RENDERER(ColoredTextRenderer);
 
     // control
 
-    void beginFrameImpl() noexcept {
-        _wrapped.beginFrame();
+    void begin_frame_impl() noexcept {
+        _wrapped.begin_frame();
     }
 
-    void endFrameImpl() noexcept {
-        _wrapped.endFrame();
+    void end_frame_impl() noexcept {
+        _wrapped.end_frame();
     }
 
-    usize beginPageImpl(StringView title, Layout layout) noexcept {
-        writeForegroundColor(Color::Normal, this->config().focused_foreground_palette);
-        writeBackgroundColor(Color::Primary, this->config().focused_background_palette);
-        return _wrapped.beginPage(title, layout);
+    usize begin_page_impl(StringView title, Layout layout) noexcept {
+        write_foreground_color(Color::Normal, this->config().focused_foreground_palette);
+        write_background_color(Color::Primary, this->config().focused_background_palette);
+        return _wrapped.begin_page(title, layout);
     }
 
-    void endPageImpl() noexcept {
-        _wrapped.endPage();
+    void end_page_impl() noexcept {
+        _wrapped.end_page();
     }
 
-    void beginWidgetImpl(usize index, bool is_focused, usize offset) noexcept {
+    void begin_widget_impl(usize index, bool is_focused, usize offset) noexcept {
         _focus_active = is_focused;
 
         if (_wrapped.layout() == Layout::Vertical) {
-            _wrapped.fillSpace(offset * this->config().textual.offset_size);
+            _wrapped.fill_space(offset * this->config().textual.offset_size);
         }
     }
 
-    void endWidgetImpl() noexcept {
-        if (not _focus_active) { _wrapped.writeChar('\x80'); }
-        _wrapped.endWidget();
+    void end_widget_impl() noexcept {
+        if (not _focus_active) { _wrapped.write_char('\x80'); }
+        _wrapped.end_widget();
         _focus_active = false;
     }
 
-    void beginBlockImpl(Block block_type) noexcept {
-        _wrapped.beginBlock(block_type);
+    void begin_block_impl(Block block_type) noexcept {
+        _wrapped.begin_block(block_type);
     }
 
-    void endBlockImpl(Block block_type) noexcept {
-        _wrapped.endBlock(block_type);
+    void end_block_impl(Block block_type) noexcept {
+        _wrapped.end_block(block_type);
     }
 
-    void decorationImpl(Decoration decoration) noexcept {
+    void decoration_impl(Decoration decoration) noexcept {
         _wrapped.decoration(decoration);
     }
 
-    void checkboxImpl(bool enabled) noexcept {
+    void checkbox_impl(bool enabled) noexcept {
         this->background(enabled ? Color::Primary : Color::Secondary);
         _wrapped.checkbox(enabled);
     }
 
-    void sliderImpl(f32 fill) noexcept {
+    void slider_impl(f32 fill) noexcept {
         _wrapped.slider(fill);
     }
 
     // value
 
-    void valueImpl(auto const &value) {
+    void value_impl(auto const &value) {
         _wrapped.value(value);
     }
 
     // semantic color
 
-    void setForegroundImpl(Color color) noexcept {
-        writeForegroundColor(color, _focus_active ? this->config().focused_foreground_palette : this->config().normal_foreground_palette);
+    void set_foreground_impl(Color color) noexcept {
+        write_foreground_color(color, _focus_active ? this->config().focused_foreground_palette : this->config().normal_foreground_palette);
     }
 
-    void setBackgroundImpl(Color color) noexcept {
-        writeBackgroundColor(color, _focus_active ? this->config().focused_background_palette : this->config().normal_background_palette);
+    void set_background_impl(Color color) noexcept {
+        write_background_color(color, _focus_active ? this->config().focused_background_palette : this->config().normal_background_palette);
     }
 
     // Properties
 
-    constexpr Layout getLayoutImpl() const noexcept {
+    constexpr Layout get_layout_impl() const noexcept {
         return _wrapped.layout();
     }
 };

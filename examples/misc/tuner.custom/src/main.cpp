@@ -24,12 +24,12 @@ struct MyConfig {
     int average;
 
     // Factory method: create a tuner for this config.
-    MyTuner createTuner(int samples) noexcept;
+    MyTuner create_tuner(int samples) noexcept;
 };
 
 // --- Simulated sensor reading ---
 
-int mySensorReadRaw() noexcept {
+int my_sensor_read_raw() noexcept {
     static int a = 0x12'34'56'78;
     a = (a << 5) * (a + 1);
     return (a >> 16);
@@ -55,7 +55,7 @@ private:
     } _state{State::Idle};
 
     // Process a single sample: update min, max, sum.
-    void processSample(int sample) noexcept {
+    void process_sample(int sample) noexcept {
         _sum += sample;
         if (sample < _min) _min = sample;
         if (sample > _max) _max = sample;
@@ -64,7 +64,7 @@ private:
     // --- CRTP implementation ---
     KF_IMPL_TUNER(MyTuner);
 
-    void resetImpl() noexcept {
+    void reset_impl() noexcept {
         _samples_collected = 0;
         _min = MyConfig::value_limit;
         _max = 0;
@@ -72,14 +72,14 @@ private:
         _state = State::Collecting;
     }
 
-    void pollImpl(kf::units::Milliseconds now) noexcept {
+    void poll_impl(kf::units::Milliseconds now) noexcept {
         (void) now;// this tuner is not time-aware
         switch (_state) {
             case State::Idle:
                 return;
 
             case State::Collecting: {
-                processSample(mySensorReadRaw());
+                process_sample(my_sensor_read_raw());
                 _samples_collected += 1;
 
                 if (_samples_collected >= _samples_total) {
@@ -97,14 +97,14 @@ private:
         }
     }
 
-    bool runningImpl() const noexcept {
+    bool running_impl() const noexcept {
         return _state != State::Idle;
     }
 };
 
 // --- Factory method implementation ---
 
-MyTuner MyConfig::createTuner(int samples) noexcept {
+MyTuner MyConfig::create_tuner(int samples) noexcept {
     return MyTuner{*this, samples};
 }
 
@@ -119,9 +119,9 @@ void kf::main(kf::Init &init) {
     MyConfig config_3{"Config 3", 0, 0};
 
     // --- Create tuners for each config ---
-    auto tuner_1 = config_1.createTuner(50);
-    auto tuner_2 = config_2.createTuner(250);
-    auto tuner_3 = config_3.createTuner(1000);
+    auto tuner_1 = config_1.create_tuner(50);
+    auto tuner_2 = config_2.create_tuner(250);
+    auto tuner_3 = config_3.create_tuner(1000);
 
     // --- Launch all tuners (parallel) ---
     tuner_1.reset();

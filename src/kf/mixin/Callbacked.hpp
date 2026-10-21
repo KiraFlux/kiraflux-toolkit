@@ -60,7 +60,7 @@ protected:
     /// @brief Invoke callback function if is some
     /// @param value callback function argument
     auto invoke(auto &&...args) const noexcept -> Option<typename FunctionType::ReturnType> {
-        if (this->_callback_function.isSome()) {
+        if (this->_callback_function.is_some()) {
             if constexpr (std::is_void_v<typename FunctionType::ReturnType>) {
                 this->_callback_function.unwrap()(std::forward<decltype(args)>(args)...);
                 return some();

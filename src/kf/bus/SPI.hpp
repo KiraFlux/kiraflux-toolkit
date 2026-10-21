@@ -123,14 +123,14 @@ private:
 
     /// @brief Control the chip select line (active low)
     /// @param selected true to pull CS low (select device), false to release
-    void chipSelected(bool selected) noexcept {
+    void chip_selected(bool selected) noexcept {
         digitalWrite(static_cast<u8>(this->config().gpio_num_cs), selected ? LOW : HIGH);
     }
 
     /// @brief Begin an SPI transaction: pull CS low and apply the stored SPI settings
     /// @note Must be called before any data transfer
-    void beginTransaction() noexcept {
-        chipSelected(true);
+    void begin_transaction() noexcept {
+        chip_selected(true);
 
         _spi.beginTransaction(SPISettings{
             this->config().clock_hz,
@@ -140,14 +140,14 @@ private:
     }
 
     /// @brief End an SPI transaction: pull CS high
-    void endTransaction() noexcept {
+    void end_transaction() noexcept {
         _spi.endTransaction();
-        chipSelected(false);
+        chip_selected(false);
     }
 
     /// @brief Read a 1/2/4‑byte packet using dedicated SPI transfer functions (faster than generic loop)
     /// @tparam T Must be exactly 1, 2 or 4 bytes
-    template<trivial T> T readPacketUnchecked() noexcept {
+    template<trivial T> T read_packet_unchecked() noexcept {
         constexpr usize to_read = sizeof(T);
 
         if constexpr (to_read == sizeof(u8)) {
@@ -157,42 +157,42 @@ private:
         } else if constexpr (to_read == sizeof(u32)) {
             return static_cast<T>(_spi.transfer32(0));
         } else {
-            static_assert(not sizeof(T), "readPacketUnchecked supports only 1,2,4 byte types");
+            static_assert(not sizeof(T), "read_packet_unchecked supports only 1,2,4 byte types");
         }
     }
 
-    void readBytes(u8 *buffer, usize length) noexcept {
+    void read_bytes(u8 *buffer, usize length) noexcept {
         // Read length bytes from the device while sending zeros (half‑duplex cuz abstraction restrictions)
         _spi.transferBytes(nullptr, buffer, length);
     }
 
     /// @brief Write raw bytes to the device (simplex)
-    void writeBytes(u8 const *buffer, usize length) noexcept {
+    void write_bytes(u8 const *buffer, usize length) noexcept {
         _spi.transferBytes(buffer, nullptr, length);
     }
 
     /// @brief Write a single‑byte packet (optimized)
-    void writePacketUnchecked(u8 packet) noexcept {
+    void write_packet_unchecked(u8 packet) noexcept {
         _spi.write(packet);
     }
 
     /// @brief Write a 2‑byte packet (optimized)
-    void writePacketUnchecked(u16 packet) noexcept {
+    void write_packet_unchecked(u16 packet) noexcept {
         _spi.write16(packet);
     }
 
     /// @brief Write a 4‑byte packet (optimized)
-    void writePacketUnchecked(u32 packet) noexcept {
+    void write_packet_unchecked(u32 packet) noexcept {
         _spi.write32(packet);
     }
 
     /// @brief Write a packet of arbitrary size (generic fallback)
-    void writePacketUnchecked(trivial auto const &packet) noexcept {
-        writeBytes(reinterpret_cast<u8 const *>(&packet), sizeof(decltype(packet)));
+    void write_packet_unchecked(trivial auto const &packet) noexcept {
+        write_bytes(reinterpret_cast<u8 const *>(&packet), sizeof(decltype(packet)));
     }
 
     KF_IMPL_INITABLE(Self, void());
-    void initImpl() noexcept {
+    void init_impl() noexcept {
         auto const pin = static_cast<u8>(this->config().gpio_num_cs);
         pinMode(pin, OUTPUT);
         digitalWrite(pin, HIGH);
@@ -200,50 +200,50 @@ private:
 
     KF_IMPL_BUS_NODE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error> {
-        beginTransaction();
-        readBytes(buffer.data(), buffer.length());
-        endTransaction();
+    auto read_buffer_impl(Bytes buffer) noexcept -> Result<BytesView, Error> {
+        begin_transaction();
+        read_bytes(buffer.data(), buffer.length());
+        end_transaction();
         return ok<BytesView>(buffer);
     }
 
-    template<trivial T> auto readPacketImpl() noexcept -> Result<T, Error> {
+    template<trivial T> auto read_packet_impl() noexcept -> Result<T, Error> {
         constexpr auto to_read = sizeof(T);
 
-        beginTransaction();
+        begin_transaction();
 
         T value;
 
         if constexpr (to_read <= sizeof(u32)) {
-            value = readPacketUnchecked<T>();
+            value = read_packet_unchecked<T>();
         } else {
-            readBytes(reinterpret_cast<u8 *>(&value), to_read);
+            read_bytes(reinterpret_cast<u8 *>(&value), to_read);
         }
 
-        endTransaction();
+        end_transaction();
 
         return ok(value);
     }
 
-    SpiWriteResult writeBufferImpl(BytesView buffer) noexcept {
-        beginTransaction();
-        writeBytes(buffer.data(), buffer.length());
-        endTransaction();
+    SpiWriteResult write_buffer_impl(BytesView buffer) noexcept {
+        begin_transaction();
+        write_bytes(buffer.data(), buffer.length());
+        end_transaction();
         return ok();
     }
 
-    SpiWriteResult writePacketImpl(trivial auto const &packet) noexcept {
-        beginTransaction();
-        writePacketUnchecked(packet);
-        endTransaction();
+    SpiWriteResult write_packet_impl(trivial auto const &packet) noexcept {
+        begin_transaction();
+        write_packet_unchecked(packet);
+        end_transaction();
         return ok();
     }
 
-    SpiWriteResult writeMixedImpl(trivial auto const &header, BytesView buffer) noexcept {
-        beginTransaction();
-        writePacketUnchecked(header);
-        writeBytes(buffer.data(), buffer.length());
-        endTransaction();
+    SpiWriteResult write_mixed_impl(trivial auto const &header, BytesView buffer) noexcept {
+        begin_transaction();
+        write_packet_unchecked(header);
+        write_bytes(buffer.data(), buffer.length());
+        end_transaction();
         return ok();
     }
 };
@@ -265,20 +265,20 @@ private:
     KF_IMPL_BUS(Self, Error);
 
     [[nodiscard]] static constexpr i8 uncast(Option<gpio::GpioNumber> g) noexcept {
-        if (g.isNone()) {
+        if (g.is_none()) {
             return -1;
         } else {
             return static_cast<i8>(g.unwrap());
         }
     }
 
-    auto initImpl() noexcept -> Result<void, Error> {
+    auto init_impl() noexcept -> Result<void, Error> {
         _spi.begin(uncast(this->config().gpio_num_sck), uncast(this->config().gpio_num_miso), uncast(this->config().gpio_num_mosi));
 
         return ok();
     }
 
-    void quitImpl() noexcept {
+    void quit_impl() noexcept {
         _spi.end();
     }
 };
@@ -296,27 +296,27 @@ template<typename B> struct SpiNodeImpl : SpiNodeBase<SpiNodeImpl<B>> {
 
 private:
     KF_IMPL_INITABLE(Self, void());
-    void initImpl() noexcept {}
+    void init_impl() noexcept {}
 
     KF_IMPL_BUS_NODE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error> {
+    auto read_buffer_impl(Bytes buffer) noexcept -> Result<BytesView, Error> {
         return error(Error{});
     }
 
-    template<trivial T> auto readPacketImpl() noexcept -> Result<T, Error> {
+    template<trivial T> auto read_packet_impl() noexcept -> Result<T, Error> {
         return error(Error{});
     }
 
-    SpiWriteResult writeBufferImpl(BytesView buffer) noexcept {
+    SpiWriteResult write_buffer_impl(BytesView buffer) noexcept {
         return ok();
     }
 
-    SpiWriteResult writePacketImpl(trivial auto const &packet) noexcept {
+    SpiWriteResult write_packet_impl(trivial auto const &packet) noexcept {
         return ok();
     }
 
-    SpiWriteResult writeMixedImpl(trivial auto const &header, BytesView buffer) noexcept {
+    SpiWriteResult write_mixed_impl(trivial auto const &header, BytesView buffer) noexcept {
         return ok();
     }
 };
@@ -333,11 +333,11 @@ struct SpiBusImpl : SpiBusBase<SpiBusImpl> {
 private:
     KF_IMPL_BUS(Self, Error);
 
-    auto initImpl() noexcept -> Result<void, Error> {
+    auto init_impl() noexcept -> Result<void, Error> {
         return ok();
     }
 
-    void quitImpl() noexcept {}
+    void quit_impl() noexcept {}
 };
 
 #endif

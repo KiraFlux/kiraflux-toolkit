@@ -11,14 +11,14 @@ namespace kf::mixin {
 struct DrainTag {};
 
 /// @brief Adds `drain()` to return output consume.
-/// @tparam Impl Drain implementation class with `T drainImpl() noexcept` method
+/// @tparam Impl Drain implementation class with `T drain_impl() noexcept` method
 /// @tparam T   The type of the drained value.
 template<typename Impl, typename T> struct Drain : DrainTag {
 
     /// @brief Drain the contained data (move out) and reset the source.
     /// @return The drained value (moved out).
     [[nodiscard]] T drain() noexcept {
-        return static_cast<Impl *>(this)->drainImpl();
+        return static_cast<Impl *>(this)->drain_impl();
     }
 };
 

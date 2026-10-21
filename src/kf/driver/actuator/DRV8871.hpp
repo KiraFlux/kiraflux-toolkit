@@ -25,9 +25,9 @@ struct DRV8871Config {
     gpio::PwmOutput::Duty duty_dead_zone;///< Minimum PWM duty to start moving forward
 
     /// @brief Map speed command to PWM duty cycle respecting dead zone
-    [[nodiscard]] constexpr gpio::PwmOutput::Duty calcDuty(InputType value) const noexcept {
+    [[nodiscard]] constexpr gpio::PwmOutput::Duty calc_duty(InputType value) const noexcept {
         auto const clamped_input = math::clamp(value, 0, max_input);
-        return static_cast<gpio::PwmOutput::Duty>(math::linearMap(clamped_input, 0, max_input, duty_dead_zone, pwm.maxDuty()));
+        return static_cast<gpio::PwmOutput::Duty>(math::linear_map(clamped_input, 0, max_input, duty_dead_zone, pwm.max_duty()));
     }
 };
 
@@ -57,23 +57,23 @@ private:
 
     KF_IMPL_ACTUATOR_DRIVER(DRV8871, Config::InputType, bool);
 
-    bool initImpl() noexcept {
+    bool init_impl() noexcept {
         if (not _pwm_gpio_forward.init()) { return false; }
         if (not _pwm_gpio_backward.init()) { return false; }
         return true;
     }
 
-    void setImpl(Config::InputType value) noexcept {
+    void set_impl(Config::InputType value) noexcept {
         if (value < 0) {
             _pwm_gpio_forward.write(0);
-            _pwm_gpio_backward.write(this->config().calcDuty(-value));
+            _pwm_gpio_backward.write(this->config().calc_duty(-value));
         } else {
-            _pwm_gpio_forward.write(this->config().calcDuty(value));
+            _pwm_gpio_forward.write(this->config().calc_duty(value));
             _pwm_gpio_backward.write(0);
         }
     }
 
-    void stopImpl() noexcept {
+    void stop_impl() noexcept {
         _pwm_gpio_forward.write(0);
         _pwm_gpio_backward.write(0);
     }

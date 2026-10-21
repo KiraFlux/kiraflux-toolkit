@@ -57,13 +57,13 @@ struct EspnowError final : mixin::Representable<EspnowError, StringView> {
         return error(EspnowError{.kind = kind});
     }
 
-    [[nodiscard]] static constexpr auto fromEspErr(esp_err_t e) noexcept -> ResultErrorWrapper<EspnowError> {
+    [[nodiscard]] static constexpr auto from_esp_err(esp_err_t e) noexcept -> ResultErrorWrapper<EspnowError> {
         return create((ESP_ERR_ESPNOW_BASE <= e and e <= ESP_ERR_ESPNOW_IF) ? UnknownError : static_cast<Kind>(e - ESP_ERR_ESPNOW_BASE));
     }
 
 private:
     KF_IMPL_REPRESENTABLE(EspnowError, StringView);
-    StringView reprImpl() const noexcept {
+    StringView repr_impl() const noexcept {
 
         switch (kind) {
             CASE_RETURN(EspnowError::NotInitialized);
@@ -160,7 +160,7 @@ struct Espnow final :
             if (ESP_OK == e) {
                 return ok(std::move(Peer{config.mac_address}));
             } else {
-                return Error::fromEspErr(e);
+                return Error::from_esp_err(e);
             }
         }
 
@@ -170,7 +170,7 @@ struct Espnow final :
             if (ESP_OK == e) {
                 return ok();
             } else {
-                return Error::fromEspErr(e);
+                return Error::from_esp_err(e);
             }
         }
 
@@ -191,23 +191,23 @@ struct Espnow final :
             if (ESP_OK == e) {
                 return ok();
             } else {
-                return Error::fromEspErr(e);
+                return Error::from_esp_err(e);
             }
         }
 
         KF_IMPL_BINARY_WRITABLE(Peer, VoidResult);
 
-        VoidResult writeBufferImpl(BytesView buffer) noexcept {
+        VoidResult write_buffer_impl(BytesView buffer) noexcept {
             if (buffer.length() > ESP_NOW_MAX_DATA_LEN) { return Error::create(Error::TooBigMessage); }
             return send(buffer.data(), buffer.length());
         }
 
-        VoidResult writePacketImpl(auto const &packet) noexcept {
+        VoidResult write_packet_impl(auto const &packet) noexcept {
             static_assert(sizeof(decltype(packet)) < ESP_NOW_MAX_DATA_LEN, "Message is too big!");
             return send(reinterpret_cast<u8 const *>(&packet), sizeof(decltype(packet)));
         }
 
-        VoidResult writeMixedImpl(auto const &header, BytesView buffer) noexcept {
+        VoidResult write_mixed_impl(auto const &header, BytesView buffer) noexcept {
             auto const mixed_size = sizeof(decltype(header)) + buffer.length();
             if (mixed_size > ESP_NOW_MAX_DATA_LEN) { return Error::create(Error::TooBigMessage); }
             u8 mixed[mixed_size];
@@ -227,7 +227,7 @@ private:
     constexpr Espnow() noexcept : MacAddressed{{}} {}
 
     /// @brief ESP‑NOW receive callback (static wrapper)
-    static void onReceive(esp_now_recv_info_t const *info, u8 const *data, int size) noexcept {
+    static void on_receive(esp_now_recv_info_t const *info, u8 const *data, int size) noexcept {
         MacAddress source_mac_address;
         std::copy(info->src_addr, info->src_addr + ESP_NOW_ETH_ALEN, source_mac_address.begin());
 
@@ -235,21 +235,21 @@ private:
     }
 
     KF_IMPL_INITABLE(Espnow, VoidResult());
-    VoidResult initImpl() noexcept {
+    VoidResult init_impl() noexcept {
         esp_err_t e;
 
         if (e = esp_now_init(); ESP_OK != e) { goto fail; }
-        if (e = esp_now_register_recv_cb(onReceive); ESP_OK != e) { goto fail; }
+        if (e = esp_now_register_recv_cb(on_receive); ESP_OK != e) { goto fail; }
 
         (void) esp_read_mac(_mac_address.data(), ESP_MAC_WIFI_STA);
 
         return ok();
     fail:
-        return Error::fromEspErr(e);
+        return Error::from_esp_err(e);
     }
 
     KF_IMPL_QUITABLE(Espnow);
-    void quitImpl() noexcept {
+    void quit_impl() noexcept {
         (void) esp_now_unregister_recv_cb();
         (void) esp_now_deinit();
     }

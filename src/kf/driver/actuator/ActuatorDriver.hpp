@@ -28,12 +28,12 @@ template<typename Impl, typename Unit, typename InitResult> struct ActuatorDrive
 
     /// @brief Set Control value
     void set(Unit value) noexcept {
-        static_cast<Impl *>(this)->setImpl(value);
+        static_cast<Impl *>(this)->set_impl(value);
     }
 
     /// @brief Release actuator (disable output)
     void stop() noexcept {
-        static_cast<Impl *>(this)->stopImpl();
+        static_cast<Impl *>(this)->stop_impl();
     }
 };
 

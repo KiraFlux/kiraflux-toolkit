@@ -12,14 +12,14 @@ namespace kf::mixin {
 struct RepresentableTag {};
 
 /// @brief CRTP mixin that adds a `repr()` method
-/// @tparam Impl       Implementation class (must implement `ReprType reprImpl() const noexcept`)
+/// @tparam Impl       Implementation class (must implement `ReprType repr_impl() const noexcept`)
 /// @tparam ReprType Return type of `repr()`
 template<typename Impl, typename ReprType> struct Representable : RepresentableTag {
 
     /// @brief Get string representation of the object
     /// @return String of type `ReprType`
     [[nodiscard]] constexpr ReprType repr() const noexcept {
-        return static_cast<Impl const *>(this)->reprImpl();
+        return static_cast<Impl const *>(this)->repr_impl();
     }
 };
 

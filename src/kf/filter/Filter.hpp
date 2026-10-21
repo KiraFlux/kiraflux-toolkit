@@ -31,7 +31,7 @@ template<typename Impl, arithmetic T> struct Filter :
     /// @param value The new input value.
     /// @return The filtered value after the update.
     [[nodiscard]] T calc(T const &value) noexcept {
-        return static_cast<Impl *>(this)->calcImpl(value);
+        return static_cast<Impl *>(this)->calc_impl(value);
     }
 };
 

@@ -14,13 +14,13 @@ namespace kf::mixin {
 struct PollTag {};
 
 /// @brief CRTP mixin poll (Periodic polling)
-/// @tparam Impl The derived class that must implement `pollImpl(units::Milliseconds)`.
+/// @tparam Impl The derived class that must implement `poll_impl(units::Milliseconds)`.
 template<typename Impl> struct Poll : PollTag {
 
     /// @brief Performs time‑aware polling.
     /// @param now Current timestamp (milliseconds).
     void poll(units::Milliseconds now) noexcept {
-        static_cast<Impl *>(this)->pollImpl(now);
+        static_cast<Impl *>(this)->poll_impl(now);
     }
 };
 

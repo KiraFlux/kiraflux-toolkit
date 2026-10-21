@@ -26,7 +26,7 @@ void kf::main(kf::Init &init) {
     kf::Stack<int> my_stack{buffer};// equivalent to Stack{buffer, 0}
 
     // --- Error handling: reading from an empty stack returns none ---
-    if (auto const value = my_stack.read(); value.isNone()) {
+    if (auto const value = my_stack.read(); value.is_none()) {
         init.logger.error("read from empty stack - returns None");
     }
 
@@ -46,14 +46,14 @@ void kf::main(kf::Init &init) {
     // The remaining (8,9) were rejected.
 
     // --- Availability ---
-    // availableForRead() returns the number of elements currently in the stack.
-    // availableForWrite() returns the number of free slots (capacity - length).
-    init.logger.info("availableForRead: {} (elements in stack)", my_stack.availableForRead());
-    init.logger.info("availableForWrite: {} (free slots)", my_stack.availableForWrite());
+    // available_for_read() returns the number of elements currently in the stack.
+    // available_for_write() returns the number of free slots (capacity - length).
+    init.logger.info("available_for_read: {} (elements in stack)", my_stack.available_for_read());
+    init.logger.info("available_for_write: {} (free slots)", my_stack.available_for_write());
 
     // --- Accessing elements ---
     // top() returns Option<T&> - mutable reference to the top element.
-    if (auto top = my_stack.top(); top.isSome()) {
+    if (auto top = my_stack.top(); top.is_some()) {
         init.logger.info("top element: {}", top.unwrap());
     }
 
@@ -72,10 +72,10 @@ void kf::main(kf::Init &init) {
 
     init.logger.info("popping elements:");
     for (int i = 0; i < (n + 2); i += 1) {
-        if (auto value = my_stack.read(); value.isSome()) {
+        if (auto value = my_stack.read(); value.is_some()) {
             init.logger.debug("read: {} -> ok", value.unwrap());
             // Show updated availability after each pop.
-            init.logger.debug("  remaining: {}, free: {}", my_stack.availableForRead(), my_stack.availableForWrite());
+            init.logger.debug("  remaining: {}, free: {}", my_stack.available_for_read(), my_stack.available_for_write());
         } else {
             init.logger.warn("read: {} -> empty, stopped", i);
             break;

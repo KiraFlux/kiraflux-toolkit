@@ -52,7 +52,7 @@ template<implements<UiTraitsTag> U, arithmetic T> struct Slider :
         mixin::Configured<Config>{config}, _show_value{config.init_show_value} {}
 
     /// @brief Toggle slider numeric value display
-    Request onClick() noexcept override {
+    Request on_click() noexcept override {
         _show_value = not _show_value;
 
         return Request::Redraw;
@@ -60,13 +60,13 @@ template<implements<UiTraitsTag> U, arithmetic T> struct Slider :
 
     /// @brief Adjust value
     /// @param event_value adjust change scale
-    Request onEventValue(typename U::EventImpl::Value event_value) noexcept override {
+    Request on_event_value(typename U::EventImpl::Value event_value) noexcept override {
         this->value(this->config().value_range.clamped(U::template ArithmeticAdjuster<T>::adjust(this->value(), this->config().step, event_value)));
 
         return Request::Redraw;
     }
 
-    void doRender(typename U::RendererImpl &render) const noexcept override {
+    void do_render(typename U::RendererImpl &render) const noexcept override {
         if (_show_value) {
             render.value(this->value());
             render.decoration(Decoration::Space);

@@ -12,8 +12,8 @@ struct ExtraAllocationLengthTag {};
 
 template<typename Impl> struct ExtraAllocationLength : ExtraAllocationLengthTag {
 
-    [[nodiscard]] static constexpr kf::usize extraAllocationLength(auto const &...args) noexcept {
-        return Impl::getExtraAllocationLengthImpl(args...);
+    [[nodiscard]] static constexpr usize extra_allocation_length(auto const &...args) noexcept {
+        return Impl::get_extra_allocation_length_impl(args...);
     }
 };
 

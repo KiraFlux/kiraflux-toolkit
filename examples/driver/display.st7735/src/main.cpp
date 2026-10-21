@@ -23,15 +23,15 @@ using P = ST7735::PixelImpl;
 using Palette = kf::gfx::Palette<P>;
 
 // Predefined colors (using hardware-specific RGB conversion)
-constexpr auto red = P::fromRgb(0xFF, 0x00, 0x00);
-constexpr auto green = P::fromRgb(0x00, 0xFF, 0x00);
-constexpr auto blue = P::fromRgb(0x00, 0x00, 0xFF);
+constexpr auto red = P::from_rgb(0xFF, 0x00, 0x00);
+constexpr auto green = P::from_rgb(0x00, 0xFF, 0x00);
+constexpr auto blue = P::from_rgb(0x00, 0x00, 0xFF);
 constexpr auto black = Palette::black;
 constexpr auto white = Palette::white;
 
 // --- Helper: run a demo sequence for a given orientation ---
 
-void runDemo(kf::Init &init, ST7735 &display, char const *orientation_name) {
+void run_demo(kf::Init &init, ST7735 &display, char const *orientation_name) {
     // Wrap the display framebuffer into a Canvas
     kf::gfx::Canvas<P> canvas{kf::image::DynamicImage<P>{display.image()}};
     canvas.font(kf::gfx::fonts::gyver_5x7_en);
@@ -59,9 +59,9 @@ void runDemo(kf::Init &init, ST7735 &display, char const *orientation_name) {
     canvas.fill();
     for (int i = 0; i < canvas.width(); i += 10) {
         canvas.foreground(red);
-        canvas.line(0, 0, i, canvas.maxY());
+        canvas.line(0, 0, i, canvas.max_y());
         canvas.foreground(blue);
-        canvas.line(canvas.maxX(), 0, canvas.maxX() - i, canvas.maxY());
+        canvas.line(canvas.max_x(), 0, canvas.max_x() - i, canvas.max_y());
     }
     (void) display.send();
     kf::rtos::Task::sleep(2 * step_time_ms);
@@ -95,7 +95,7 @@ void kf::main(kf::Init &init) {
 
     // Initialize the SPI bus
     auto init_result = spi_bus.init();
-    if (init_result.isError()) {
+    if (init_result.is_error()) {
         init.logger.error("SPI bus init failed");
         return;
     }
@@ -126,7 +126,7 @@ void kf::main(kf::Init &init) {
 
     // Initialize the display
     auto display_init = display.init();
-    if (display_init.isError()) {
+    if (display_init.is_error()) {
         init.logger.error("Display init failed");
         return;
     }
@@ -154,8 +154,8 @@ void kf::main(kf::Init &init) {
 
     for (usize i = 0; i < 6; i += 1) {
         auto orient_result = display.orientation(orientations[i]);
-        if (orient_result.isOk()) {
-            runDemo(init, display, orientation_names[i]);
+        if (orient_result.is_ok()) {
+            run_demo(init, display, orientation_names[i]);
         } else {
             init.logger.error("Orientation '{}' set error", orientation_names[i]);
         }

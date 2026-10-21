@@ -52,7 +52,7 @@ template<implements<UiTraitsTag> U, arithmetic T, implements<typename U::Adjuste
         U::Widget{style}, mixin::ValueCallbacked<T>{default_value}, mixin::Configured<Config>{config}, _step(config.default_step) {}
 
     /// @brief Toggle between value adjustment and step adjustment modes
-    Request onClick() noexcept override {
+    Request on_click() noexcept override {
         _is_step_setting_mode = not _is_step_setting_mode;
 
         return Request::Redraw;
@@ -60,7 +60,7 @@ template<implements<UiTraitsTag> U, arithmetic T, implements<typename U::Adjuste
 
     /// @brief Adjust value or step based on current mode
     /// @param event_value Adjustment scale
-    Request onEventValue(typename U::EventImpl::Value event_value) noexcept override {
+    Request on_event_value(typename U::EventImpl::Value event_value) noexcept override {
         if (_is_step_setting_mode) {
             _step = U::template GeometricAdjuster<T>::adjust(_step, this->config().step_adjust, event_value);
         } else {
@@ -71,12 +71,12 @@ template<implements<UiTraitsTag> U, arithmetic T, implements<typename U::Adjuste
     }
 
     /// @brief Render current value or step size based on mode
-    void doRender(typename U::RendererImpl &render) const noexcept override {
+    void do_render(typename U::RendererImpl &render) const noexcept override {
         if (_is_step_setting_mode) {
             render.background(Color::Warning);
         }
 
-        render.beginBlock(Block::Alternative);
+        render.begin_block(Block::Alternative);
 
         if (_is_step_setting_mode) {
             render.decoration(Decoration::Colon);
@@ -85,7 +85,7 @@ template<implements<UiTraitsTag> U, arithmetic T, implements<typename U::Adjuste
             render.value(this->value());
         }
 
-        render.endBlock(Block::Alternative);
+        render.end_block(Block::Alternative);
     }
 
 private:

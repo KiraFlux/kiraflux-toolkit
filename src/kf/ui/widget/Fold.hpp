@@ -55,21 +55,21 @@ template<typename U> struct Fold :
     }
 
     /// @brief Set Fold expanded
-    constexpr void expanded(bool is_expanded) const noexcept {
+    constexpr void expanded(bool is_expanded) noexcept {
         _expanded = is_expanded;
     }
 
-    void doRender(typename U::RendererImpl &render) const noexcept override {
-        render.beginBlock();
+    void do_render(typename U::RendererImpl &render) const noexcept override {
+        render.begin_block();
         render.decoration(_expanded ? Decoration::ShortArrowDown : Decoration::ShortArrowRight);
-        render.endBlock();
+        render.end_block();
 
         render.decoration(Decoration::Space);
 
         render.value(this->label());
     }
 
-    Request onClick() noexcept override {
+    Request on_click() noexcept override {
         _expanded = not _expanded;
 
         this->background(_expanded ? expanded_background_color : folded_background_color);

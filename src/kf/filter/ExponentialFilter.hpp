@@ -43,8 +43,8 @@ private:
 
     KF_IMPL_FILTER(ExponentialFilter<ValueType>, ValueType);
 
-    ValueType calcImpl(ValueType const &value) noexcept {
-        if (_filtered.isNone()) {
+    ValueType calc_impl(ValueType const &value) noexcept {
+        if (_filtered.is_none()) {
             _filtered = some(value);
         } else {
             _filtered.unwrap() += (value - _filtered.unwrap()) * this->config().factor;
@@ -52,7 +52,7 @@ private:
         return _filtered.unwrap();
     }
 
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _filtered = none;
     }
 };

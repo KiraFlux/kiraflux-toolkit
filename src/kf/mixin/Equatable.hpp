@@ -10,11 +10,11 @@
 namespace kf::mixin {
 
 /// @brief Adds `==` and `!=`
-/// @tparam Impl Equatable Implementation class with `constexpr bool isEqualsImpl(const Impl &) const noexcept`
+/// @tparam Impl Equatable Implementation class with `constexpr bool is_equals_impl(const Impl &) const noexcept`
 template<typename Impl> struct Equatable {
 
     [[nodiscard]] constexpr bool operator==(Impl const &other) const noexcept {
-        return static_cast<Impl const *>(this)->isEqualsImpl(other);
+        return static_cast<Impl const *>(this)->is_equals_impl(other);
     }
 
     [[nodiscard]] constexpr bool operator!=(Impl const &other) const noexcept {

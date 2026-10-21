@@ -26,7 +26,7 @@ template<typename Impl, typename Measurement, typename InitResult> struct Sensor
 
     /// @brief Read sensor value
     [[nodiscard]] Measurement read() noexcept {
-        return static_cast<Impl *>(this)->readImpl();
+        return static_cast<Impl *>(this)->read_impl();
     }
 };
 

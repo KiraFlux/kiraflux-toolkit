@@ -24,7 +24,7 @@ template<typename T> struct SequenceTag {
 };
 
 /// @brief   CRTP base for sequence containers providing iteration, indexing, and slicing.
-/// @tparam Impl Sequence Implementation class with `lengthImpl` and `getDataImpl` methods
+/// @tparam Impl Sequence Implementation class with `length_impl` and `get_data_impl` methods
 /// @tparam T Item type
 template<typename Impl, typename T> struct Sequence :
 
@@ -37,7 +37,7 @@ template<typename Impl, typename T> struct Sequence :
     using Self = Sequence<Impl, T>;
 
     [[nodiscard]] constexpr T *data() noexcept {
-        return static_cast<Impl *>(this)->getDataImpl();
+        return static_cast<Impl *>(this)->get_data_impl();
     }
 
     [[nodiscard]] constexpr T const *data() const noexcept {
@@ -80,19 +80,19 @@ template<typename Impl, typename T> struct Sequence :
         };
     }
 
-    [[nodiscard]] constexpr auto firstWhere(callable<bool(T &)> auto &&f) noexcept -> Option<T &> {
+    [[nodiscard]] constexpr auto first_where(callable<bool(T &)> auto &&f) noexcept -> Option<T &> {
         for (auto &item: *this) {
             if (f(item)) {
-                return someRef(item);
+                return some_ref(item);
             }
         }
         return none;
     }
 
-    [[nodiscard]] constexpr auto firstWhere(callable<bool(T const &)> auto &&f) const noexcept -> Option<T const &> {
+    [[nodiscard]] constexpr auto first_where(callable<bool(T const &)> auto &&f) const noexcept -> Option<T const &> {
         for (auto const &item: *this) {
             if (f(item)) {
-                return someRef(item);
+                return some_ref(item);
             }
         }
         return none;
@@ -100,14 +100,14 @@ template<typename Impl, typename T> struct Sequence :
 
 private:
     KF_IMPL_INDEXABLE(Self, T);
-    constexpr T &getItemImpl(usize index) noexcept {
+    constexpr T &get_item_impl(usize index) noexcept {
         return data()[index];
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize reprToImpl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
         if constexpr (type_like<T, char>) {
-            return char_writable.appendNullTerminatedString(this->data(), this->length());
+            return char_writable.append_null_terminated_string(this->data(), this->length());
         } else {
             usize ret = 0;
             bool f = false;

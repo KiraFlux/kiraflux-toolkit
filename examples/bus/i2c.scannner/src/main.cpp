@@ -29,7 +29,7 @@ void kf::main(kf::Init &init) {
 
     // --- Initialize the bus ---
 
-    if (auto const result = i2c_bus.init(); result.isError()) {
+    if (auto const result = i2c_bus.init(); result.is_error()) {
         init.logger.error("Bus init failed: {}", result.error());
         return;
     }
@@ -46,12 +46,12 @@ void kf::main(kf::Init &init) {
         bus::I2C::Node::Config node_config{
             .address = address,
         };
-        auto node = i2c_bus.createNode(node_config);
+        auto node = i2c_bus.create_node(node_config);
 
         // Attempt to write an empty buffer. The device acknowledges with ACK if present.
-        auto const result = node.writeBuffer({});
+        auto const result = node.write_buffer({});
 
-        if (result.isOk()) {
+        if (result.is_ok()) {
             init.logger.info("Device found at {}", address);
         } else {
             // Log the error at debug level (common: AddressNack, Timeout, etc.)

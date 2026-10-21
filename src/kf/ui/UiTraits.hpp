@@ -62,7 +62,7 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
         /// @param direction Direction: -1 (decrease), 0 (no change), +1 (increase).
         /// @return The adjusted value.
         [[nodiscard]] static constexpr T adjust(T value, T step, int direction) noexcept {
-            return Impl::adjustImpl(value, step, direction);
+            return Impl::adjust_impl(value, step, direction);
         }
     };
 
@@ -72,7 +72,7 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
     template<arithmetic T> struct ArithmeticAdjuster final : Adjuster<ArithmeticAdjuster<T>, T> {
     private:
         KF_IMPL_ADJUSTER(ArithmeticAdjuster<T>, T);
-        static constexpr T adjustImpl(T value, T step, int direction) noexcept {
+        static constexpr T adjust_impl(T value, T step, int direction) noexcept {
             return value + direction * step;
         }
     };
@@ -81,7 +81,7 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
     template<arithmetic T> struct ArithmeticPositiveOnlyAdjuster final : Adjuster<ArithmeticPositiveOnlyAdjuster<T>, T> {
     private:
         KF_IMPL_ADJUSTER(ArithmeticPositiveOnlyAdjuster<T>, T);
-        static constexpr T adjustImpl(T value, T step, int direction) noexcept {
+        static constexpr T adjust_impl(T value, T step, int direction) noexcept {
             return math::max<T>(0, ArithmeticAdjuster<T>::adjust(value, step, direction));
         }
     };
@@ -90,7 +90,7 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
     template<arithmetic T> struct GeometricAdjuster final : Adjuster<GeometricAdjuster<T>, T> {
     private:
         KF_IMPL_ADJUSTER(GeometricAdjuster<T>, T);
-        static constexpr T adjustImpl(T value, T step, int direction) noexcept {
+        static constexpr T adjust_impl(T value, T step, int direction) noexcept {
             return (direction == 0) ? value : ((direction > 0) ? (value * step) : math::max<T>(value / step, internal::step_adjuster_min_step<T>::value));
         }
     };

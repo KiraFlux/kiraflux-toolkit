@@ -34,21 +34,21 @@ template<implements<UiTraitsTag> U> struct Labeled :
         U::Widget{style}, mixin::Labeled{label}, _wrapped{wrapped} {}
 
     /// @brief Forward click event to wrapped widget
-    /// @return Result from wrapped widget's onClick()
-    Request onClick() noexcept override {
-        return _wrapped.onClick();
+    /// @return Result from wrapped widget's on_click()
+    Request on_click() noexcept override {
+        return _wrapped.on_click();
     }
 
     /// @brief Forward change event to wrapped widget
-    /// @return Result from wrapped widget's onEventValue()
-    Request onEventValue(typename U::EventImpl::Value event_value) noexcept override {
-        return _wrapped.onEventValue(event_value);
+    /// @return Result from wrapped widget's on_event_value()
+    Request on_event_value(typename U::EventImpl::Value event_value) noexcept override {
+        return _wrapped.on_event_value(event_value);
     }
 
-    void doRender(typename U::RendererImpl &render) const noexcept override {
+    void do_render(typename U::RendererImpl &render) const noexcept override {
         render.value(this->label());
         render.decoration(Decoration::Colon);
-        _wrapped.doRender(render);
+        _wrapped.do_render(render);
         // restore color
         render.foreground(this->foreground());
         render.background(this->background());

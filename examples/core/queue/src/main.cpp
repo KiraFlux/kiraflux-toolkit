@@ -27,7 +27,7 @@ void kf::main(kf::Init &init) {
     kf::Queue<int> my_queue{buffer};// equivalent to Queue{buffer, 0}
 
     // --- Error handling: reading from an empty queue returns none ---
-    if (auto const value = my_queue.read(); value.isNone()) {
+    if (auto const value = my_queue.read(); value.is_none()) {
         init.logger.error("read from empty queue - returns None");
     }
 
@@ -47,19 +47,19 @@ void kf::main(kf::Init &init) {
     // The remaining (8,9) were rejected.
 
     // --- Availability ---
-    // availableForRead() returns the number of elements currently in the queue.
-    // availableForWrite() returns the number of free slots (capacity - length).
-    init.logger.info("availableForRead: {} (elements in queue)", my_queue.availableForRead());
-    init.logger.info("availableForWrite: {} (free slots)", my_queue.availableForWrite());
+    // available_for_read() returns the number of elements currently in the queue.
+    // available_for_write() returns the number of free slots (capacity - length).
+    init.logger.info("available_for_read: {} (elements in queue)", my_queue.available_for_read());
+    init.logger.info("available_for_write: {} (free slots)", my_queue.available_for_write());
 
     // --- Accessing front and back ---
     // front() returns Option<T&> - mutable reference to the oldest element.
-    if (auto front = my_queue.front(); front.isSome()) {
+    if (auto front = my_queue.front(); front.is_some()) {
         init.logger.info("front element: {}", front.unwrap());
     }
 
     // back() returns Option<T&> - mutable reference to the newest element.
-    if (auto back = my_queue.back(); back.isSome()) {
+    if (auto back = my_queue.back(); back.is_some()) {
         init.logger.info("back element: {}", back.unwrap());
     }
 
@@ -73,10 +73,10 @@ void kf::main(kf::Init &init) {
 
     init.logger.info("dequeuing elements:");
     for (int i = 0; i < (n + 2); i += 1) {
-        if (auto value = my_queue.read(); value.isSome()) {
+        if (auto value = my_queue.read(); value.is_some()) {
             init.logger.debug("read: {} -> ok", value.unwrap());
             // Show updated availability after each dequeue.
-            init.logger.debug("  remaining: {}, free: {}", my_queue.availableForRead(), my_queue.availableForWrite());
+            init.logger.debug("  remaining: {}, free: {}", my_queue.available_for_read(), my_queue.available_for_write());
         } else {
             init.logger.warn("read: {} -> empty, stopped", i);
             break;

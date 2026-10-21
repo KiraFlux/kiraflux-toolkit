@@ -28,8 +28,8 @@ struct PwmPositionServoConfig final {
     /// @brief Convert angle to pulse width using linear interpolation
     /// @param angle Target servo angle
     /// @return Required pulse width in microseconds
-    [[nodiscard]] constexpr units::Microseconds pulseWidthFromAngle(units::Degrees angle) const noexcept {
-        return math::linearMap<i32>(angle, angle_range.start, angle_range.end, pulse_range.start, pulse_range.end);
+    [[nodiscard]] constexpr units::Microseconds pulse_width_from_angle(units::Degrees angle) const noexcept {
+        return math::linear_map<i32>(angle, angle_range.start, angle_range.end, pulse_range.start, pulse_range.end);
     }
 };
 
@@ -69,15 +69,15 @@ private:
 
     KF_IMPL_ACTUATOR_DRIVER(PwmPositionServo, units::Degrees, bool);
 
-    bool initImpl() noexcept {
+    bool init_impl() noexcept {
         return _pwm_output.init();
     }
 
-    void setImpl(units::Degrees angle) noexcept {
-        _pwm_output.writePulse(this->config().pulseWidthFromAngle(_angle_safe_range.clamped(angle)));
+    void set_impl(units::Degrees angle) noexcept {
+        _pwm_output.write_pulse(this->config().pulse_width_from_angle(_angle_safe_range.clamped(angle)));
     }
 
-    void stopImpl() noexcept {
+    void stop_impl() noexcept {
         _pwm_output.write(0);
     }
 };

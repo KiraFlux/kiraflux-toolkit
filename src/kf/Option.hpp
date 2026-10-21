@@ -38,7 +38,7 @@ template<typename Impl> struct StorageBase :
 struct OptionHelper {
 
     template<typename R, typename... Args> static constexpr bool function_is_some(Function<R(Args...)> const &f) noexcept {
-        return f.isSome();
+        return f.is_some();
     }
 
     template<typename R, typename... Args> static constexpr void function_reset(Function<R(Args...)> &f) noexcept {
@@ -74,17 +74,17 @@ private:
     using Self = Option<void>;
 
     KF_IMPL_INVARIANT(Self);
-    constexpr bool isSomeImpl() const noexcept {
+    constexpr bool is_some_impl() const noexcept {
         return _is_some;
     }
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _is_some = false;
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize reprToImpl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
         return char_writable.append(_is_some ? "some()" : "none");
     }
 };
@@ -97,7 +97,7 @@ template<typename T> [[nodiscard]] constexpr auto some(T &&value) noexcept {
     return Option<void>{internal::OptionHelper{}};
 }
 
-template<typename T> [[nodiscard]] constexpr auto someRef(T &ref) noexcept {
+template<typename T> [[nodiscard]] constexpr auto some_ref(T &ref) noexcept {
     return Option<T &>{ref};
 }
 
@@ -195,12 +195,12 @@ private:
     using Self = SentinelStorage<T>;
 
     KF_IMPL_INVARIANT(Self);
-    constexpr bool isSomeImpl() const noexcept {
+    constexpr bool is_some_impl() const noexcept {
         return not is_sentinel(_value);
     }
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         set_sentinel(_value);
     }
 };
@@ -228,12 +228,12 @@ private:
     using Self = SentinelStorage<T &>;
 
     KF_IMPL_INVARIANT(Self);
-    constexpr bool isSomeImpl() const noexcept {
+    constexpr bool is_some_impl() const noexcept {
         return _ptr != nullptr;
     }
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _ptr = nullptr;
     }
 };
@@ -272,12 +272,12 @@ private:
     using Self = TrivialStorage<T>;
 
     KF_IMPL_INVARIANT(Self);
-    constexpr bool isSomeImpl() const noexcept {
+    constexpr bool is_some_impl() const noexcept {
         return _is_some;
     }
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _is_some = false;
     }
 };
@@ -303,14 +303,14 @@ public:
 
     /// @brief Copy
     BufferedStorage(Self const &other) noexcept : _is_some{other._is_some} {
-        if (this->isSome()) {
+        if (this->is_some()) {
             construct(other.get());
         }
     }
 
     /// @brief Move
     BufferedStorage(Self &&other) noexcept : _is_some{other._is_some} {
-        if (this->isSome()) {
+        if (this->is_some()) {
             construct(std::move(other.get()));
             other.reset();
         }
@@ -324,8 +324,8 @@ public:
     /// @note Copies stored value if any
     BufferedStorage &operator=(Self const &other) noexcept {
         if (this != &other) {
-            if (other.isSome()) {
-                if (this->isSome()) {
+            if (other.is_some()) {
+                if (this->is_some()) {
                     this->get() = other.get();
                 } else {
                     construct(other.get());
@@ -346,7 +346,7 @@ public:
         if (this != &other) {
             this->reset();
 
-            if (other.isSome()) {
+            if (other.is_some()) {
                 construct(std::move(other.get()));
                 other.reset();
             }
@@ -385,12 +385,12 @@ private:
     }
 
     KF_IMPL_INVARIANT(Self);
-    constexpr bool isSomeImpl() const noexcept {
+    constexpr bool is_some_impl() const noexcept {
         return _is_some;
     }
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         if (_is_some) {
             reinterpret_cast<T *>(_buffer)->~T();
             _is_some = false;
@@ -452,12 +452,12 @@ public:
 
     // unwrap with default
 
-    [[nodiscard]] constexpr decltype(auto) unwrapOr(auto &&default_value) const & noexcept {
-        return this->isSome() ? this->get() : std::forward<decltype(default_value)>(default_value);
+    [[nodiscard]] constexpr decltype(auto) unwrap_or(auto &&default_value) const & noexcept {
+        return this->is_some() ? this->get() : std::forward<decltype(default_value)>(default_value);
     }
 
-    [[nodiscard]] constexpr decltype(auto) unwrapOr(auto &&default_value) && noexcept {
-        return this->isSome() ? std::move(this->get()) : std::forward<decltype(default_value)>(default_value);
+    [[nodiscard]] constexpr decltype(auto) unwrap_or(auto &&default_value) && noexcept {
+        return this->is_some() ? std::move(this->get()) : std::forward<decltype(default_value)>(default_value);
     }
 
     // mapping
@@ -466,7 +466,7 @@ public:
 
     // map (lvalue)
     template<typename F> [[nodiscard]] constexpr auto map(F &&f) & noexcept -> MappedOption<F, T &> {
-        if (this->isNone()) {
+        if (this->is_none()) {
             return none;
         }
 
@@ -485,7 +485,7 @@ public:
 
     // map (rvalue)
     template<typename F> [[nodiscard]] constexpr auto map(F &&f) && noexcept -> MappedOption<F, T &&> {
-        if (this->isNone()) {
+        if (this->is_none()) {
             return none;
         }
 
@@ -499,14 +499,14 @@ public:
 
 private:
     constexpr void check() const noexcept {
-        if (this->isNone()) {
+        if (this->is_none()) {
             abort();
         }
     }
 
     KF_IMPL_REPR_TO(Option<T>);
-    constexpr usize reprToImpl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
-        if (this->isSome()) {
+    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+        if (this->is_some()) {
             return (
                 char_writable.append("some(") +
                 char_writable.append(this->get()) +

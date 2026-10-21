@@ -28,15 +28,15 @@ struct MonochromePixel final : Pixel<MonochromePixel, u8, bool, 1> {
 private:
     friend Base;
 
-    static constexpr usize getBufferSizeImpl(usize width, usize height) noexcept {
+    static constexpr usize get_buffer_size_impl(usize width, usize height) noexcept {
         return (width * height + 7) / 8;
     }
 
-    static constexpr ColorType fromRgbImpl(u8 r, u8 b, u8 g) noexcept {
+    static constexpr ColorType from_rgb_impl(u8 r, u8 b, u8 g) noexcept {
         return (r + g + b) > 128 * 3;
     }
 
-    static void setPixelImpl(Slice<BufferType> buffer, PositionType stride, PositionType abs_x, PositionType abs_y, ColorType color) noexcept {
+    static void set_pixel_impl(Slice<BufferType> buffer, PositionType stride, PositionType abs_x, PositionType abs_y, ColorType color) noexcept {
         auto const page = abs_y / page_height;
         auto const bit_mask = static_cast<u8>(1 << (abs_y % page_height));
         usize const index = page * stride + abs_x;
@@ -48,7 +48,7 @@ private:
         }
     }
 
-    static void fillImpl(
+    static void fill_impl(
         Slice<BufferType> buffer,
         PositionType stride,
         PositionType offset_x,
@@ -61,7 +61,7 @@ private:
         u8 const fill_byte = on ? 0xFF : 0x00;
 
         for (auto page = start_page; page < end_page; page += 1) {
-            u8 const mask = calculatePageMask(page, offset_y, height);
+            u8 const mask = calculate_page_mask(page, offset_y, height);
             if (mask == 0) { continue; }
 
             for (auto x = 0; x < width; x += 1) {
@@ -76,7 +76,7 @@ private:
         }
     }
 
-    static void copyImpl(
+    static void copy_impl(
         Slice<BufferType const> src,
         PositionType src_w,
         PositionType src_h,
@@ -130,7 +130,7 @@ private:
 private:
     /// @brief Calculate page mask for specified region
     /// @return Bit mask for the visible portion of the page
-    static u8 calculatePageMask(int page, int offset_y, int height) noexcept {
+    static u8 calculate_page_mask(int page, int offset_y, int height) noexcept {
         auto const page_top = (page * page_height);
         auto const page_bottom = (page_top + page_height - 1);
 
@@ -139,14 +139,14 @@ private:
 
         if (visible_top >= visible_bottom) { return 0; }
 
-        return createMask(
+        return create_mask(
             static_cast<u8>(visible_top - page_top),
             static_cast<u8>(visible_bottom - page_top - 1));
     }
 
     /// @brief Create bit mask for specified bit range
     /// @return Bit mask covering [start_bit, end_bit] inclusive
-    static constexpr u8 createMask(u8 start_bit, u8 end_bit) noexcept {
+    static constexpr u8 create_mask(u8 start_bit, u8 end_bit) noexcept {
         if (start_bit > end_bit) {
             return 0;
         } else {

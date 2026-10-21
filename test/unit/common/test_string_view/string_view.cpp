@@ -9,7 +9,7 @@ using kf::Option;
 using kf::Slice;
 using kf::StringView;
 
-static void assertStringViewEqual(StringView actual, char const *expected, size_t len) {
+static void assert_string_view_equal(StringView actual, char const *expected, size_t len) {
     TEST_ASSERT_EQUAL_UINT32(len, actual.length());
 
     if (len) {
@@ -19,7 +19,7 @@ static void assertStringViewEqual(StringView actual, char const *expected, size_
 
 namespace constructors {
 
-void default_() {
+void default_case() {
     StringView sv{};
 
     TEST_ASSERT_NULL(sv.data());
@@ -116,51 +116,51 @@ namespace find {
 
 void character() {
     StringView sv{"hello world"};
-    auto p{sv.indexOf('o')};
+    auto p{sv.index_of('o')};
 
-    TEST_ASSERT_TRUE(p.isSome() and p.unwrap() == 4);
+    TEST_ASSERT_TRUE(p.is_some() and p.unwrap() == 4);
 
-    p = sv.indexOf('o');
+    p = sv.index_of('o');
 
-    TEST_ASSERT_TRUE(p.isSome() and p.unwrap() == 4);
+    TEST_ASSERT_TRUE(p.is_some() and p.unwrap() == 4);
 
     StringView sub{sv.sub(5)};
-    p = sub.indexOf('o');
+    p = sub.index_of('o');
 
-    TEST_ASSERT_TRUE(p.isSome() and p.unwrap() == 2);
+    TEST_ASSERT_TRUE(p.is_some() and p.unwrap() == 2);
 
-    p = sv.indexOf('x');
+    p = sv.index_of('x');
 
-    TEST_ASSERT_TRUE(p.isNone());
+    TEST_ASSERT_TRUE(p.is_none());
 }
 
 void substring() {
     StringView sv{"the quick brown fox"};
-    auto p{sv.indexOf("quick")};
-    TEST_ASSERT_TRUE(p.isSome() and p.unwrap() == 4);
+    auto p{sv.index_of("quick")};
+    TEST_ASSERT_TRUE(p.is_some() and p.unwrap() == 4);
 
-    p = sv.indexOf("brown");
-    TEST_ASSERT_TRUE(p.isSome());
+    p = sv.index_of("brown");
+    TEST_ASSERT_TRUE(p.is_some());
     TEST_ASSERT_EQUAL_INT32(p.unwrap(), 10);
 
-    p = sv.indexOf("cat");
-    TEST_ASSERT_FALSE(p.isSome());
+    p = sv.index_of("cat");
+    TEST_ASSERT_FALSE(p.is_some());
 
-    p = sv.indexOf("");
-    TEST_ASSERT_TRUE(p.isNone());
+    p = sv.index_of("");
+    TEST_ASSERT_TRUE(p.is_none());
 
-    p = sv.indexOf('?');
-    TEST_ASSERT_TRUE(p.isNone());
+    p = sv.index_of('?');
+    TEST_ASSERT_TRUE(p.is_none());
 }
 
 void rfind() {
     StringView sv{"abracadabra"};
 
-    auto p{sv.lastIndexOf('a')};
-    TEST_ASSERT_TRUE(p.isSome() and p.unwrap() == 10);
+    auto p{sv.last_index_of('a')};
+    TEST_ASSERT_TRUE(p.is_some() and p.unwrap() == 10);
 
-    auto p2{sv.lastIndexOf('x')};
-    TEST_ASSERT_TRUE(p2.isNone());
+    auto p2{sv.last_index_of('x')};
+    TEST_ASSERT_TRUE(p2.is_none());
 }
 
 }// namespace find
@@ -170,10 +170,10 @@ namespace starts_ends {
 void test() {
     StringView sv{"hello.txt"};
 
-    TEST_ASSERT_TRUE(sv.startsWith("hello"));
-    TEST_ASSERT_TRUE(sv.endsWith(".txt"));
-    TEST_ASSERT_FALSE(sv.startsWith("world"));
-    TEST_ASSERT_FALSE(sv.endsWith(".cpp"));
+    TEST_ASSERT_TRUE(sv.starts_with("hello"));
+    TEST_ASSERT_TRUE(sv.ends_with(".txt"));
+    TEST_ASSERT_FALSE(sv.starts_with("world"));
+    TEST_ASSERT_FALSE(sv.ends_with(".cpp"));
 }
 
 }// namespace starts_ends
@@ -184,11 +184,11 @@ void sub() {
     StringView sv{"hello world"};
     auto s{sv.sub(6, kf::some<kf::usize>(5))};
 
-    assertStringViewEqual(s, "world", 5);
+    assert_string_view_equal(s, "world", 5);
 
     s = sv.sub(6, kf::some<kf::usize>(100));
 
-    assertStringViewEqual(s, "world", 5);
+    assert_string_view_equal(s, "world", 5);
 
     s = sv.sub(20, kf::some<kf::usize>(5));
 
@@ -201,15 +201,15 @@ void sub() {
 
 void from_offset() {
     StringView sv{"hello world"};
-    auto s{sv.fromOffset(6)};
+    auto s{sv.from_offset(6)};
 
-    assertStringViewEqual(s, "world", 5);
+    assert_string_view_equal(s, "world", 5);
 
-    s = sv.fromOffset(20);
+    s = sv.from_offset(20);
 
     TEST_ASSERT_TRUE(s.empty());
 
-    s = sv.fromOffset(0);
+    s = sv.from_offset(0);
 
     TEST_ASSERT_EQUAL_UINT32(11, s.length());
 }
@@ -220,24 +220,24 @@ namespace crop {
 
 void remove_prefix() {
     StringView sv{"hello world"};
-    sv = sv.removePrefix("hello ");
+    sv = sv.remove_prefix("hello ");
 
-    assertStringViewEqual(sv, "world", 5);
+    assert_string_view_equal(sv, "world", 5);
 
-    sv = sv.removePrefix("xyz");
+    sv = sv.remove_prefix("xyz");
 
-    assertStringViewEqual(sv, "world", 5);
+    assert_string_view_equal(sv, "world", 5);
 }
 
 void remove_suffix() {
     StringView sv{"hello world"};
-    sv = sv.removeSuffix(" world");
+    sv = sv.remove_suffix(" world");
 
-    assertStringViewEqual(sv, "hello", 5);
+    assert_string_view_equal(sv, "hello", 5);
 
-    sv = sv.removeSuffix("xyz");
+    sv = sv.remove_suffix("xyz");
 
-    assertStringViewEqual(sv, "hello", 5);
+    assert_string_view_equal(sv, "hello", 5);
 }
 
 }// namespace crop
@@ -245,18 +245,18 @@ void remove_suffix() {
 namespace trim {
 
 void start() {
-    assertStringViewEqual(StringView{"   hello"}.trimStart(), "hello", 5);
+    assert_string_view_equal(StringView{"   hello"}.trim_start(), "hello", 5);
 }
 
 void end() {
-    assertStringViewEqual(StringView{"hello   "}.trimEnd(), "hello", 5);
+    assert_string_view_equal(StringView{"hello   "}.trim_end(), "hello", 5);
 }
 
 void both() {
-    assertStringViewEqual(StringView{"   hello world   "}.trim(), "hello world", 11);
-    assertStringViewEqual(StringView{""}.trim(), "", 0);
-    assertStringViewEqual(StringView{"   "}.trim(), "", 0);
-    assertStringViewEqual(StringView{"  a  "}.trim(), "a", 1);
+    assert_string_view_equal(StringView{"   hello world   "}.trim(), "hello world", 11);
+    assert_string_view_equal(StringView{""}.trim(), "", 0);
+    assert_string_view_equal(StringView{"   "}.trim(), "", 0);
+    assert_string_view_equal(StringView{"  a  "}.trim(), "a", 1);
 }
 
 }// namespace trim
@@ -274,7 +274,7 @@ void test() {
 }// namespace to_slice
 
 void run_tests() {
-    RUN_TEST(constructors::default_);
+    RUN_TEST(constructors::default_case);
     RUN_TEST(constructors::cstring);
     RUN_TEST(constructors::ptr_size);
     RUN_TEST(constructors::literal);

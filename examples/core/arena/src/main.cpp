@@ -41,12 +41,12 @@ struct Player :
 
 private:
     KF_IMPL_MATCH(Player, kf::StringView);
-    constexpr bool matchImpl(kf::StringView str) const noexcept {
+    constexpr bool match_impl(kf::StringView str) const noexcept {
         return name.view() == str;
     }
 
     KF_IMPL_EXTRA_ALLOCATION_LENGTH(Player);
-    static constexpr auto getExtraAllocationLengthImpl(auto, int score, auto const &...) noexcept {
+    static constexpr auto get_extra_allocation_length_impl(auto, int score, auto const &...) noexcept {
         return max_name_length + score;
     }
 };
@@ -64,7 +64,7 @@ void kf::main(kf::Init &init) {
         init.logger.debug("{} {}", p->name, p->score);
     }
 
-    if (auto maybe_kek = player_registry.get("kek"); maybe_kek.isSome()) {
+    if (auto maybe_kek = player_registry.get("kek"); maybe_kek.is_some()) {
         init.logger.debug("kek: {} {}", maybe_kek.unwrap().name, maybe_kek.unwrap().score);
     }
 
@@ -97,14 +97,14 @@ void kf::main(kf::Init &init) {
 
     // --- 4. Object construction with constructor (create<T>()) ---
     auto player_opt = arena.create<Player>("Alice", 100);
-    if (player_opt.isSome()) {
+    if (player_opt.is_some()) {
         auto &p = player_opt.unwrap();
         init.logger.info("Created player: '{}' (name capacity={}), score={}",
                          p.name, p.name.capacity(), p.score);
     }
 
     auto player2_opt = arena.create<Player>("Bob", 200);
-    if (player2_opt.isSome()) {
+    if (player2_opt.is_some()) {
         auto &p = player2_opt.unwrap();
         init.logger.info("Created player: '{}' (name capacity={}), score={}",
                          p.name, p.name.capacity(), p.score);

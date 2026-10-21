@@ -70,8 +70,8 @@ void array_empty() {
     TEST_ASSERT_EQUAL(1, s.length());
     TEST_ASSERT_EQUAL(42, s[0]);
 
-    int *nullPtr = nullptr;
-    Slice<int> s2{nullPtr, 0};
+    int *null_ptr = nullptr;
+    Slice<int> s2{null_ptr, 0};
     TEST_ASSERT_NULL(s2.data());
     TEST_ASSERT_EQUAL(0, s2.length());
 }
@@ -149,7 +149,7 @@ void last() {
 void from_offset() {
     int data[] = {1, 2, 3, 4, 5};
     Slice<int> s{data, 5};
-    auto off = s.fromOffset(2);
+    auto off = s.from_offset(2);
     TEST_ASSERT_EQUAL_PTR(data + 2, off.data());
     TEST_ASSERT_EQUAL(3, off.length());
     TEST_ASSERT_EQUAL(3, off[0]);

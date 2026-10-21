@@ -16,8 +16,8 @@ struct Point : kf::mixin::ReprTo<Point> {
 
 private:
     KF_IMPL_REPR_TO(Point);
-    constexpr kf::usize reprToImpl(kf::implements<kf::mixin::WritableTag<char>> auto &w) const {
-        return w.appendFormat("Point({}, {})", x, y);
+    constexpr kf::usize repr_to_impl(kf::implements<kf::mixin::WritableTag<char>> auto &w) const {
+        return w.append_format("Point({}, {})", x, y);
     }
 };
 
@@ -32,16 +32,16 @@ void kf::main(kf::Init &init) {
     init.logger.debug("opt_int: {}", opt_int);    // some(42)
     init.logger.debug("opt_empty: {}", opt_empty);// none
 
-    // --- unwrapOr() ---
+    // --- unwrap_or() ---
 
-    init.logger.debug("opt_int.unwrapOr(0): {}", opt_int.unwrapOr(0));
-    init.logger.debug("opt_empty.unwrapOr(100): {}", opt_empty.unwrapOr(100));
+    init.logger.debug("opt_int.unwrap_or(0): {}", opt_int.unwrap_or(0));
+    init.logger.debug("opt_empty.unwrap_or(100): {}", opt_empty.unwrap_or(100));
 
     // --- Checked extraction with unwrap() ---
-    if (opt_int.isSome()) {
+    if (opt_int.is_some()) {
         init.logger.debug("opt_int.unwrap(): {}", opt_int.unwrap());
     }
-    if (opt_empty.isNone()) {
+    if (opt_empty.is_none()) {
         init.logger.debug("opt_empty is None, skipping unwrap");
     }
 
@@ -63,16 +63,16 @@ void kf::main(kf::Init &init) {
     Function<int(int)> add_one = [](int x) { return x + 1; };
     Option<Function<int(int)>> opt_func = some(std::move(add_one));
 
-    if (opt_func.isSome()) {
+    if (opt_func.is_some()) {
         init.logger.debug("opt_func(41): {}", opt_func.unwrap()(41));
     }
 
     // --- Option<T&> ---
 
     int answer = 42;
-    Option<int &> ref_opt = someRef(answer);
+    Option<int &> ref_opt = some_ref(answer);
 
-    if (ref_opt.isSome()) {
+    if (ref_opt.is_some()) {
         ref_opt.unwrap() = 100;
         init.logger.debug("answer changed via ref: {}", answer);
     }

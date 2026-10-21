@@ -14,13 +14,13 @@ namespace kf::mixin {
 struct IndexableTag {};
 
 /// @brief Adds Index operator
-/// @tparam Impl Indexable implementation class with `constexpr T getItemImpl(usize index) noexcept` method
+/// @tparam Impl Indexable implementation class with `constexpr T get_item_impl(usize index) noexcept` method
 /// @tparam T item type
 template<typename Impl, typename T> struct Indexable : IndexableTag {
 
     /// @brief Get mutable access to item by index
     [[nodiscard]] constexpr T &operator[](usize index) noexcept {
-        return static_cast<Impl *>(this)->getItemImpl(index);
+        return static_cast<Impl *>(this)->get_item_impl(index);
     }
 
     /// @brief Get readonly access to item by index

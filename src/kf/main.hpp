@@ -158,7 +158,7 @@ private:
     inline static struct termios _orig_tty{};
     inline static bool _is_raw{false}, _restored{false};
 
-    static void restoreTerminal() noexcept {
+    static void restore_terminal() noexcept {
         if (not _is_raw or _restored) { return; }
         _restored = true;
 
@@ -174,15 +174,15 @@ private:
         _is_raw = false;
     }
 
-    static void signalHandler(int sig) noexcept {
+    static void signal_handler(int sig) noexcept {
         (void) sig;
-        restoreTerminal();
+        restore_terminal();
         ::_exit(0);
     }
 
-    static void setupSignalHandlers() noexcept {
+    static void setup_signal_handlers() noexcept {
         struct sigaction sa{};
-        sa.sa_handler = signalHandler;
+        sa.sa_handler = signal_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
 
@@ -192,7 +192,7 @@ private:
     }
 
     KF_IMPL_INITABLE(Self, void());
-    void initImpl() noexcept {
+    void init_impl() noexcept {
         if (::isatty(STDIN_FILENO)) {
             // Save original terminal settings
             ::tcgetattr(STDIN_FILENO, &_orig_tty);
@@ -214,10 +214,10 @@ private:
             _restored = false;
 
             // Register terminal restoration on normal exit
-            ::atexit(restoreTerminal);
+            ::atexit(restore_terminal);
 
             // Install signal handlers
-            setupSignalHandlers();
+            setup_signal_handlers();
         }
 
         // Disable sync with C I/O (for raw mode)
@@ -225,13 +225,13 @@ private:
     }
 
     KF_IMPL_QUITABLE(Self);
-    void quitImpl() noexcept {
-        restoreTerminal();
+    void quit_impl() noexcept {
+        restore_terminal();
     }
 
     KF_IMPL_BINARY_READABLE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error> {
+    auto read_buffer_impl(Bytes buffer) noexcept -> Result<BytesView, Error> {
         if (buffer.empty()) {
             return ok(BytesView{});
         }
@@ -253,15 +253,15 @@ private:
         return ok(BytesView{buffer.data(), static_cast<usize>(n)});
     }
 
-    template<trivial T> auto readPacketImpl() -> Result<T, Error> {
+    template<trivial T> auto read_packet_impl() -> Result<T, Error> {
         T packet;
 
-        auto result = this->readBuffer(Bytes{
+        auto result = this->read_buffer(Bytes{
             reinterpret_cast<u8 *>(&packet),
             sizeof(T),
         });
 
-        if (result.isError()) {
+        if (result.is_error()) {
             return error(result.error());
         }
 
@@ -273,13 +273,13 @@ private:
     }
 
     KF_IMPL_READ_AVAILABLE(Self);
-    usize availableForReadImpl() const noexcept {
+    usize available_for_read_impl() const noexcept {
         return std::cin.rdbuf()->in_avail();
     }
 
     KF_IMPL_BINARY_WRITABLE(Self, AppIoWriteResult);
 
-    AppIoWriteResult writeBufferImpl(BytesView buffer) noexcept {
+    AppIoWriteResult write_buffer_impl(BytesView buffer) noexcept {
         if (not buffer.empty()) {
             auto const to_write = buffer.length();
 
@@ -291,7 +291,7 @@ private:
         return ok();
     }
 
-    AppIoWriteResult writePacketImpl(trivial auto const &packet) noexcept {
+    AppIoWriteResult write_packet_impl(trivial auto const &packet) noexcept {
         constexpr auto to_write = sizeof(packet);
 
         if constexpr (to_write == sizeof(u8)) {
@@ -307,18 +307,18 @@ private:
         }
     }
 
-    AppIoWriteResult writeMixedImpl(trivial auto const &header, BytesView buffer) noexcept {
-        KF_TRY(this->writePacket(header));
-        return this->writeBuffer(buffer);
+    AppIoWriteResult write_mixed_impl(trivial auto const &header, BytesView buffer) noexcept {
+        KF_TRY(this->write_packet(header));
+        return this->write_buffer(buffer);
     }
 
     KF_IMPL_WRITE_AVAILABLE(Self);
-    usize availableForWriteImpl() const noexcept {
+    usize available_for_write_impl() const noexcept {
         return std::cout.good() ? static_cast<usize>(-1) : 0;
     }
 
     KF_IMPL_FLUSH(Self);
-    void flushImpl() noexcept {
+    void flush_impl() noexcept {
         (void) std::cout.flush();
     }
 };
@@ -342,7 +342,7 @@ KF_PLATFORM_APP_FUNCTION_DECLARATION {
     init.io.init();
 
     kf::Logger::writer = [](auto str) {
-        (void) init.io.writeBuffer({reinterpret_cast<kf::u8 const *>(str.data()), str.length()});
+        (void) init.io.write_buffer({reinterpret_cast<kf::u8 const *>(str.data()), str.length()});
         init.io.flush();
     };
 
@@ -364,3 +364,4 @@ KF_PLATFORM_APP_FUNCTION_DECLARATION {
 #undef KF_CONFIG_MAIN_LOGGER_KEY
 #undef KF_CONFIG_MAIN_LOGGER_BUFFER_LENGTH
 #undef KF_CONFIG_MAIN_UART_BAUDRATE
+#undef KF_CONFIG_MAIN_UART_NUM

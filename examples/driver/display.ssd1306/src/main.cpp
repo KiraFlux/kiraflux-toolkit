@@ -24,7 +24,7 @@ constexpr Color OFF = false;
 
 // --- Helper: run a demo sequence for a given orientation ---
 
-void runDemo(kf::Init &init, SSD1306 &display, char const *orientation_name) {
+void run_demo(kf::Init &init, SSD1306 &display, char const *orientation_name) {
     // Wrap the display framebuffer into a Canvas
     kf::gfx::Canvas<P> canvas{kf::image::DynamicImage<P>{display.image()}};
     canvas.font(kf::gfx::fonts::gyver_5x7_en);
@@ -48,8 +48,8 @@ void runDemo(kf::Init &init, SSD1306 &display, char const *orientation_name) {
     canvas.fill();
     canvas.foreground(ON);
     for (int i = 0; i < canvas.width(); i += 10) {
-        canvas.line(0, 0, i, canvas.maxY());
-        canvas.line(canvas.maxX(), 0, canvas.maxX() - i, canvas.maxY());
+        canvas.line(0, 0, i, canvas.max_y());
+        canvas.line(canvas.max_x(), 0, canvas.max_x() - i, canvas.max_y());
     }
     (void) display.send();
     kf::rtos::Task::sleep(2 * step_time_ms);
@@ -88,7 +88,7 @@ void kf::main(kf::Init &init) {
 
     // Initialize the I2C bus
     auto init_result = i2c_bus.init();
-    if (init_result.isError()) {
+    if (init_result.is_error()) {
         init.logger.error("I2C bus init failed: {}", init_result.error());
         return;
     }
@@ -108,7 +108,7 @@ void kf::main(kf::Init &init) {
 
     // Initialize the display
     auto display_init = display.init();
-    if (display_init.isError()) {
+    if (display_init.is_error()) {
         init.logger.error("Display init failed: {}", display_init.error());
         return;
     }
@@ -126,8 +126,8 @@ void kf::main(kf::Init &init) {
 
     for (usize i = 0; i < 3; i += 1) {
         auto orient_result = display.orientation(orientations[i]);
-        if (orient_result.isOk()) {
-            runDemo(init, display, orientation_names[i]);
+        if (orient_result.is_ok()) {
+            run_demo(init, display, orientation_names[i]);
         } else {
             init.logger.error("Orientation '{}' set error: {}", orientation_names[i], orient_result.error());
         }

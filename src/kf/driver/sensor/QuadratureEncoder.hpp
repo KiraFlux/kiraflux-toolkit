@@ -29,13 +29,13 @@ template<typename T> struct QuadratureEncoderConfig final {
     gpio::DigitalInput::Pull pull;///< Phase Pull type
 
     /// @brief Converts ticks to physical units
-    [[nodiscard]] constexpr UnitType unitsFromTicks(TickType value) const noexcept {
+    [[nodiscard]] constexpr UnitType units_from_ticks(TickType value) const noexcept {
         return static_cast<UnitType>(value) * units_per_tick;
     }
 
     /// @brief Converts physical units to ticks (truncated)
     /// @note For integral unit types, precision loss may occur due to integer division
-    [[nodiscard]] constexpr TickType ticksFromUnits(UnitType value) const noexcept {
+    [[nodiscard]] constexpr TickType ticks_from_units(UnitType value) const noexcept {
         return static_cast<TickType>(value / units_per_tick);
     }
 };
@@ -63,23 +63,23 @@ template<typename T> struct QuadratureEncoder final :
         mixin::Configured<Config>::Configured{config}, _gpio_phase_a{gpio_num_phase_a, config.pull}, _gpio_phase_b{gpio_num_phase_b, config.pull} {}
 
     /// @brief Current accumulated position in ticks
-    [[nodiscard]] auto positionTicks() const noexcept -> typename Config::TickType {
+    [[nodiscard]] auto position_ticks() const noexcept -> typename Config::TickType {
         return _position_ticks;
     }
 
     /// @brief Overwrite the current tick count
-    void positionTicks(typename Config::TickType position) noexcept {
+    void position_ticks(typename Config::TickType position) noexcept {
         _position_ticks = position;
     }
 
     /// @brief Current position converted to physical units
-    [[nodiscard]] auto positionUnits() const noexcept -> typename Config::UnitType {
-        return this->config().unitsFromTicks(_position_ticks);
+    [[nodiscard]] auto position_units() const noexcept -> typename Config::UnitType {
+        return this->config().units_from_ticks(_position_ticks);
     }
 
     /// @brief Set position in physical units (converted to ticks)
-    void positionUnits(typename Config::UnitType position) noexcept {
-        _position_ticks = this->config().ticksFromUnits(position);
+    void position_units(typename Config::UnitType position) noexcept {
+        _position_ticks = this->config().ticks_from_units(position);
     }
 
 private:
@@ -89,7 +89,7 @@ private:
 
     /// @brief ISR triggered on any edge of either phase
     /// @note Avoid `switch` because it may generate a jump table in flash, unreachable from IRAM due to `l32r` range limits.
-    static void onAnyPhaseChange(void *arg) noexcept {
+    static void on_any_phase_change(void *arg) noexcept {
         auto &self = *static_cast<Self *>(arg);
 
         auto const current_state = self.read();
@@ -118,24 +118,24 @@ private:
 
     KF_IMPL_SENSOR_DRIVER(Self, typename Config::PhaseStateType, void);
 
-    void initImpl() noexcept {
+    void init_impl() noexcept {
         _gpio_phase_a.init();
-        _gpio_phase_a.attachInterrupt(onAnyPhaseChange, static_cast<void *>(this), gpio::DigitalInput::Interrupt::OnChange);
+        _gpio_phase_a.attachInterrupt(on_any_phase_change, static_cast<void *>(this), gpio::DigitalInput::Interrupt::OnChange);
 
         _gpio_phase_b.init();
-        _gpio_phase_b.attachInterrupt(onAnyPhaseChange, static_cast<void *>(this), gpio::DigitalInput::Interrupt::OnChange);
+        _gpio_phase_b.attachInterrupt(on_any_phase_change, static_cast<void *>(this), gpio::DigitalInput::Interrupt::OnChange);
 
         this->reset();
     }
 
-    typename Config::PhaseStateType readImpl() const noexcept {
+    typename Config::PhaseStateType read_impl() const noexcept {
         auto const state_a = static_cast<typename Config::PhaseStateType>(_gpio_phase_a.level());
         auto const state_b = static_cast<typename Config::PhaseStateType>(_gpio_phase_b.level());
         return (state_a << 1) | state_b;// pack as AB
     }
 
     KF_IMPL_RESETTABLE(Self);
-    void resetImpl() noexcept {
+    void reset_impl() noexcept {
         _position_ticks = 0;
         _last_state = this->read();
     }

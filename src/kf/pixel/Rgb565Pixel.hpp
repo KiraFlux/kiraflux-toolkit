@@ -18,24 +18,24 @@ struct Rgb565Pixel final : Pixel<Rgb565Pixel, u16, u16, 16> {
 private:
     friend Base;
 
-    static constexpr usize getBufferSizeImpl(usize width, usize height) noexcept {
+    static constexpr usize get_buffer_size_impl(usize width, usize height) noexcept {
         return width * height;
     }
 
-    static constexpr ColorType fromRgbImpl(u8 r, u8 g, u8 b) noexcept {
+    static constexpr ColorType from_rgb_impl(u8 r, u8 g, u8 b) noexcept {
         auto const color = (r >> 3) << 11 | ((g >> 2) << 5) | (b >> 3);
         // convert to BE
         return static_cast<ColorType>(((color & 0xFF) << 8) | (color >> 8));
     }
 
-    static void setPixelImpl(Slice<BufferType> buffer, PositionType stride, PositionType abs_x, PositionType abs_y, ColorType color) noexcept {
+    static void set_pixel_impl(Slice<BufferType> buffer, PositionType stride, PositionType abs_x, PositionType abs_y, ColorType color) noexcept {
         auto const target = buffer.data() + (abs_y * stride + abs_x);
         if (target < buffer.end()) {
             *target = color;
         }
     }
 
-    static void fillImpl(
+    static void fill_impl(
 
         Slice<BufferType> buffer,
         PositionType stride,
@@ -55,7 +55,7 @@ private:
         }
     }
 
-    static void copyImpl(
+    static void copy_impl(
 
         Slice<BufferType const> src,
         PositionType src_w, PositionType src_h,

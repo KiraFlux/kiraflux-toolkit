@@ -45,8 +45,8 @@ private:
 
     KF_IMPL_FILTER(LowFrequencyFilter<ValueType>, ValueType);
 
-    ValueType calcImpl(ValueType const &x) noexcept {
-        if (_filtered.isNone()) {
+    ValueType calc_impl(ValueType const &x) noexcept {
+        if (_filtered.is_none()) {
             goto set;
         }
 
@@ -61,7 +61,7 @@ private:
         return _filtered.unwrap();
     }
 
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _first_step = true;
     }
 };

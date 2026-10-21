@@ -39,7 +39,7 @@ template<implements<pixel::PixelTag> P> struct DynamicImage final : Image<Dynami
         units::Pixels width, units::Pixels height,
         units::Pixels offset_x, units::Pixels offset_y) noexcept {
 
-        if (buffer.length() < PixelImpl::bufferSize(width, height)) { return error(Error::BufferTooSmall); }
+        if (buffer.length() < PixelImpl::buffer_size(width, height)) { return error(Error::BufferTooSmall); }
 
         if (width < 1 or height < 1) { return error(Error::SizeTooSmall); }
 
@@ -79,7 +79,7 @@ template<implements<pixel::PixelTag> P> struct DynamicImage final : Image<Dynami
 
     /// @brief Creates sub-region without validation
     /// @warning No bounds checking - caller must ensure parameters are valid
-    [[nodiscard]] DynamicImage subUnchecked(
+    [[nodiscard]] DynamicImage sub_unchecked(
         units::Pixels sub_width, units::Pixels sub_height,
         units::Pixels sub_offset_x, units::Pixels sub_offset_y) noexcept {
         return DynamicImage{
@@ -93,28 +93,28 @@ template<implements<pixel::PixelTag> P> struct DynamicImage final : Image<Dynami
     }
 
     /// @brief Checks if X coordinate is within view bounds
-    [[nodiscard]] bool isInsideX(units::Pixels x_relative) const noexcept {
+    [[nodiscard]] bool is_inside_x(units::Pixels x_relative) const noexcept {
         return x_relative >= 0 and x_relative < _width;
     }
 
     /// @brief Checks if Y coordinate is within view bounds
-    [[nodiscard]] bool isInsideY(units::Pixels y_relative) const noexcept {
+    [[nodiscard]] bool is_inside_y(units::Pixels y_relative) const noexcept {
         return y_relative >= 0 and y_relative < _height;
     }
 
     /// @brief Converts relative X to absolute buffer coordinate
-    [[nodiscard]] units::Pixels toAbsoluteX(units::Pixels x) const noexcept {
+    [[nodiscard]] units::Pixels to_absolute_x(units::Pixels x) const noexcept {
         return static_cast<units::Pixels>(_offset_x + x);
     }
 
     /// @brief Converts relative Y to absolute buffer coordinate
-    [[nodiscard]] units::Pixels toAbsoluteY(units::Pixels y) const noexcept {
+    [[nodiscard]] units::Pixels to_absolute_y(units::Pixels y) const noexcept {
         return static_cast<units::Pixels>(_offset_y + y);
     }
 
     /// @brief Sets single pixel color
-    void setPixel(units::Pixels x_relative, units::Pixels y_relative, ColorType color) const noexcept {
-        PixelImpl::setPixel(_buffer, _stride, toAbsoluteX(x_relative), toAbsoluteY(y_relative), color);
+    void set_pixel(units::Pixels x_relative, units::Pixels y_relative, ColorType color) const noexcept {
+        PixelImpl::set_pixel(_buffer, _stride, to_absolute_x(x_relative), to_absolute_y(y_relative), color);
     }
 
     /// @brief Fills entire region with solid color
@@ -148,13 +148,13 @@ private:
 
     KF_IMPL_IMAGE(DynamicImage<P>, P);
 
-    constexpr units::Pixels getWidthImpl() const noexcept { return _width; }
+    constexpr units::Pixels get_width_impl() const noexcept { return _width; }
 
-    constexpr units::Pixels getHeightImpl() const noexcept { return _height; }
+    constexpr units::Pixels get_height_impl() const noexcept { return _height; }
 
-    constexpr units::Pixels getStrideImpl() const noexcept { return _stride; }
+    constexpr units::Pixels get_stride_impl() const noexcept { return _stride; }
 
-    constexpr Slice<BufferType> getBufferImpl() noexcept { return _buffer; }
+    constexpr Slice<BufferType> get_buffer_impl() noexcept { return _buffer; }
 };
 
 }// namespace kf::image

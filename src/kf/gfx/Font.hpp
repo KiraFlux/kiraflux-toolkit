@@ -67,7 +67,7 @@ struct Font final {
     /// @return Total advance width in pixels (glyph_width + 1)
     /// @note Includes 1 pixel of spacing between characters.
     /// Use this for cursor positioning and text layout calculations.
-    [[nodiscard]] constexpr u8 widthTotal() const noexcept {
+    [[nodiscard]] constexpr u8 width_total() const noexcept {
         return glyph_width + 1;
     }
 
@@ -75,7 +75,7 @@ struct Font final {
     /// @return Total line height in pixels (glyph_height + 1)
     /// @note Includes 1 pixel of spacing between lines.
     /// Use this for multi-line text layout calculations.
-    [[nodiscard]] constexpr u8 heightTotal() const noexcept {
+    [[nodiscard]] constexpr u8 height_total() const noexcept {
         return glyph_height + 1;
     }
 
@@ -88,7 +88,7 @@ struct Font final {
     /// bitmap data in the font data array. The glyph data consists of
     /// `glyph_width` consecutive bytes, each representing a vertical column.
     /// @note ASCII code 127 (DEL) is excluded from the font
-    [[nodiscard]] u8 const *getGlyph(char c) const noexcept {
+    [[nodiscard]] u8 const *get_glyph(char c) const noexcept {
         if (nullptr == data or c < start_char or c >= end_char) {
             return nullptr;
         }

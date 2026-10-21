@@ -44,13 +44,13 @@ template<typename Impl, implements<image::ImageTag> ImageImpl, typename Operatio
 
     /// @brief Transfer software buffer to display hardware
     [[nodiscard]] OperationResult send() noexcept {
-        return static_cast<Impl *>(this)->sendImpl();
+        return static_cast<Impl *>(this)->send_impl();
     }
 
     /// @brief Set display orientation.
     /// @param new_orientation New orientation value.
     [[nodiscard]] OperationResult orientation(Orientation new_orientation) noexcept {
-        return static_cast<Impl *>(this)->setOrientationImpl(new_orientation);
+        return static_cast<Impl *>(this)->set_orientation_impl(new_orientation);
     }
 
 private:

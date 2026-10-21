@@ -59,11 +59,11 @@ template<implements<pixel::PixelTag> P> struct Canvas {
 
     /// @brief Creates sub-canvas without validation
     /// @warning No bounds checking - caller must ensure parameters are valid
-    [[nodiscard]] constexpr Canvas subUnchecked(
+    [[nodiscard]] constexpr Canvas sub_unchecked(
         units::Pixels width, units::Pixels height,
         units::Pixels offset_x, units::Pixels offset_y) noexcept {
         return Canvas{
-            _frame.subUnchecked(width, height, offset_x, offset_y),
+            _frame.sub_unchecked(width, height, offset_x, offset_y),
             _state,
         };
     }
@@ -77,25 +77,25 @@ template<implements<pixel::PixelTag> P> struct Canvas {
     [[nodiscard]] units::Pixels height() const noexcept { return _frame.height(); }
 
     /// @brief Get maximum valid X coordinate (rightmost pixel)
-    [[nodiscard]] units::Pixels maxX() const noexcept { return _frame.maxX(); }
+    [[nodiscard]] units::Pixels max_x() const noexcept { return _frame.max_x(); }
 
     /// @brief Get maximum valid Y coordinate (bottommost pixel)
-    [[nodiscard]] units::Pixels maxY() const noexcept { return _frame.maxY(); }
+    [[nodiscard]] units::Pixels max_y() const noexcept { return _frame.max_y(); }
 
     /// @brief Get horizontal center coordinate
-    [[nodiscard]] units::Pixels centerX() const noexcept { return static_cast<units::Pixels>(maxX() / 2); }
+    [[nodiscard]] units::Pixels center_x() const noexcept { return static_cast<units::Pixels>(max_x() / 2); }
 
     /// @brief Get vertical center coordinate
-    [[nodiscard]] units::Pixels centerY() const noexcept { return static_cast<units::Pixels>(maxY() / 2); }
+    [[nodiscard]] units::Pixels center_y() const noexcept { return static_cast<units::Pixels>(max_y() / 2); }
 
     /// @brief Get tab width based on current font (4 character widths)
-    [[nodiscard]] units::Pixels tabWidth() const noexcept { return static_cast<units::Pixels>(font().widthTotal() * 4); }
+    [[nodiscard]] units::Pixels tab_width() const noexcept { return static_cast<units::Pixels>(font().width_total() * 4); }
 
     /// @brief Get canvas width in glyphs
-    [[nodiscard]] usize widthInGlyphs() const noexcept { return width() / font().widthTotal(); }
+    [[nodiscard]] usize width_in_glyphs() const noexcept { return width() / font().width_total(); }
 
     /// @brief Get canvas height in glyphs
-    [[nodiscard]] usize heightInGlyphs() const noexcept { return height() / font().heightTotal(); }
+    [[nodiscard]] usize height_in_glyphs() const noexcept { return height() / font().height_total(); }
 
     // Properties: Colors
 
@@ -114,18 +114,18 @@ template<implements<pixel::PixelTag> P> struct Canvas {
     // Properties: Font
 
     /// @brief Get current text font
-    [[nodiscard]] Font const &font() const noexcept { return _state.active_font.unwrapOr(Font::blank()); }
+    [[nodiscard]] Font const &font() const noexcept { return _state.active_font.unwrap_or(Font::blank()); }
 
     /// @brief Set current text font
-    void font(Font const &new_font) noexcept { _state.active_font = someRef(new_font); }
+    void font(Font const &new_font) noexcept { _state.active_font = some_ref(new_font); }
 
     // Control
 
     /// @brief Enable/disable automatic text wrapping to next line
-    void autoNextLine(bool enable) noexcept { _state.auto_next_line = enable; }
+    void auto_next_line(bool enable) noexcept { _state.auto_next_line = enable; }
 
     /// @brief Swap foreground and background colors
-    void swapColors() noexcept { std::swap(_state.foreground_color, _state.background_color); }
+    void swap_colors() noexcept { std::swap(_state.foreground_color, _state.background_color); }
 
     /// @brief Split canvas into weighted sub-canvases
     template<usize N> auto split(Array<usize, N> weights, bool horizontal = true) noexcept -> Array<Canvas, N> {
@@ -152,9 +152,9 @@ template<implements<pixel::PixelTag> P> struct Canvas {
 
             if (size > 0) {
                 if (horizontal) {
-                    result[i] = subUnchecked(size, height(), offset, 0);
+                    result[i] = sub_unchecked(size, height(), offset, 0);
                 } else {
-                    result[i] = subUnchecked(width(), size, 0, offset);
+                    result[i] = sub_unchecked(width(), size, 0, offset);
                 }
             }
 
@@ -174,7 +174,7 @@ template<implements<pixel::PixelTag> P> struct Canvas {
 
     /// @brief Draw single pixel at specified coordinates
     void dot(units::Pixels x, units::Pixels y) const noexcept {
-        _frame.setPixel(x, y, _state.foreground_color);
+        _frame.set_pixel(x, y, _state.foreground_color);
     }
 
     /// @brief Draw static image at specified position
@@ -184,22 +184,22 @@ template<implements<pixel::PixelTag> P> struct Canvas {
         PixelImpl::copy(
             image.buffer(), image.width(), image.height(),
             _frame.buffer(), _frame.stride(),
-            _frame.toAbsoluteX(x), _frame.toAbsoluteY(y));
+            _frame.to_absolute_x(x), _frame.to_absolute_y(y));
     }
 
     /// @brief Draw line (x0, y0), (x1, y1) between two points
     void line(units::Pixels x0, units::Pixels y0, units::Pixels x1, units::Pixels y1) const noexcept {
         if (x0 == x1) {
             if (y0 == y1) {
-                _frame.setPixel(x0, y0, _state.foreground_color);
+                _frame.set_pixel(x0, y0, _state.foreground_color);
             } else {
-                drawLineVertical(x0, y0, y1, _state.foreground_color);
+                draw_line_vertical(x0, y0, y1, _state.foreground_color);
             }
             return;
         }
 
         if (y0 == y1) {
-            drawLineHorizontal(x0, y0, x1, _state.foreground_color);
+            draw_line_horizontal(x0, y0, x1, _state.foreground_color);
             return;
         }
 
@@ -210,7 +210,7 @@ template<implements<pixel::PixelTag> P> struct Canvas {
         auto error = dx + dy;
 
         while (true) {
-            _frame.setPixel(x0, y0, _state.foreground_color);
+            _frame.set_pixel(x0, y0, _state.foreground_color);
             if (x0 == x1 and y0 == y1) { break; }
 
             auto const double_error = 2 * error;
@@ -236,11 +236,11 @@ template<implements<pixel::PixelTag> P> struct Canvas {
             _frame.fill(x0, y0, x1, y1, _state.foreground_color);
         } else {
             // Outline
-            drawLineHorizontal(x0, y0, x1, _state.foreground_color);
-            drawLineHorizontal(x0, y1, x1, _state.foreground_color);
+            draw_line_horizontal(x0, y0, x1, _state.foreground_color);
+            draw_line_horizontal(x0, y1, x1, _state.foreground_color);
             y0 += 1;
-            drawLineVertical(x0, y0, y1, _state.foreground_color);
-            drawLineVertical(x1, y0, y1, _state.foreground_color);
+            draw_line_vertical(x0, y0, y1, _state.foreground_color);
+            draw_line_vertical(x1, y0, y1, _state.foreground_color);
         }
     }
 
@@ -255,9 +255,9 @@ template<implements<pixel::PixelTag> P> struct Canvas {
                 int const y_squared = y * y;
                 auto const width = static_cast<int>(math::sqrt(r_squared - y_squared));
 
-                // todo lineH
+                // todo line_h
                 for (auto x = -width; x <= width; x += 1) {
-                    _frame.setPixel(static_cast<units::Pixels>(center_x + x), static_cast<units::Pixels>(center_y + y), _state.foreground_color);
+                    _frame.set_pixel(static_cast<units::Pixels>(center_x + x), static_cast<units::Pixels>(center_y + y), _state.foreground_color);
                 }
             }
         } else {
@@ -268,11 +268,11 @@ template<implements<pixel::PixelTag> P> struct Canvas {
 
             while (x >= y) {
                 // Draw 8 symmetric points
-                drawCirclePoints(center_x, center_y, x, y, _state.foreground_color);
+                draw_circle_points(center_x, center_y, x, y, _state.foreground_color);
 
                 // Avoid drawing duplicate points when x == y
                 if (x != y) {
-                    drawCirclePoints(center_x, center_y, y, x, _state.foreground_color);
+                    draw_circle_points(center_x, center_y, y, x, _state.foreground_color);
                 }
 
                 y += 1;
@@ -289,7 +289,7 @@ template<implements<pixel::PixelTag> P> struct Canvas {
 
     /// @brief Draw glyph at specified position
     void glyph(units::Pixels x, units::Pixels y, char c) noexcept {
-        drawGlyph(x, y, font().getGlyph(c), _state.foreground_color, _state.background_color);
+        draw_glyph(x, y, font().get_glyph(c), _state.foreground_color, _state.background_color);
     }
 
     /// @brief Draw text at specified position
@@ -301,9 +301,9 @@ template<implements<pixel::PixelTag> P> struct Canvas {
     ///
     ///   \x82 - swap bg <-> fg colors
     ///
-    ///   \xF* - Set custom foreground color (ANSI color index)
+    ///   \x_f* - Set custom foreground color (ANSI color index)
     ///
-    ///   \xB* - Set custom background color (ANSI color index)
+    ///   \x_b* - Set custom background color (ANSI color index)
     ///
     ///   \n - New line
     ///
@@ -311,7 +311,7 @@ template<implements<pixel::PixelTag> P> struct Canvas {
     void text(units::Pixels start_x, units::Pixels start_y, StringView text) noexcept {
         auto const font_width = font().glyph_width;
         auto const font_height = font().glyph_height;
-        auto const font_total_height = font().heightTotal();
+        auto const font_total_height = font().height_total();
 
         auto cursor_x = start_x;
         auto cursor_y = start_y;
@@ -339,33 +339,33 @@ template<implements<pixel::PixelTag> P> struct Canvas {
                 }
 
                 case '\xF0' ... '\xFF': {
-                    current_foreground_color = PaletteType::ansiColor(static_cast<u8>(c));
+                    current_foreground_color = PaletteType::ansi_color(static_cast<u8>(c));
                     continue;
                 }
 
                 case '\xB0' ... '\xBF': {
-                    current_background_color = PaletteType::ansiColor(static_cast<u8>(c));
+                    current_background_color = PaletteType::ansi_color(static_cast<u8>(c));
                     continue;
                 }
 
                 case '\n': {
-                    clearLineSegment(cursor_x, cursor_y, maxX(), current_background_color);
+                    clear_line_segment(cursor_x, cursor_y, max_x(), current_background_color);
                     cursor_x = start_x;
                     cursor_y += font_total_height;
                     continue;
                 }
 
                 case '\t': {
-                    auto const tab_width = tabWidth();
-                    auto const new_x = ((cursor_x / tab_width) + 1) * tab_width;
-                    clearLineSegment(cursor_x, cursor_y, new_x, current_background_color);
+                    auto const tw = tab_width();
+                    auto const new_x = ((cursor_x / tw) + 1) * tw;
+                    clear_line_segment(cursor_x, cursor_y, new_x, current_background_color);
                     cursor_x = new_x;
                     continue;
                 }
             }
 
             if (cursor_x > (width() - font_width)) {
-                clearLineSegment(cursor_x, cursor_y, maxX(), current_background_color);
+                clear_line_segment(cursor_x, cursor_y, max_x(), current_background_color);
                 if (_state.auto_next_line) {
                     cursor_x = start_x;
                     cursor_y += font_total_height;
@@ -376,11 +376,11 @@ template<implements<pixel::PixelTag> P> struct Canvas {
 
             if (cursor_y > (height() - font_height)) { return; }
 
-            drawGlyph(cursor_x, cursor_y, font().getGlyph(c), current_foreground_color, current_background_color);
+            draw_glyph(cursor_x, cursor_y, font().get_glyph(c), current_foreground_color, current_background_color);
 
             cursor_x += font_width;
             if (cursor_x < width()) {
-                drawLineVertical(cursor_x, cursor_y, cursor_y + font_height, current_background_color);
+                draw_line_vertical(cursor_x, cursor_y, cursor_y + font_height, current_background_color);
             }
 
             cursor_x += 1;
@@ -394,50 +394,50 @@ private:
     // Drawing API backend
 
     /// @brief Clear rectangular line segment with background color
-    void clearLineSegment(units::Pixels cursor_x, units::Pixels cursor_y, units::Pixels end_x, ColorType color) noexcept {
+    void clear_line_segment(units::Pixels cursor_x, units::Pixels cursor_y, units::Pixels end_x, ColorType color) noexcept {
         if (cursor_x < end_x) {
-            _frame.fill(cursor_x, cursor_y, end_x, font().heightTotal() + cursor_y, color);
+            _frame.fill(cursor_x, cursor_y, end_x, font().height_total() + cursor_y, color);
         }
     }
 
     /// @brief Draw horizontal line (optimized)
-    void drawLineHorizontal(units::Pixels x0, units::Pixels y, units::Pixels x1, ColorType color) const noexcept {
+    void draw_line_horizontal(units::Pixels x0, units::Pixels y, units::Pixels x1, ColorType color) const noexcept {
         if (x0 > x1) { std::swap(x0, x1); }
         _frame.fill(x0, y, x1, y, color);
     }
 
     /// @brief Draw vertical line (optimized)
-    void drawLineVertical(units::Pixels x, units::Pixels y0, units::Pixels y1, ColorType color) const noexcept {
+    void draw_line_vertical(units::Pixels x, units::Pixels y0, units::Pixels y1, ColorType color) const noexcept {
         if (y0 > y1) { std::swap(y0, y1); }
         _frame.fill(x, y0, x, y1, color);
     }
 
     /// @brief Draw 8 symmetric points for circle outline
-    void drawCirclePoints(units::Pixels cx, units::Pixels cy, units::Pixels dx, units::Pixels dy, ColorType color) const noexcept {
-        _frame.setPixel(static_cast<units::Pixels>(cx + dx), static_cast<units::Pixels>(cy + dy), color);
-        _frame.setPixel(static_cast<units::Pixels>(cx + dy), static_cast<units::Pixels>(cy + dx), color);
-        _frame.setPixel(static_cast<units::Pixels>(cx - dy), static_cast<units::Pixels>(cy + dx), color);
-        _frame.setPixel(static_cast<units::Pixels>(cx - dx), static_cast<units::Pixels>(cy + dy), color);
-        _frame.setPixel(static_cast<units::Pixels>(cx - dx), static_cast<units::Pixels>(cy - dy), color);
-        _frame.setPixel(static_cast<units::Pixels>(cx - dy), static_cast<units::Pixels>(cy - dx), color);
-        _frame.setPixel(static_cast<units::Pixels>(cx + dy), static_cast<units::Pixels>(cy - dx), color);
-        _frame.setPixel(static_cast<units::Pixels>(cx + dx), static_cast<units::Pixels>(cy - dy), color);
+    void draw_circle_points(units::Pixels cx, units::Pixels cy, units::Pixels dx, units::Pixels dy, ColorType color) const noexcept {
+        _frame.set_pixel(static_cast<units::Pixels>(cx + dx), static_cast<units::Pixels>(cy + dy), color);
+        _frame.set_pixel(static_cast<units::Pixels>(cx + dy), static_cast<units::Pixels>(cy + dx), color);
+        _frame.set_pixel(static_cast<units::Pixels>(cx - dy), static_cast<units::Pixels>(cy + dx), color);
+        _frame.set_pixel(static_cast<units::Pixels>(cx - dx), static_cast<units::Pixels>(cy + dy), color);
+        _frame.set_pixel(static_cast<units::Pixels>(cx - dx), static_cast<units::Pixels>(cy - dy), color);
+        _frame.set_pixel(static_cast<units::Pixels>(cx - dy), static_cast<units::Pixels>(cy - dx), color);
+        _frame.set_pixel(static_cast<units::Pixels>(cx + dy), static_cast<units::Pixels>(cy - dx), color);
+        _frame.set_pixel(static_cast<units::Pixels>(cx + dx), static_cast<units::Pixels>(cy - dy), color);
     }
 
     /// @brief Draw font glyph at specified position
     /// @param x Left position
     /// @param y Top position
     /// @param glyph Pointer to glyph bitmap data
-    void drawGlyph(units::Pixels x, units::Pixels y, u8 const *glyph, ColorType color_on, ColorType color_off) noexcept {
+    void draw_glyph(units::Pixels x, units::Pixels y, u8 const *glyph, ColorType color_on, ColorType color_off) noexcept {
         if (nullptr == glyph) {
             // Draw box for unknown character
             auto const x1 = static_cast<units::Pixels>(x + font().glyph_width - 1);
             auto const y1 = static_cast<units::Pixels>(y + font().glyph_height - 1);
 
-            drawLineHorizontal(x, y, x1, color_on);
-            drawLineHorizontal(x, y1, x1, color_on);
-            drawLineVertical(x, y, y1, color_on);
-            drawLineVertical(x1, y, y1, color_on);
+            draw_line_horizontal(x, y, x1, color_on);
+            draw_line_horizontal(x, y1, x1, color_on);
+            draw_line_vertical(x, y, y1, color_on);
+            draw_line_vertical(x1, y, y1, color_on);
             return;
         }
 
@@ -449,10 +449,10 @@ private:
 
             for (auto row = 0u; row < font_height; row += 1) {
                 auto const color = (glyph[col] >> row) & 1 ? color_on : color_off;
-                _frame.setPixel(pixel_x, static_cast<units::Pixels>(y + row), color);
+                _frame.set_pixel(pixel_x, static_cast<units::Pixels>(y + row), color);
             }
 
-            _frame.setPixel(pixel_x, static_cast<units::Pixels>(y + font_height), color_off);
+            _frame.set_pixel(pixel_x, static_cast<units::Pixels>(y + font_height), color_off);
         }
     }
 };

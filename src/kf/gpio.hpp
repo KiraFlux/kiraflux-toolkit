@@ -31,7 +31,7 @@ struct PwmOutputConfig final {
     u8 resolution_bits;///< resolution in bits (1..16)
 
     /// @brief Maximum PWM value for given resolution (2^bits - 1)
-    [[nodiscard]] constexpr u16 maxDuty() const noexcept {
+    [[nodiscard]] constexpr u16 max_duty() const noexcept {
         return static_cast<u16>((1u << (resolution_bits)) - 1u);
     }
 };
@@ -340,7 +340,7 @@ private:
 
     KF_IMPL_GPIO(DigitalInput, void);
 
-    void initImpl() noexcept {
+    void init_impl() noexcept {
 #ifdef ARDUINO
         ::pinMode(static_cast<u8>(this->num()), static_cast<u8>(_pull));
 #endif
@@ -372,11 +372,11 @@ struct AdcInput : GPIO<AdcInput> {
     }
 
     /// @brief Get Maximum value for the current resolution
-    [[nodiscard]] static Value maxValue() noexcept {
+    [[nodiscard]] static Value max_value() noexcept {
         return static_cast<Value>((1u << resolution()) - 1u);
     }
 
-    /// @brief Read analog value (0..maxValue)
+    /// @brief Read analog value (0..max_value)
     [[nodiscard]] Value read() const noexcept {
         return (
 #ifdef ARDUINO
@@ -392,7 +392,7 @@ private:
 
     KF_IMPL_GPIO(AdcInput, void);
 
-    void initImpl() noexcept {
+    void init_impl() noexcept {
 #ifdef ARDUINO
         ::pinMode(static_cast<u8>(this->num()), INPUT);
 #endif
@@ -417,7 +417,7 @@ struct DigitalOutput : GPIO<DigitalOutput> {
 private:
     KF_IMPL_GPIO(DigitalOutput, void);
 
-    void initImpl() noexcept {
+    void init_impl() noexcept {
 #ifdef ARDUINO
         ::pinMode(static_cast<u8>(this->num()), OUTPUT);
 #endif
@@ -443,7 +443,7 @@ struct PwmOutput :
     explicit constexpr PwmOutput(Config const &config, GpioNumber gpio_num) noexcept :
         GPIO<PwmOutput, bool>{gpio_num}, mixin::Configured<Config>{config} {}
 
-    /// @brief Write duty cycle (0..maxDuty)
+    /// @brief Write duty cycle (0..max_duty)
     void write(Duty duty) const noexcept {
 #ifdef ARDUINO
         ::ledcWrite(static_cast<u8>(this->num()), static_cast<u32>(duty));
@@ -453,15 +453,15 @@ struct PwmOutput :
     }
 
     /// @brief Write pulse width in microseconds (converted to duty cycle)
-    void writePulse(units::Microseconds pulse_width) const noexcept {
-        auto const t = static_cast<u64>(pulse_width) * this->config().frequency_hz * this->config().maxDuty();
+    void write_pulse(units::Microseconds pulse_width) const noexcept {
+        auto const t = static_cast<u64>(pulse_width) * this->config().frequency_hz * this->config().max_duty();
         this->write(static_cast<Duty>(t / 1'000'000u));
     }
 
 private:
     KF_IMPL_GPIO(PwmOutput, bool);
 
-    bool initImpl() noexcept {
+    bool init_impl() noexcept {
         return (
 #ifdef ARDUINO
             ::ledcAttach(static_cast<u8>(this->num()), this->config().frequency_hz, this->config().resolution_bits)

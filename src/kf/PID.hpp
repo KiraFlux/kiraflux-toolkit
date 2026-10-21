@@ -69,7 +69,7 @@ struct PID final :
             _current_integral = math::clamp(_current_integral, -this->config().integral_limit, this->config().integral_limit);
         }
 
-        if (this->config().derivative_gain != 0.0f and _last_error.isSome()) {
+        if (this->config().derivative_gain != 0.0f and _last_error.is_some()) {
             _current_derivative = _derivative_filter.calc((error - _last_error.unwrap()) / dt);
         } else {
             _current_derivative = 0.0f;
@@ -86,7 +86,7 @@ private:
     Option<f32> _last_error{none};             ///< Previous error value
 
     KF_IMPL_RESETTABLE(PID);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _current_derivative = 0.0f;
         _current_integral = 0.0f;
         _last_error.reset();

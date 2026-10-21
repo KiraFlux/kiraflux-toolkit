@@ -40,16 +40,16 @@ template<typename T, usize N> struct Array :
 private:
     KF_IMPL_SEQUENCE(Self, T);
 
-    constexpr T *getDataImpl() noexcept {
+    constexpr T *get_data_impl() noexcept {
         return items;
     }
 
-    constexpr usize lengthImpl() const noexcept {
+    constexpr usize length_impl() const noexcept {
         return N;
     }
 
     KF_IMPL_EQUATABLE(Self);
-    constexpr bool isEqualsImpl(Self const &other) const noexcept {
+    constexpr bool is_equals_impl(Self const &other) const noexcept {
         for (auto i = 0u; i < N; i += 1) {
             if ((*this)[i] != other[i]) {
                 return false;

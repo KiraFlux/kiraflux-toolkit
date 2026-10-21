@@ -96,13 +96,13 @@ private:
         _tx_gpio_num;
 
     KF_IMPL_INITABLE(Self, void());
-    void initImpl() noexcept {
+    void init_impl() noexcept {
 
-        if (this->config().rx_buffer_length.isSome()) {
+        if (this->config().rx_buffer_length.is_some()) {
             (void) _serial.setRxBufferSize(this->config().rx_buffer_length.unwrap());
         }
 
-        if (this->config().tx_buffer_length.isSome()) {
+        if (this->config().tx_buffer_length.is_some()) {
             (void) _serial.setTxBufferSize(this->config().tx_buffer_length.unwrap());
         }
 
@@ -117,13 +117,13 @@ private:
     }
 
     KF_IMPL_QUITABLE(Self);
-    void quitImpl() noexcept {
+    void quit_impl() noexcept {
         _serial.end();
     }
 
     KF_IMPL_BINARY_READABLE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error> {
+    auto read_buffer_impl(Bytes buffer) noexcept -> Result<BytesView, Error> {
         if (buffer.empty()) {
             return ok(BytesView{});
         }
@@ -137,7 +137,7 @@ private:
         return ok(BytesView{buffer.data(), bytes_read});
     }
 
-    template<typename T> auto readPacketImpl() noexcept -> Result<T, Error> {
+    template<typename T> auto read_packet_impl() noexcept -> Result<T, Error> {
         constexpr auto to_read = sizeof(T);
 
         if constexpr (to_read == sizeof(u8)) {
@@ -163,13 +163,13 @@ private:
     }
 
     KF_IMPL_READ_AVAILABLE(Self);
-    usize availableForReadImpl() const noexcept {
+    usize available_for_read_impl() const noexcept {
         return _serial.available();
     }
 
     KF_IMPL_BINARY_WRITABLE(Self, internal::UartWriteResult);
 
-    auto writeBufferImpl(BytesView buffer) noexcept -> internal::UartWriteResult {
+    auto write_buffer_impl(BytesView buffer) noexcept -> internal::UartWriteResult {
         if (not buffer.empty()) {
             auto const to_write = buffer.length();
 
@@ -181,7 +181,7 @@ private:
         return ok();
     }
 
-    auto writePacketImpl(trivial auto const &packet) noexcept -> internal::UartWriteResult {
+    auto write_packet_impl(trivial auto const &packet) noexcept -> internal::UartWriteResult {
         constexpr auto to_write = sizeof(packet);
 
         usize written;
@@ -199,20 +199,20 @@ private:
         }
     }
 
-    auto writeMixedImpl(trivial auto const &header, BytesView buffer) noexcept -> internal::UartWriteResult {
-        KF_TRY(this->writePacket(header));
-        return this->writeBuffer(buffer);
+    auto write_mixed_impl(trivial auto const &header, BytesView buffer) noexcept -> internal::UartWriteResult {
+        KF_TRY(this->write_packet(header));
+        return this->write_buffer(buffer);
     }
 
     KF_IMPL_WRITE_AVAILABLE(Self);
-    usize availableForWriteImpl() const noexcept {
+    usize available_for_write_impl() const noexcept {
         auto const ret = _serial.availableForWrite();
         // Arduino Stream returns size 0 if "may write any size"
         return (0 == ret) ? static_cast<usize>(-1) : ret;
     }
 
     KF_IMPL_FLUSH(Self);
-    void flushImpl() noexcept {
+    void flush_impl() noexcept {
         _serial.flush();
     }
 };
@@ -234,43 +234,43 @@ struct UART : internal::UartBase<UART> {
 
 private:
     KF_IMPL_INITABLE(Self, void());
-    void initImpl() noexcept {}
+    void init_impl() noexcept {}
 
     KF_IMPL_QUITABLE(Self);
-    void quitImpl() noexcept {}
+    void quit_impl() noexcept {}
 
     KF_IMPL_BINARY_READABLE(Self, Error);
 
-    auto readBufferImpl(Bytes buffer) const noexcept -> Result<BytesView, Error> {
+    auto read_buffer_impl(Bytes buffer) const noexcept -> Result<BytesView, Error> {
         (void) buffer;
 
         return error(Error::ReadFailed);
     }
 
-    template<typename T> auto readPacketImpl() const noexcept -> Result<T, Error> {
+    template<typename T> auto read_packet_impl() const noexcept -> Result<T, Error> {
         return error(Error::ReadFailed);
     }
 
     KF_IMPL_READ_AVAILABLE(Self);
-    usize availableForReadImpl() noexcept {
+    usize available_for_read_impl() noexcept {
         return 0;
     }
 
     KF_IMPL_BINARY_WRITABLE(Self, internal::UartWriteResult);
 
-    auto writeBufferImpl(BytesView buffer) const noexcept -> internal::UartWriteResult {
+    auto write_buffer_impl(BytesView buffer) const noexcept -> internal::UartWriteResult {
         (void) buffer;
 
         return ok();
     }
 
-    auto writePacketImpl(trivial auto const &packet) const noexcept -> internal::UartWriteResult {
+    auto write_packet_impl(trivial auto const &packet) const noexcept -> internal::UartWriteResult {
         (void) packet;
 
         return ok();
     }
 
-    auto writeMixedImpl(trivial auto const &header, BytesView buffer) const noexcept -> internal::UartWriteResult {
+    auto write_mixed_impl(trivial auto const &header, BytesView buffer) const noexcept -> internal::UartWriteResult {
         (void) header;
         (void) buffer;
 
@@ -278,12 +278,12 @@ private:
     }
 
     KF_IMPL_WRITE_AVAILABLE(Self);
-    usize availableForWriteImpl() noexcept {
+    usize available_for_write_impl() noexcept {
         return static_cast<usize>(-1);
     }
 
     KF_IMPL_FLUSH(Self);
-    void flushImpl() noexcept {}
+    void flush_impl() noexcept {}
 };
 
 #endif

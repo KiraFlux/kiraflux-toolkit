@@ -27,7 +27,6 @@ This document defines code style, architectural conventions, and review process.
     - [Mixins](#mixins)
     - [Error Handling](#error-handling)
     - [Hardware Abstraction](#hardware-abstraction)
-    - [UI](#ui)
     - [Traits](#traits)
   - [Testing](#testing)
   - [Versioning](#versioning)
@@ -45,11 +44,11 @@ This document defines code style, architectural conventions, and review process.
 - **No mutable global state** - pass dependencies explicitly. `mixin::Singleton` is allowed only for hardware-guaranteed singletons (e.g., `kf::esp::Espnow`); justify new uses in the PR.
 - **No default constructors for resource-dependent types** - construct with all dependencies.
 - **Single internal namespace** - `kf::internal` only; `kf::<module>::internal` is forbidden.
-- **Minimal dependencies** - algorithmic code must not include `<Arduino.h>`; use portable abstractions (`kf::clamp`, `kf::math`, etc.).
+- **Minimal dependencies** - algorithmic code must not include `<Arduino.h>`; use portable abstractions (`kf::math`, `kf::clamp`, etc.).
 - **Testability** - algorithmic code must be testable natively (x86) with Unity; hardware-dependent code isolated.
 - **Performance** - prefer `constexpr`, `noexcept`, `[[nodiscard]]`, `alignas` for SBO.
 - **SPDX headers** - every file starts with `SPDX-FileCopyrightText`, `SPDX-License-Identifier: GPL-3.0-or-later`, project URL. `./kf new` generates them; do not strip existing.
-- **License** - GPL-3.0-or-later (v0.3.4 and earlier: MIT). See [LICENSE](LICENSE). No CLA: opening a PR licenses your contribution under the same terms.
+- **License** - GPL-3.0-or-later. See [LICENSE](LICENSE). No CLA: opening a PR licenses your contribution under the same terms.
 
 ---
 
@@ -68,7 +67,7 @@ This document defines code style, architectural conventions, and review process.
 ### Pull Requests
 1. Branch from latest `dev`.
 2. Open PR targeting `dev`; list `Closes #...`.
-3. `./kf test` locally; CI must pass.
+3. `./kf test` and `./kf lint` locally; CI must pass.
 4. Regular merge commit into `dev` (not squash).
 5. Releases: PR `dev` -> `main`, bump version, tag.
 
@@ -87,43 +86,33 @@ Resolve conflicts locally. Force push is allowed only on feature branches, never
 ## Structure and Naming
 
 ### Folders - Namespaces
-Namespaces mirror folder depth exactly:
+A header's namespace is its path relative to `src/kf/`, joined by `::` and prefixed with `kf`. Depth mirrors the folder structure exactly.
 
-| Folder                    | Namespace              |
-| ------------------------- | ---------------------- |
-| `src/kf/`                 | `kf`                   |
-| `src/kf/bus/`             | `kf::bus`              |
-| `src/kf/driver/`          | `kf::driver`           |
-| `src/kf/driver/actuator/` | `kf::driver::actuator` |
-| `src/kf/driver/display/`  | `kf::driver::display`  |
-| `src/kf/driver/sensor/`   | `kf::driver::sensor`   |
-| `src/kf/filter/`          | `kf::filter`           |
-| `src/kf/gfx/`             | `kf::gfx`              |
-| `src/kf/image/`           | `kf::image`            |
-| `src/kf/pixel/`           | `kf::pixel`            |
-| `src/kf/listener/`        | `kf::listener`         |
-| `src/kf/tuner/`           | `kf::tuner`            |
-| `src/kf/ui/`              | `kf::ui`               |
-| `src/kf/ui/render/`       | `kf::ui::render`       |
-| `src/kf/ui/widget/`       | `kf::ui::widget`       |
-| `src/kf/rtos/`            | `kf::rtos`             |
-| `src/kf/mixin/`           | `kf::mixin`            |
-| `src/kf/esp/`             | `kf::esp`              |
+- `src/kf/bus/I2C.hpp` -> `kf::bus`
+- `src/kf/driver/display/SSD1306.hpp` -> `kf::driver::display`
+- `src/kf/mixin/Resettable.hpp` -> `kf::mixin`
 
-**Only `kf::internal`** is allowed as an implementation-detail namespace.
+Only `kf::internal` is allowed as an implementation-detail namespace.
 
 ### Files
 - **One public type per file**; filename = type name. Helpers naturally belonging to the type stay in the same file.
 - Platform-specific implementations get their own header (`ArduinoGPIO.hpp`).
 
 ### Naming
-- Types, template params - `PascalCase`.
-- Functions, variables, fields - `camelCase`.
-- Private fields - `_field`.
-- Constants, macros - `UPPER_SNAKE_CASE`.
-- Concrete impl aliases - suffix `Impl` (`RendererImpl`, `PixelImpl`).
-- CRTP tag structs - suffix `Tag` (`GpioTag`, `SensorTag`).
-- Config instances in examples - suffix `_config` (`pwm_config`, `bus_config`).
+
+| Category                    | Convention               | Examples                    |
+| --------------------------- | ------------------------ | --------------------------- |
+| Types, template params      | `PascalCase`             | `Result`, `GpioNumber`      |
+| Functions, methods          | `snake_case`             | `unwrap_or`, `read_buffer`  |
+| Variables, fields           | `snake_case`             | `max_duty`, `write_count`   |
+| Private / protected fields  | `_` + `snake_case`       | `_buffer`, `_active_page`   |
+| Constants, macros           | `UPPER_SNAKE_CASE`       | `KF_TRY`, `KF_PLACE_IRAM`   |
+| Concrete impl aliases       | `PascalCase` + `Impl`    | `RendererImpl`, `PixelImpl` |
+| CRTP tag structs            | `PascalCase` + `Tag`     | `GpioTag`, `SensorTag`      |
+| Config instances (examples) | `snake_case` + `_config` | `pwm_config`, `bus_config`  |
+| CRTP impl methods           | `snake_case` + `_impl`   | `read_impl`, `reset_impl`   |
+
+Naming is enforced by `.clang-tidy` (`readability-identifier-naming`). Exception lists (`MethodIgnoredRegexp`, `FunctionIgnoredRegexp`, `StructIgnoredRegexp`) live in `.clang-tidy` - do not work around them.
 
 ---
 
@@ -132,6 +121,7 @@ Namespaces mirror folder depth exactly:
 ### Formatting
 - `.clang-format` and `.clang-tidy` are authoritative.
 - Before committing: `./kf format` and `./kf lint` (add `--all` for the whole tree).
+- PRs are rejected by CI if `./kf lint --all` reports violations.
 
 ### Inheritance
 Each base class on its own line, blank lines around the list:
@@ -151,7 +141,7 @@ struct MyClass :
 Use trailing return for complex return types:
 
 ```cpp
-auto readBufferImpl(Bytes buffer) noexcept -> Result<BytesView, Error>;
+auto read_buffer_impl(Bytes buffer) noexcept -> Result<BytesView, Error>;
 auto map(F &&f) const & noexcept -> Option<decltype(f(std::declval<T>()))>;
 ```
 
@@ -194,47 +184,45 @@ Alphabetic within each group; blank line between groups:
 
 ```cpp
 template<typename Impl> struct Base {
-    void doSomething() { static_cast<Impl *>(this)->doSomethingImpl(); }
-    static void classMethod() { Impl::classMethodImpl(); }
+    void do_something() { static_cast<Impl *>(this)->do_something_impl(); }
+    static void class_method() { Impl::class_method_impl(); }
 };
 
 struct MyBase : Base<MyBase> {
 private:
     friend struct Base<MyBase>;
-    void doSomethingImpl() { /* ... */ }
-    static void classMethodImpl() { /* ... */ }
+    void do_something_impl() { /* ... */ }
+    static void class_method_impl() { /* ... */ }
 };
 ```
 
-Always define a tag struct (`MyBaseTag`) for interface checking.
+Always define a tag struct (`MyBaseTag`) for interface checking. Impl methods use the `_impl` suffix, so the public method and its impl do not collide.
 
 ### Mixins
 
-CRTP mixins in `kf/mixin/`; each provides `KF_IMPL_*` macro to place in the `private` section of the derived class.
+CRTP mixins in `kf/mixin/`. Each provides a `KF_IMPL_*` macro; place it in the `private` section of the derived class.
 
-- **Lifecycle**: `NonCopyable`, `Initable`, `Resettable`, `DefaultResettable`, `Quitable`
-- **Periodic**: `Poll`, `Flush`, `Drain`
-- **Config**: `Configured`
-- **Callbacks**: `Callbacked<Args...>`, `ValueCallbacked<T>`
-- **Labels / styling**: `Labeled`, `Styled`
-- **Invariant**: `Invariant`
-- **Comparison / indexing**: `Equatable`, `Indexable`, `Length`
-- **Streams**: `Readable`, `Writable`, `ReadAvailable`, `WriteAvailable`, `BinaryReadable`, `BinaryWritable`
-- **Matching**: `Match`
-- **Stringification**: `Representable` (`repr()`), `ReprTo` (`reprTo()`)
-- **Arena helpers**: `ExtraAllocationLength`
-- **Identity**: `MacAddressed`
-- **Singleton**: `Singleton` (see [Core Principles](#core-principles))
+| Group                 | Mixins                                                                                        | What it adds                                      |
+| --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Type contract         | `NonCopyable`, `Initable`, `Quitable`                                                         | Copy deletion, `init()`, `quit()`                 |
+| Type state            | `Resettable`, `DefaultResettable`, `Invariant`                                                | `reset()`, Some/None-style checks                 |
+| Scheduling            | `Poll`, `Flush`, `Drain`                                                                      | `poll(now)`, `flush()`, `drain()`                 |
+| Injected dependencies | `Configured`, `Callbacked<Args...>`, `ValueCallbacked<T>`                                     | Config reference, optional callbacks              |
+| Presentation          | `Labeled`, `Styled`, `Representable`, `ReprTo`                                                | Label, style, `repr()` / `repr_to()`              |
+| Container interface   | `Equatable`, `Indexable`, `Length`, `Match`                                                   | `==`, `[]`, `length()`, key matching              |
+| Data streams          | `Readable`, `Writable`, `ReadAvailable`, `WriteAvailable`, `BinaryReadable`, `BinaryWritable` | Text and binary I/O with availability             |
+| Object identity       | `Singleton`, `MacAddressed`                                                                   | Meyer's singleton access, owned MAC address       |
+| Arena                 | `ExtraAllocationLength`                                                                       | Extra allocation length for arena-created objects |
 
-Do not duplicate mixin functionality.
+Do not duplicate mixin functionality in your own types.
 
 ### Error Handling
 
-| Mechanism      | When                              | Example                                  |
-| -------------- | --------------------------------- | ---------------------------------------- |
-| `bool`         | Success/failure with no context   | `sendBuffer(buf)`                        |
-| `Option<T>`    | One obvious failure reason        | `parseInt(str) -> Option<int>`           |
-| `Result<T, E>` | Multiple distinguishable failures | `createNode(...) -> Result<Node, Error>` |
+| Mechanism      | When                              | Example            |
+| -------------- | --------------------------------- | ------------------ |
+| `bool`         | Success/failure with no context   | `send_buffer(buf)` |
+| `Option<T>`    | One obvious failure reason        | `parse_int(str)`   |
+| `Result<T, E>` | Multiple distinguishable failures | `create_node(...)` |
 
 Rules:
 - Never throw. No `std::optional` / `std::variant` / `std::expected`.
@@ -244,7 +232,7 @@ Rules:
 - `unwrap()` is safe when a checked invariant guarantees success:
 
   ```cpp
-  while (queue.availableForRead() > 0) {
+  while (queue.available_for_read() > 0) {
       char c = queue.read().unwrap();  // safe
   }
   ```
@@ -253,10 +241,6 @@ Rules:
 - Guard hardware code with `#ifdef ARDUINO` in the same header.
 - Algorithmic code must not include `<Arduino.h>`.
 - ISRs: `IRAM_ATTR` (via `KF_PLACE_IRAM`); shared vars `volatile`.
-
-### UI
-- `UI` is not a singleton; construct with a renderer.
-- Renderers are passed by reference and outlive `UI`.
 
 ### Traits
 - `static_assert` for type properties.
@@ -269,6 +253,7 @@ Rules:
 - Native unit tests in `test/unit/` (Unity), run via `./kf test`.
 - Hardware tests not yet implemented (`test/hardware/` planned).
 - Every new algorithmic module needs tests; new examples must build (`./kf build --all`).
+- Before opening a PR: `./kf lint` and `./kf format` must pass locally.
 
 ---
 
@@ -290,6 +275,7 @@ When commenting on a violation, reference the relevant section (concise and acti
 > **Error Handling** - use `bool`; only one failure reason here.
 > **Include Organization** - Toolkit group before Protect interface.
 > **Structure and Naming** - `kf::foo::internal` forbidden; use `kf::internal`.
+> **Structure and Naming** - method should be `snake_case`; `.clang-tidy` will flag it.
 
 If the issue is not covered by this document: explain it fully in the comment, then propose a doc update (Issue or PR).
 
@@ -313,7 +299,8 @@ Recommended header:
 // SPDX-License-Identifier: GPL-3.0-or-later
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 //
-// This file was generated via <Tool Name>.
+// FIXME: This file was generated via <Tool Name>.
+// TODO: REFACTOR WANTED
 ```
 
 ---
@@ -322,12 +309,16 @@ Recommended header:
 
 - [ ] `./kf build --all` passes.
 - [ ] `./kf test` passes; new algorithmic code is covered.
+- [ ] `./kf lint` (and `./kf lint --all` for cross-file changes) reports no violations.
+- [ ] `./kf format` reports no diffs.
 - [ ] No mutable global state; `mixin::Singleton` justified.
 - [ ] Correct error mechanism used (`bool` / `Option` / `Result`).
 - [ ] Mixins used where applicable.
 - [ ] Namespaces mirror folders; no `kf::<module>::internal`.
 - [ ] Filename matches primary type.
-- [ ] Include order follows 4-group rule.
+- [ ] Naming follows the rules.
+- [ ] CRTP impl methods use the `_impl` suffix.
+- [ ] Include order follows the 4-group rule.
 - [ ] Public API has Doxygen; `kf::internal` exempt.
 - [ ] SPDX headers present and correct.
 - [ ] AI-generated code attributed and flagged.

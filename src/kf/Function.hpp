@@ -47,17 +47,17 @@ template<typename R, typename... Args> struct Function<R(Args...)> : mixin::NonC
         static_assert(std::is_invocable_r<R, decltype(f), Args...>::value, "Callable not invocable with given arguments");
 
         new (static_cast<void *>(_storage)) Impl<Decayed>{std::forward<decltype(f)>(f)};
-        isSome(true);
+        is_some(true);
     }
 
     Function(Function &&other) noexcept {
-        moveFrom(std::move(other));
+        move_from(std::move(other));
     }
 
     Function &operator=(Function &&other) noexcept {
         if (this != &other) {
             destroy();
-            moveFrom(std::move(other));
+            move_from(std::move(other));
         }
         return *this;
     }
@@ -81,7 +81,7 @@ private:
 
         virtual R invoke(Args... args) const noexcept = 0;
 
-        virtual void moveTo(void *dest) noexcept = 0;
+        virtual void move_to(void *dest) noexcept = 0;
     };
 
     template<typename _F> struct Impl final : Base {
@@ -94,7 +94,7 @@ private:
             return f(std::forward<Args>(args)...);
         }
 
-        void moveTo(void *dest) noexcept override {
+        void move_to(void *dest) noexcept override {
             new (dest) Impl{std::move(f)};
         }
     };
@@ -105,14 +105,14 @@ private:
 
     // access to default constructor only for SentinelStorage
     constexpr Function() noexcept {
-        isSome(false);
+        is_some(false);
     }
 
-    [[nodiscard]] bool isSome() const noexcept {
+    [[nodiscard]] bool is_some() const noexcept {
         return static_cast<bool>(_storage[buffer_size - 1]);
     }
 
-    void isSome(bool is_some) noexcept {
+    void is_some(bool is_some) noexcept {
         _storage[buffer_size - 1] = static_cast<u8>(is_some);
     }
 
@@ -125,17 +125,17 @@ private:
     }
 
     void destroy() noexcept {
-        if (isSome()) {
+        if (is_some()) {
             func().~Base();
-            isSome(false);
+            is_some(false);
         }
     }
 
-    void moveFrom(Function &&other) noexcept {
-        if (other.isSome()) {
-            other.func().moveTo(static_cast<void *>(_storage));
-            isSome(true);
-            other.isSome(false);
+    void move_from(Function &&other) noexcept {
+        if (other.is_some()) {
+            other.func().move_to(static_cast<void *>(_storage));
+            is_some(true);
+            other.is_some(false);
         }
     }
 };

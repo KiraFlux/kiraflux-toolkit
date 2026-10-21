@@ -32,16 +32,16 @@ template<kf::u8 V> struct EventTester {
 
     static void test_factories() {
         Value move_val = (V == 1) ? 0 : 1;
-        auto move = Ev::pageCursorMove(move_val);
+        auto move = Ev::page_cursor_move(move_val);
         TEST_ASSERT_EQUAL(Ev::Kind::PageCursorMove, move.kind());
         TEST_ASSERT_EQUAL(move_val, move.value());
 
-        auto click = Ev::widgetClick();
+        auto click = Ev::widget_click();
         TEST_ASSERT_EQUAL(Ev::Kind::WidgetClick, click.kind());
         TEST_ASSERT_EQUAL(0, click.value());
 
         Value widget_val = -1;
-        auto val = Ev::widgetValue(widget_val);
+        auto val = Ev::widget_value(widget_val);
         TEST_ASSERT_EQUAL(Ev::Kind::WidgetValue, val.kind());
         TEST_ASSERT_EQUAL(widget_val, val.value());
     }

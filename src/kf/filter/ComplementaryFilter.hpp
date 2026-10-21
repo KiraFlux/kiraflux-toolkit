@@ -47,7 +47,7 @@ template<arithmetic T> struct ComplementaryFilter final :
     /// @param dt Time step in seconds since last update
     /// @return Filtered value combining prediction and measurement
     [[nodiscard]] ValueType const &calc(ValueType x, ValueType dx, Seconds dt) noexcept {
-        if (_filtered.isNone()) {
+        if (_filtered.is_none()) {
             _filtered = some(x);
         } else {
             auto const prediction = _filtered + dx * dt;
@@ -61,7 +61,7 @@ private:
     Option<ValueType> _filtered{none};
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _filtered = none;
     }
 };

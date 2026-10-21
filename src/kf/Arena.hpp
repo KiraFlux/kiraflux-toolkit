@@ -72,7 +72,7 @@ struct Arena : mixin::NonCopyable, mixin::Resettable<Arena> {
         usize total_size = sizeof(T);
 
         if constexpr (implements<T, mixin::ExtraAllocationLengthTag>) {
-            total_size += T::extraAllocationLength(args...);
+            total_size += T::extra_allocation_length(args...);
         }
 
         if (available() < total_size) { return none; }
@@ -85,7 +85,7 @@ struct Arena : mixin::NonCopyable, mixin::Resettable<Arena> {
             new (ptr) T{std::forward<Args>(args)...};
         }
 
-        return someRef(*static_cast<T *>(ptr));
+        return some_ref(*static_cast<T *>(ptr));
     }
 
 private:
@@ -93,7 +93,7 @@ private:
     usize _used{0};
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _used = 0;
     }
 };

@@ -77,25 +77,25 @@ struct SSD1306 :
 
     /// @brief Construct SSD1306 driver instance
     explicit constexpr SSD1306(bus::I2C &i2c_bus, Config const &config) noexcept :
-        mixin::Configured<Config>{config}, _i2c_node{i2c_bus.createNode(config.i2c_node)} {}
+        mixin::Configured<Config>{config}, _i2c_node{i2c_bus.create_node(config.i2c_node)} {}
 
     /// @brief Set display contrast level (0..255)
     [[nodiscard]] auto contrast(u8 value) noexcept -> internal::IicWriteResult {
         u8 const packet[]{CommandMode, Contrast, value};
-        return _i2c_node.writePacket(packet);
+        return _i2c_node.write_packet(packet);
     }
 
     /// @brief Enable or disable display power
     [[nodiscard]] auto power(bool on) noexcept -> internal::IicWriteResult {
-        return sendCommand(on ? DisplayOn : DisplayOff);
+        return send_command(on ? DisplayOn : DisplayOff);
     }
 
     /// @brief Invert display colors
     [[nodiscard]] auto invert(bool invert) noexcept -> internal::IicWriteResult {
-        return sendCommand(invert ? InvertDisplay : NormalDisplay);
+        return send_command(invert ? InvertDisplay : NormalDisplay);
     }
 
-    [[nodiscard]] static constexpr bool supportOrientation(Orientation orientation) noexcept {
+    [[nodiscard]] static constexpr bool support_orientation(Orientation orientation) noexcept {
         return orientation == Orientation::Normal or orientation == Orientation::MirrorX or orientation == Orientation::MirrorY;
     }
 
@@ -103,19 +103,19 @@ private:
     bus::I2C::Node _i2c_node;
 
     /// @brief Send single command to display
-    [[nodiscard]] auto sendCommand(Command c) noexcept -> internal::IicWriteResult {
+    [[nodiscard]] auto send_command(Command c) noexcept -> internal::IicWriteResult {
         u8 const packet[]{
             OneCommandMode,
             static_cast<u8>(c),
         };
 
-        return _i2c_node.writeBuffer({packet});
+        return _i2c_node.write_buffer({packet});
     }
 
     KF_IMPL_DISPLAY_DRIVER(SSD1306, internal::SSD1306Image, internal::IicWriteResult);
 
     /// @brief Initialize display hardware via I2C
-    auto initImpl() noexcept -> internal::IicWriteResult {
+    auto init_impl() noexcept -> internal::IicWriteResult {
         static constexpr u8 init_commands[]{
             CommandMode,
 
@@ -158,12 +158,12 @@ private:
             0x3F,
         };
 
-        return _i2c_node.writeBuffer({init_commands});
+        return _i2c_node.write_buffer({init_commands});
     }
 
-    constexpr void resetImpl() const noexcept {}
+    constexpr void reset_impl() const noexcept {}
 
-    auto sendImpl() noexcept -> internal::IicWriteResult {
+    auto send_impl() noexcept -> internal::IicWriteResult {
         // Transfer software buffer to display via I2C
 
         static constexpr u8 set_area_commands[]{
@@ -177,7 +177,7 @@ private:
             PixelImpl::pages(internal::SSD1306Image::comptime_height) - 1,
         };
 
-        KF_TRY(_i2c_node.writeBuffer({set_area_commands}));
+        KF_TRY(_i2c_node.write_buffer({set_area_commands}));
 
         auto p = this->image().buffer().data();
         auto remaining = this->image().buffer().length();
@@ -185,7 +185,7 @@ private:
         while (remaining > 0) {
             auto const chunk = math::min(this->config().chunk_size, remaining);
 
-            KF_TRY(_i2c_node.writeMixed(Command::DataMode, {p, chunk}));
+            KF_TRY(_i2c_node.write_mixed(Command::DataMode, {p, chunk}));
 
             p += chunk;
             remaining -= chunk;
@@ -194,8 +194,8 @@ private:
         return ok();
     }
 
-    auto setOrientationImpl(Orientation orientation) noexcept -> internal::IicWriteResult {
-        if (not supportOrientation(orientation)) {
+    auto set_orientation_impl(Orientation orientation) noexcept -> internal::IicWriteResult {
+        if (not support_orientation(orientation)) {
             return ok();
         }
 
@@ -203,8 +203,8 @@ private:
         constexpr auto flip_y = 0b10;
         auto const flags = static_cast<u8>(orientation);
 
-        KF_TRY(sendCommand((flags & flip_x) ? FlipH : NormalH));
-        KF_TRY(sendCommand((flags & flip_y) ? FlipV : NormalV));
+        KF_TRY(send_command((flags & flip_x) ? FlipH : NormalH));
+        KF_TRY(send_command((flags & flip_y) ? FlipV : NormalV));
 
         return ok();
     }

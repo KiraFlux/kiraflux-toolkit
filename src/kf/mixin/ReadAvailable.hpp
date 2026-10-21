@@ -3,7 +3,7 @@
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    mixin/ReadAvailable.hpp
-/// @brief   Adds availableForRead() to query available data.
+/// @brief   Adds available_for_read() to query available data.
 
 #pragma once
 
@@ -13,14 +13,14 @@ namespace kf::mixin {
 
 struct ReadAvailableTag {};
 
-/// @brief Adds `availableForRead()` to query how many bytes/items can be read without blocking.
-/// @tparam Impl Implementation class with `usize availableForReadImpl() const noexcept` method.
+/// @brief Adds `available_for_read()` to query how many bytes/items can be read without blocking.
+/// @tparam Impl Implementation class with `usize available_for_read_impl() const noexcept` method.
 /// @note The value may change between calls; intended for non‑blocking polling.
 template<typename Impl> struct ReadAvailable : ReadAvailableTag {
 
     /// @brief Get the number of bytes/items currently available to read.
-    [[nodiscard]] usize availableForRead() const noexcept {
-        return static_cast<Impl const *>(this)->availableForReadImpl();
+    [[nodiscard]] usize available_for_read() const noexcept {
+        return static_cast<Impl const *>(this)->available_for_read_impl();
     }
 };
 

@@ -28,11 +28,11 @@ struct NormalizedAdcInputConfig final {
     bool inverted;
     AdcSignedValue dead_zone, range_positive, range_negative;
 
-    [[nodiscard]] static constexpr AdcSignedValue calcPositiveRange(AdcSignedValue max_analog_value, AdcSignedValue center) noexcept {
+    [[nodiscard]] static constexpr AdcSignedValue calc_positive_range(AdcSignedValue max_analog_value, AdcSignedValue center) noexcept {
         return static_cast<AdcSignedValue>(max_analog_value - center);
     }
 
-    [[nodiscard]] static constexpr AdcSignedValue calcNegativeRange(AdcSignedValue center) noexcept {
+    [[nodiscard]] static constexpr AdcSignedValue calc_negative_range(AdcSignedValue center) noexcept {
         return center;
     }
 };
@@ -73,35 +73,35 @@ struct NormalizedAdcInput final :
 
         KF_IMPL_SAMPLE_COLLECTING_TUNER(Tuner, Config);
 
-        void resetImpl() noexcept {
+        void reset_impl() noexcept {
             _max_sample = 0;
-            _min_sample = gpio::AdcInput::maxValue();
+            _min_sample = gpio::AdcInput::max_value();
             _sum = 0;
         }
 
-        void pollImpl(units::Milliseconds now) noexcept {
+        void poll_impl(units::Milliseconds now) noexcept {
             (void) now;
-            auto const sample = Config::AdcSignedValue(_normalized_input.readRaw());
+            auto const sample = Config::AdcSignedValue(_normalized_input.read_raw());
             _max_sample = math::max(_max_sample, sample);
             _min_sample = math::min(_min_sample, sample);
             _sum += sample;
         }
 
-        void calculateImpl(Config &config) const noexcept {
+        void calculate_impl(Config &config) const noexcept {
             constexpr auto margin{10};
             constexpr auto zone_percents{10};
 
             config.dead_zone = static_cast<Config::AdcSignedValue>((_max_sample - _min_sample) / zone_percents + margin);
             auto const center = static_cast<Config::AdcSignedValue>(_sum / this->samples_total);
-            config.range_positive = Config::calcPositiveRange(gpio::AdcInput::maxValue(), center);
-            config.range_negative = Config::calcNegativeRange(center);
+            config.range_positive = Config::calc_positive_range(gpio::AdcInput::max_value(), center);
+            config.range_negative = Config::calc_negative_range(center);
         }
     };
 
     explicit NormalizedAdcInput(Config const &config, typename FilterImpl::Config const &filter_config, gpio::GpioNumber gpio_num) noexcept :
         mixin::Configured<Config>{config}, _filter{filter_config}, _adc_input{gpio_num} {}
 
-    [[nodiscard]] gpio::AdcInput::Value readRaw() const noexcept {
+    [[nodiscard]] gpio::AdcInput::Value read_raw() const noexcept {
         return _adc_input.read();
     }
 
@@ -111,13 +111,13 @@ private:
 
     KF_IMPL_SENSOR_DRIVER(Self, f32, void);
 
-    void initImpl() noexcept {
+    void init_impl() noexcept {
         _adc_input.init();
     }
 
-    [[nodiscard]] f32 readImpl() noexcept {
+    [[nodiscard]] f32 read_impl() noexcept {
         // Applies dead zone, filtering, and optional inversion
-        auto const deviation = static_cast<Config::AdcSignedValue>(readRaw()) - this->config().range_negative;
+        auto const deviation = static_cast<Config::AdcSignedValue>(read_raw()) - this->config().range_negative;
 
         if (math::abs(deviation) < this->config().dead_zone) {
             return 0.0f;

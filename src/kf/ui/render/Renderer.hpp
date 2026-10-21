@@ -37,26 +37,26 @@ template<typename Impl> struct Renderer :
 {
     /// @brief Check whether a render has been requested
     /// @return `true` if a render is pending, `false` otherwise
-    [[nodiscard]] constexpr bool renderRequested() noexcept {
+    [[nodiscard]] constexpr bool render_requested() noexcept {
         return _render_requested;
     }
 
     /// @brief Request a full UI redraw on the next poll cycle
     /// @note The actual rendering will be performed during the next call to `poll()`
-    void requestRender() noexcept {
+    void request_render() noexcept {
         _render_requested = true;
     }
 
     // Control operations
 
     /// @brief Prepare render buffer for new frame
-    void beginFrame() noexcept {
-        static_cast<Impl *>(this)->beginFrameImpl();
+    void begin_frame() noexcept {
+        static_cast<Impl *>(this)->begin_frame_impl();
     }
 
     /// @brief Finalize frame after rendering
-    void endFrame() noexcept {
-        static_cast<Impl *>(this)->endFrameImpl();
+    void end_frame() noexcept {
+        static_cast<Impl *>(this)->end_frame_impl();
         _render_requested = false;
     }
 
@@ -64,36 +64,36 @@ template<typename Impl> struct Renderer :
     /// @param title Page title
     /// @param layout Page layout hint
     /// @return Number of widgets that can still be rendered in current frame
-    [[nodiscard]] usize beginPage(StringView title, Layout layout) noexcept {
-        return static_cast<Impl *>(this)->beginPageImpl(title, layout);
+    [[nodiscard]] usize begin_page(StringView title, Layout layout) noexcept {
+        return static_cast<Impl *>(this)->begin_page_impl(title, layout);
     }
 
     /// @brief Finish rendering page
-    void endPage() noexcept {
-        static_cast<Impl *>(this)->endPageImpl();
+    void end_page() noexcept {
+        static_cast<Impl *>(this)->end_page_impl();
     }
 
     /// @brief Begin rendering specific widget
     /// @param index Widget position on page
     /// @param is_focused contrasting text region (higher visibility)
     /// @param offset Widget offset
-    void beginWidget(usize index, bool is_focused, usize offset) noexcept {
-        static_cast<Impl *>(this)->beginWidgetImpl(index, is_focused, offset);
+    void begin_widget(usize index, bool is_focused, usize offset) noexcept {
+        static_cast<Impl *>(this)->begin_widget_impl(index, is_focused, offset);
     }
 
     /// @brief Finish rendering current widget
-    void endWidget() noexcept {
-        static_cast<Impl *>(this)->endWidgetImpl();
+    void end_widget() noexcept {
+        static_cast<Impl *>(this)->end_widget_impl();
     }
 
     /// @brief Begin content block
-    void beginBlock(Block block_type = Block::Standard) noexcept {
-        static_cast<Impl *>(this)->beginBlockImpl(block_type);
+    void begin_block(Block block_type = Block::Standard) noexcept {
+        static_cast<Impl *>(this)->begin_block_impl(block_type);
     }
 
     /// @brief End content block
-    void endBlock(Block block_type = Block::Standard) noexcept {
-        static_cast<Impl *>(this)->endBlockImpl(block_type);
+    void end_block(Block block_type = Block::Standard) noexcept {
+        static_cast<Impl *>(this)->end_block_impl(block_type);
     }
 
     // Value rendering
@@ -102,18 +102,18 @@ template<typename Impl> struct Renderer :
     /// @param decoration The type of decoration to render
     /// @note Decorations are lightweight markers that help users interpret the UI.
     void decoration(Decoration decoration) noexcept {
-        static_cast<Impl *>(this)->decorationImpl(decoration);
+        static_cast<Impl *>(this)->decoration_impl(decoration);
     }
 
     /// @brief Render checkbox
     void checkbox(bool enabled) noexcept {
-        static_cast<Impl *>(this)->checkboxImpl(enabled);
+        static_cast<Impl *>(this)->checkbox_impl(enabled);
     }
 
     /// @brief Render slider
     /// @brief fill slider fill value [0..1]
     void slider(f32 fill) noexcept {
-        static_cast<Impl *>(this)->sliderImpl(fill);
+        static_cast<Impl *>(this)->slider_impl(fill);
     }
 
     /// @brief Render value
@@ -124,14 +124,14 @@ template<typename Impl> struct Renderer :
             this->value(v.repr());
         } else if constexpr (std::is_base_of_v<OptionTag, T>) {
 
-            if (v.isSome()) {
+            if (v.is_some()) {
                 this->value(v.unwrap());
             } else {
-                static_cast<Impl *>(this)->valueImpl(none);
+                static_cast<Impl *>(this)->value_impl(none);
             }
 
         } else {
-            static_cast<Impl *>(this)->valueImpl(v);
+            static_cast<Impl *>(this)->value_impl(v);
         }
     }
 
@@ -139,19 +139,19 @@ template<typename Impl> struct Renderer :
 
     /// @brief Set foreground Semantic color
     void foreground(Color color) noexcept {
-        static_cast<Impl *>(this)->setForegroundImpl(color);
+        static_cast<Impl *>(this)->set_foreground_impl(color);
     }
 
     /// @brief Set background Semantic color
     void background(Color color) noexcept {
-        static_cast<Impl *>(this)->setBackgroundImpl(color);
+        static_cast<Impl *>(this)->set_background_impl(color);
     }
 
     // Properties
 
     /// @brief Get Current Layout
     [[nodiscard]] constexpr Layout layout() const noexcept {
-        return static_cast<Impl const *>(this)->getLayoutImpl();
+        return static_cast<Impl const *>(this)->get_layout_impl();
     }
 
 private:

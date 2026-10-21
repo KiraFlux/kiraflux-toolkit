@@ -26,13 +26,13 @@ kf::Option<Espnow::Peer> target_peer{kf::none};
 
 // --- Factory function ---
 
-kf::Option<Espnow::Peer> createPeer(kf::Init &init, MacAddress const &mac_address) noexcept {
+kf::Option<Espnow::Peer> create_peer(kf::Init &init, MacAddress const &mac_address) noexcept {
     auto result = Espnow::Peer::create(Espnow::Peer::Config{
         .mac_address = mac_address,
         .wifi_interface_sta = true,
     });
 
-    if (result.isOk()) {
+    if (result.is_ok()) {
         return kf::some(std::move(result.ok()));
     }
 
@@ -42,8 +42,8 @@ kf::Option<Espnow::Peer> createPeer(kf::Init &init, MacAddress const &mac_addres
 
 // --- Callback ---
 
-void onReceive(kf::Init &init, MacAddress const &mac, kf::Slice<kf::u8 const> data) {
-    if (target_peer.isSome() and target_peer.unwrap().mac() == mac) {
+void on_receive(kf::Init &init, MacAddress const &mac, kf::Slice<kf::u8 const> data) {
+    if (target_peer.is_some() and target_peer.unwrap().mac() == mac) {
         init.logger.info("target: got {} bytes", data.length());
         return;
     }
@@ -66,7 +66,7 @@ void kf::main(kf::Init &init) {
     // --- ESP-NOW initialization ---
 
     auto init_result = Espnow::instance().init();
-    if (init_result.isError()) {
+    if (init_result.is_error()) {
         init.logger.error("ESP-NOW init failed: {}", init_result.error());
         return;
     }
@@ -80,29 +80,29 @@ void kf::main(kf::Init &init) {
     // --- Callback registration ---
 
     Espnow::instance().callback([&](MacAddress const &mac, BytesView data) {
-        onReceive(init, mac, data);
+        on_receive(init, mac, data);
     });
 
     // --- Create peers ---
 
-    broadcast_peer = createPeer(init, {0xff, 0xff, 0xff, 0xff, 0xff, 0xff});
-    target_peer = createPeer(init, {0x01, 0x02, 0x03, 0x04, 0x05, 0x06});// replace with real MAC
+    broadcast_peer = create_peer(init, {0xff, 0xff, 0xff, 0xff, 0xff, 0xff});
+    target_peer = create_peer(init, {0x01, 0x02, 0x03, 0x04, 0x05, 0x06});// replace with real MAC
 
     // --- Main loop ---
 
     while (true) {
-        if (broadcast_peer.isSome()) {
+        if (broadcast_peer.is_some()) {
             init.logger.info("Sending: broadcast");
-            auto const result = broadcast_peer.unwrap().writePacket("[broadcast]: ping");
-            if (result.isError()) {
+            auto const result = broadcast_peer.unwrap().write_packet("[broadcast]: ping");
+            if (result.is_error()) {
                 init.logger.error("[broadcast]: send failed: {}", result.error());
             }
         }
 
-        if (target_peer.isSome()) {
+        if (target_peer.is_some()) {
             init.logger.info("Sending: target");
-            auto const result = target_peer.unwrap().writePacket("ping");
-            if (result.isError()) {
+            auto const result = target_peer.unwrap().write_packet("ping");
+            if (result.is_error()) {
                 init.logger.error("[target]: send failed: {}", result.error());
             }
         }

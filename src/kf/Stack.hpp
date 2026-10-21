@@ -64,13 +64,13 @@ template<typename T> struct Stack :
     /// @brief Get mutable access to stack top value
     /// @return optional reference to stack top item
     [[nodiscard]] constexpr auto top() noexcept -> Option<T &> {
-        return this->empty() ? none : someRef(_buffer[_length - 1]);
+        return this->empty() ? none : some_ref(_buffer[_length - 1]);
     }
 
     /// @brief Get Readonly access to stack top value
     /// @return optional constant reference to stack top item
     [[nodiscard]] constexpr auto top() const noexcept -> Option<T const &> {
-        return this->empty() ? none : someRef<T const &>(_buffer[_length - 1]);
+        return this->empty() ? none : some_ref<T const &>(_buffer[_length - 1]);
     }
 
 private:
@@ -79,16 +79,16 @@ private:
 
     KF_IMPL_SEQUENCE(Self, T);
 
-    constexpr T *getDataImpl() noexcept {
+    constexpr T *get_data_impl() noexcept {
         return _buffer.data();
     }
 
-    constexpr usize lengthImpl() const noexcept {
+    constexpr usize length_impl() const noexcept {
         return _length;
     }
 
     KF_IMPL_READABLE(Self, T);
-    constexpr auto readImpl() noexcept -> Option<T> {
+    constexpr auto read_impl() noexcept -> Option<T> {
         if (this->empty()) {
             return none;
         }
@@ -102,12 +102,12 @@ private:
     }
 
     KF_IMPL_READ_AVAILABLE(Self);
-    usize availableForReadImpl() const noexcept {
+    usize available_for_read_impl() const noexcept {
         return this->length();
     }
 
     KF_IMPL_WRITABLE(Self, T);
-    constexpr bool writeImpl(auto &&item) noexcept {
+    constexpr bool write_impl(auto &&item) noexcept {
         if (this->full()) {
             return false;
         }
@@ -120,12 +120,12 @@ private:
     }
 
     KF_IMPL_WRITE_AVAILABLE(Self);
-    usize availableForWriteImpl() const noexcept {
+    usize available_for_write_impl() const noexcept {
         return this->capacity() - this->length();
     }
 
     KF_IMPL_RESETTABLE(Self);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         for (auto &item: *this) {
             item.~T();
         }

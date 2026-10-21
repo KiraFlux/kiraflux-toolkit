@@ -28,7 +28,7 @@ struct JoystickListenerConfig final {
     Timer::Config repeat_timer, delay_timer;
     f32 threshold;///< 0..1
 
-    [[nodiscard]] JoystickListenerDirection calculateDirection(math::Vector2f const &v) const noexcept {
+    [[nodiscard]] JoystickListenerDirection calculate_direction(math::Vector2f const &v) const noexcept {
         auto const ax = math::abs(v.x);
         auto const ay = math::abs(v.y);
         if (ax < threshold and ay < threshold) {
@@ -66,16 +66,16 @@ private:
 
     KF_IMPL_LISTENER(JoystickListener);
 
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _current_direction = Direction::Center;
         _has_changed = false;
         _in_repeat_mode = false;
     }
 
-    void pollImpl(units::Milliseconds now) noexcept {
-        if (this->value().isNone()) { return; }
+    void poll_impl(units::Milliseconds now) noexcept {
+        if (this->value().is_none()) { return; }
 
-        auto const new_direction = this->config().calculateDirection(this->value().unwrap());
+        auto const new_direction = this->config().calculate_direction(this->value().unwrap());
 
         if (new_direction != _current_direction) {
             _current_direction = new_direction;

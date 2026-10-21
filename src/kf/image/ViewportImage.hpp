@@ -39,19 +39,19 @@ private:
 
     KF_IMPL_IMAGE(ViewportImage<P, W, H>, P);
 
-    [[nodiscard]] constexpr units::Pixels getWidthImpl() const noexcept {
+    [[nodiscard]] constexpr units::Pixels get_width_impl() const noexcept {
         return _logical_width;
     }
 
-    [[nodiscard]] constexpr units::Pixels getHeightImpl() const noexcept {
+    [[nodiscard]] constexpr units::Pixels get_height_impl() const noexcept {
         return _logical_height;
     }
 
-    [[nodiscard]] constexpr units::Pixels getStrideImpl() const noexcept {
-        return getWidthImpl();
+    [[nodiscard]] constexpr units::Pixels get_stride_impl() const noexcept {
+        return get_width_impl();
     }
 
-    [[nodiscard]] constexpr Slice<BufferType> getBufferImpl() noexcept {
+    [[nodiscard]] constexpr Slice<BufferType> get_buffer_impl() noexcept {
         return _image.buffer().first(_logical_width * _logical_height);
     }
 };

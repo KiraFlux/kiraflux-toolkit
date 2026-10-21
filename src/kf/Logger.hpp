@@ -43,7 +43,7 @@ struct Logger :
         (void) this->append('[');                                                                                            \
         (void) this->append(_key);                                                                                           \
         (void) this->append(":" __kf_level_name__ "] ");                                                                     \
-        (void) this->appendFormat(fmt, args...);                                                                             \
+        (void) this->append_format(fmt, args...);                                                                            \
         (void) this->append('\n');                                                                                           \
         (void) this->flush();                                                                                                \
     }
@@ -60,13 +60,13 @@ private:
     StringView _key;
 
     KF_IMPL_FLUSH(Logger);
-    void flushImpl() noexcept {
+    void flush_impl() noexcept {
         writer({_stack.slice()});
         _stack.reset();
     }
 
     KF_IMPL_WRITABLE(Logger, char);
-    bool writeImpl(char c) noexcept {
+    bool write_impl(char c) noexcept {
         if (nullptr == writer) {
             return false;
         }

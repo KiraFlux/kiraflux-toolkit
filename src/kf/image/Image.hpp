@@ -32,22 +32,22 @@ template<typename Impl, implements<pixel::PixelTag> P> struct Image :
 
     /// @brief Get current width in pixels (may differ from physical width due to orientation)
     [[nodiscard]] units::Pixels width() const noexcept {
-        return static_cast<Impl const *>(this)->getWidthImpl();
+        return static_cast<Impl const *>(this)->get_width_impl();
     }
 
     /// @brief Get current height in pixels (may differ from physical width due to orientation)
     [[nodiscard]] units::Pixels height() const noexcept {
-        return static_cast<Impl const *>(this)->getHeightImpl();
+        return static_cast<Impl const *>(this)->get_height_impl();
     }
 
     /// @brief Get current full width in pixels (may differ from physical width due to orientation)
     [[nodiscard]] units::Pixels stride() const noexcept {
-        return static_cast<Impl const *>(this)->getStrideImpl();
+        return static_cast<Impl const *>(this)->get_stride_impl();
     }
 
     /// @brief Get writable frame buffer
     [[nodiscard]] Slice<BufferType> buffer() noexcept {
-        return static_cast<Impl *>(this)->getBufferImpl();
+        return static_cast<Impl *>(this)->get_buffer_impl();
     }
 
     /// @brief Get readonly frame buffer
@@ -58,12 +58,12 @@ template<typename Impl, implements<pixel::PixelTag> P> struct Image :
     // properties
 
     /// @brief Get maximum valid X coordinate
-    [[nodiscard]] units::Pixels maxX() const noexcept {
+    [[nodiscard]] units::Pixels max_x() const noexcept {
         return width() - 1;
     }
 
     /// @brief Get maximum valid Y coordinate
-    [[nodiscard]] units::Pixels maxY() const noexcept {
+    [[nodiscard]] units::Pixels max_y() const noexcept {
         return height() - 1;
     }
 

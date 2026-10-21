@@ -80,7 +80,7 @@ struct MainPage : MyUI::Page {
             logger.info("Test button clicked!");
             my_value += 1;
             value_display.value(my_value);
-            _ui.requestRender();
+            _ui.request_render();
         });
 
         check_box.callback([this](bool state) {
@@ -97,18 +97,18 @@ struct MainPage : MyUI::Page {
     }
 
     // behavior on entry
-    void onEntry() noexcept override {
+    void on_entry() noexcept override {
         logger.debug("Entry on Main");
     }
 
     // behavior on leave
-    void onExit() noexcept override {
+    void on_exit() noexcept override {
         logger.debug("Exit from Main");
     }
 
 protected:
     // behavior on UI polling
-    void onPoll(kf::units::Milliseconds now) noexcept override {}
+    void on_poll(kf::units::Milliseconds now) noexcept override {}
 };
 
 struct SettingsPage : MyUI::Page {
@@ -195,15 +195,15 @@ struct SettingsPage : MyUI::Page {
 };
 
 // Simple function for conversion from char to event
-MyEvent eventFromChar(char c) {
+MyEvent event_from_char(char c) {
     switch (c) {
-        case 'w': return MyEvent::pageCursorMove(-1);// Up
-        case 's': return MyEvent::pageCursorMove(+1);// Down
-        case 'a': return MyEvent::widgetValue(-1);   // Left
-        case 'd': return MyEvent::widgetValue(+1);   // Right
+        case 'w': return MyEvent::page_cursor_move(-1);// Up
+        case 's': return MyEvent::page_cursor_move(+1);// Down
+        case 'a': return MyEvent::widget_value(-1);    // Left
+        case 'd': return MyEvent::widget_value(+1);    // Right
         case ' ':
         default:
-            return MyEvent::widgetClick();// Click
+            return MyEvent::widget_click();// Click
     }
 }
 
@@ -234,11 +234,11 @@ void kf::main(kf::Init &init) {
     my_renderer.callback([&init, &my_ui](kf::StringView text) {
         init.logger.info("UI: {}\n", text);
 
-        auto const &active_page = my_ui.activePage();
-        if (active_page.isSome()) {
-            auto const &selected_widget = active_page.unwrap().selectedWidget();
+        auto const &active_page = my_ui.active_page();
+        if (active_page.is_some()) {
+            auto const &selected_widget = active_page.unwrap().selected_widget();
 
-            if (selected_widget.isSome()) {
+            if (selected_widget.is_some()) {
                 init.logger.info("hint: {}", selected_widget.unwrap().hint());
             }
         }
@@ -248,14 +248,14 @@ void kf::main(kf::Init &init) {
     main_page.widgets_storage[0] = &settings_page.link();
     settings_page.widgets_storage[0] = &main_page.link();
 
-    my_ui.activePage(main_page);// start ui with main page
-    my_ui.requestRender();      // Force update for first ui rendering
+    my_ui.active_page(main_page);// start ui with main page
+    my_ui.request_render();      // Force update for first ui rendering
 
     while (true) {
 
-        while (init.io.availableForRead() > 0) {
-            if (auto const read = init.io.readByte(); read.isOk()) {
-                my_ui.addEvent(eventFromChar(read.ok()));
+        while (init.io.available_for_read() > 0) {
+            if (auto const read = init.io.read_byte(); read.is_ok()) {
+                my_ui.add_event(event_from_char(read.ok()));
             }
         }
 

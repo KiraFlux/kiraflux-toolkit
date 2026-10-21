@@ -3,7 +3,7 @@
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    mixin/WriteAvailable.hpp
-/// @brief   Adds availableForWrite() to query free space.
+/// @brief   Adds available_for_write() to query free space.
 
 #pragma once
 
@@ -13,14 +13,14 @@ namespace kf::mixin {
 
 struct WriteAvailableTag {};
 
-/// @brief Adds `availableForWrite()` to query how many bytes/items can be written without blocking.
-/// @tparam Impl Implementation class with `usize availableForWriteImpl() const noexcept` method.
+/// @brief Adds `available_for_write()` to query how many bytes/items can be written without blocking.
+/// @tparam Impl Implementation class with `usize available_for_write_impl() const noexcept` method.
 /// @note The value is advisory; actual write may still block if buffer is shared.
 template<typename Impl> struct WriteAvailable : WriteAvailableTag {
 
     /// @brief Get the amount of free space available for writing.
-    [[nodiscard]] usize availableForWrite() const noexcept {
-        return static_cast<Impl const *>(this)->availableForWriteImpl();
+    [[nodiscard]] usize available_for_write() const noexcept {
+        return static_cast<Impl const *>(this)->available_for_write_impl();
     }
 };
 

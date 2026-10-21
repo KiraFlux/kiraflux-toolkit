@@ -49,17 +49,17 @@ void kf::main(kf::Init &init) {
     // --- Show initial position ---
 
     init.logger.info("Initial position: {} ticks, {} units",
-                     encoder.positionTicks(),
-                     encoder.positionUnits());
+                     encoder.position_ticks(),
+                     encoder.position_units());
 
     // --- Main loop: read and log position every 200 ms ---
 
     while (true) {
         // Accumulated ticks (updated by ISR).
-        auto ticks = encoder.positionTicks();
+        auto ticks = encoder.position_ticks();
 
         // Convert ticks to physical units using the config.
-        auto units = encoder.positionUnits();
+        auto units = encoder.position_units();
 
         init.logger.debug("Position: {} ticks, {} units", ticks, units);
 

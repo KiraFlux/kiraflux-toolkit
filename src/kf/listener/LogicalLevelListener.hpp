@@ -41,13 +41,13 @@ private:
 
     KF_IMPL_LISTENER(LogicalLevelListener);
 
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _first = true;
         _last_stable = _last_raw = _click_ready = false;
     }
 
-    void pollImpl(units::Milliseconds now) noexcept {
-        if (this->value().isNone()) { return; }
+    void poll_impl(units::Milliseconds now) noexcept {
+        if (this->value().is_none()) { return; }
 
         bool const state = this->value().unwrap();
 

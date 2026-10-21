@@ -18,7 +18,7 @@ struct String : Stack<char> {
     using Stack<char>::Stack;
 
     /// @brief Make string null-terminated and get data pointer
-    [[nodiscard]] constexpr char const *cString() noexcept {
+    [[nodiscard]] constexpr char const *c_string() noexcept {
         auto const terminator_index = this->full() ? this->capacity() - 1 : this->length();
 
         (*this)[terminator_index] = '\0';

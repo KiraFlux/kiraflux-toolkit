@@ -78,7 +78,7 @@ struct ST7735 final :
 
     explicit constexpr ST7735(bus::SPI &spi_bus, Config const &config, gpio::GpioNumber gpio_num_data_command, gpio::GpioNumber gpio_num_reset) noexcept :
         mixin::Configured<internal::ST7735Config>{config},
-        _spi_node{spi_bus.createNode(config.spi_node)},
+        _spi_node{spi_bus.create_node(config.spi_node)},
         _gpio_data_command{gpio_num_data_command},
         _gpio_hardware_reset{gpio_num_reset} {}
 
@@ -91,50 +91,50 @@ private:
 
     // Low-level communication
 
-    auto sendBuffer(BytesView buffer) noexcept -> internal::SpiWriteResult {
+    auto send_buffer(BytesView buffer) noexcept -> internal::SpiWriteResult {
         _gpio_data_command.level(true);
-        return _spi_node.writeBuffer(buffer);
+        return _spi_node.write_buffer(buffer);
     }
 
-    auto sendPacket(trivial auto const &packet) noexcept -> internal::SpiWriteResult {
+    auto send_packet(trivial auto const &packet) noexcept -> internal::SpiWriteResult {
         _gpio_data_command.level(true);
-        return _spi_node.writePacket(packet);
+        return _spi_node.write_packet(packet);
     }
 
-    auto sendCommand(Command c) noexcept -> internal::SpiWriteResult {
+    auto send_command(Command c) noexcept -> internal::SpiWriteResult {
         _gpio_data_command.level(false);
-        return _spi_node.writeByte(static_cast<u8>(c));
+        return _spi_node.write_byte(static_cast<u8>(c));
     }
 
     KF_IMPL_DISPLAY_DRIVER(Self, internal::ST7735Image, internal::SpiWriteResult);
 
-    auto initImpl() noexcept -> internal::SpiWriteResult {
+    auto init_impl() noexcept -> internal::SpiWriteResult {
         _spi_node.init();
         _gpio_data_command.init();
         _gpio_hardware_reset.init();
 
         this->reset();
 
-        KF_TRY(sendCommand(Command::SWRESET));
+        KF_TRY(send_command(Command::SWRESET));
         rtos::Task::sleep(150);
 
-        KF_TRY(sendCommand(Command::SLPOUT));
+        KF_TRY(send_command(Command::SLPOUT));
         rtos::Task::sleep(255);
 
-        KF_TRY(sendCommand(Command::COLMOD));
+        KF_TRY(send_command(Command::COLMOD));
 
         constexpr u8 color_mode{0x05};// 16-bit color (RGB565)
-        KF_TRY(sendPacket(color_mode));
+        KF_TRY(send_packet(color_mode));
 
         KF_TRY(this->orientation(this->config().init_orientation));
-        KF_TRY(sendCommand(Command::DISPON));
+        KF_TRY(send_command(Command::DISPON));
 
         rtos::Task::sleep(100);
 
         return ok();
     }
 
-    void resetImpl() const noexcept {
+    void reset_impl() const noexcept {
         // Required after power‑up to initialise the internal state machine.
         _gpio_hardware_reset.level(false);
         rtos::Task::sleep(10);
@@ -142,12 +142,12 @@ private:
         rtos::Task::sleep(120);
     }
 
-    auto sendImpl() noexcept -> internal::SpiWriteResult {
-        KF_TRY(sendCommand(Command::RAMWR));
-        return sendBuffer({reinterpret_cast<u8 const *>(this->image().buffer().data()), this->image().size()});
+    auto send_impl() noexcept -> internal::SpiWriteResult {
+        KF_TRY(send_command(Command::RAMWR));
+        return send_buffer({reinterpret_cast<u8 const *>(this->image().buffer().data()), this->image().size()});
     }
 
-    auto setOrientationImpl(Orientation orientation) noexcept -> internal::SpiWriteResult {
+    auto set_orientation_impl(Orientation orientation) noexcept -> internal::SpiWriteResult {
         // full 6-way support
         constexpr u8 orient_to_transform[]{
             0,                                        // Orientation::Normal
@@ -162,15 +162,15 @@ private:
 
         this->image().transposed((madctl & MadCtl::MirrorTranspose) != 0);
 
-        u8 const data_x[4]{0, 0, 0, static_cast<u8>(this->image().maxX())};
-        u8 const data_y[4]{0, 0, 0, static_cast<u8>(this->image().maxY())};
+        u8 const data_x[4]{0, 0, 0, static_cast<u8>(this->image().max_x())};
+        u8 const data_y[4]{0, 0, 0, static_cast<u8>(this->image().max_y())};
 
-        KF_TRY(sendCommand(Command::MADCTL));
-        KF_TRY(sendPacket(madctl));
-        KF_TRY(sendCommand(Command::CASET));
-        KF_TRY(sendPacket(data_x));
-        KF_TRY(sendCommand(Command::RASET));
-        KF_TRY(sendPacket(data_y));
+        KF_TRY(send_command(Command::MADCTL));
+        KF_TRY(send_packet(madctl));
+        KF_TRY(send_command(Command::CASET));
+        KF_TRY(send_packet(data_x));
+        KF_TRY(send_command(Command::RASET));
+        KF_TRY(send_packet(data_y));
         return ok();
     }
 };

@@ -32,15 +32,15 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
 
     /// @brief Construct from C‑string (nullptr allowed)
     constexpr StringView(char const *str) noexcept :
-        internal::StringViewBase{str, (nullptr == str) ? 0 : cStringLength(str)} {}
+        internal::StringViewBase{str, (nullptr == str) ? 0 : c_string_length(str)} {}
 
     // Trimming
 
     /// @brief Trim leading whitespace
-    [[nodiscard]] constexpr StringView trimStart() const noexcept {
+    [[nodiscard]] constexpr StringView trim_start() const noexcept {
         auto i = 0u;
 
-        while (i < this->length() and isWhitespace((*this)[i])) {
+        while (i < this->length() and is_whitespace((*this)[i])) {
             i += 1;
         }
 
@@ -48,10 +48,10 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
     }
 
     /// @brief Trim trailing whitespace
-    [[nodiscard]] constexpr StringView trimEnd() const noexcept {
+    [[nodiscard]] constexpr StringView trim_end() const noexcept {
         auto i = this->length();
 
-        while (i > 0 and isWhitespace((*this)[i - 1])) {
+        while (i > 0 and is_whitespace((*this)[i - 1])) {
             i -= 1;
         }
 
@@ -60,12 +60,12 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
 
     /// @brief Trim both ends
     [[nodiscard]] constexpr StringView trim() const noexcept {
-        return trimStart().trimEnd();
+        return trim_start().trim_end();
     }
 
     // Checks
 
-    [[nodiscard]] constexpr bool startsWith(StringView prefix) const noexcept {
+    [[nodiscard]] constexpr bool starts_with(StringView prefix) const noexcept {
         if (prefix.length() > this->length()) {
             return false;
         }
@@ -79,7 +79,7 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
         return true;
     }
 
-    [[nodiscard]] constexpr bool endsWith(StringView suffix) const noexcept {
+    [[nodiscard]] constexpr bool ends_with(StringView suffix) const noexcept {
         if (suffix.length() > this->length()) {
             return false;
         }
@@ -96,16 +96,16 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
     }
 
     [[nodiscard]] constexpr bool contains(StringView sub) const noexcept {
-        return indexOf(sub).isSome();
+        return index_of(sub).is_some();
     }
 
     [[nodiscard]] constexpr bool contains(char c) const noexcept {
-        return indexOf(c).isSome();
+        return index_of(c).is_some();
     }
 
     // Search
 
-    [[nodiscard]] constexpr auto indexOf(char c) const noexcept -> Option<usize> {
+    [[nodiscard]] constexpr auto index_of(char c) const noexcept -> Option<usize> {
         for (usize i = 0; i < this->length(); i += 1) {
             if ((*this)[i] == c) {
                 return some(i);
@@ -115,7 +115,7 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
         return none;
     }
 
-    [[nodiscard]] constexpr auto lastIndexOf(char c) const noexcept -> Option<usize> {
+    [[nodiscard]] constexpr auto last_index_of(char c) const noexcept -> Option<usize> {
         for (usize i = this->length(); i > 0; i -= 1) {
             if ((*this)[i - 1] == c) {
                 return some(i - 1);
@@ -125,7 +125,7 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
         return none;
     }
 
-    [[nodiscard]] constexpr auto indexOf(StringView sub) const noexcept -> Option<usize> {
+    [[nodiscard]] constexpr auto index_of(StringView sub) const noexcept -> Option<usize> {
         if (sub.empty() or sub.length() > this->length()) {
             return none;
         }
@@ -147,7 +147,7 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
         return none;
     }
 
-    [[nodiscard]] constexpr auto lastIndexOf(StringView sub) const noexcept -> Option<usize> {
+    [[nodiscard]] constexpr auto last_index_of(StringView sub) const noexcept -> Option<usize> {
         if (sub.empty() or sub.length() > this->length()) {
             return none;
         }
@@ -171,12 +171,12 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
 
     // Remove prefix/suffix
 
-    [[nodiscard]] constexpr StringView removePrefix(StringView prefix) const noexcept {
-        return startsWith(prefix) ? StringView{data() + prefix.length(), this->length() - prefix.length()} : *this;
+    [[nodiscard]] constexpr StringView remove_prefix(StringView prefix) const noexcept {
+        return starts_with(prefix) ? StringView{data() + prefix.length(), this->length() - prefix.length()} : *this;
     }
 
-    [[nodiscard]] constexpr StringView removeSuffix(StringView suffix) const noexcept {
-        return endsWith(suffix) ? StringView{data(), this->length() - suffix.length()} : *this;
+    [[nodiscard]] constexpr StringView remove_suffix(StringView suffix) const noexcept {
+        return ends_with(suffix) ? StringView{data(), this->length() - suffix.length()} : *this;
     }
 
     // Split
@@ -215,11 +215,11 @@ struct StringView : internal::StringViewBase, mixin::Equatable<StringView> {
     }
 
 private:
-    [[nodiscard]] static constexpr bool isWhitespace(char c) noexcept {
+    [[nodiscard]] static constexpr bool is_whitespace(char c) noexcept {
         return c == ' ' or c == '\t' or c == '\n' or c == '\r' or c == '\v' or c == '\f';
     }
 
-    [[nodiscard]] static constexpr usize cStringLength(char const *str) noexcept {
+    [[nodiscard]] static constexpr usize c_string_length(char const *str) noexcept {
         usize len = 0;
 
         while (str[len] != '\0') {
@@ -230,7 +230,7 @@ private:
     }
 
     KF_IMPL_EQUATABLE(StringView);
-    constexpr bool isEqualsImpl(StringView const &other) const noexcept {
+    constexpr bool is_equals_impl(StringView const &other) const noexcept {
         if (this->length() == other.length()) {
 
             for (usize i = 0; i < this->length(); i += 1) {

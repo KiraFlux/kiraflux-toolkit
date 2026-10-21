@@ -23,7 +23,7 @@ template<typename Impl> struct DefaultResettable :
 {
 private:
     KF_IMPL_RESETTABLE(DefaultResettable<Impl>);
-    constexpr void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         *static_cast<Impl *>(this) = Impl{};
     }
 };

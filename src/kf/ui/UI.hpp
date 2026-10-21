@@ -93,26 +93,26 @@ template<implements<UiTraitsTag> U> struct UI :
 
     /// @brief Set active page
     /// @param page Page to make active (must remain valid)
-    void activePage(Page &page) noexcept {
-        if (_active_page.isSome()) {
-            _active_page.unwrap().onExit();
+    void active_page(Page &page) noexcept {
+        if (_active_page.is_some()) {
+            _active_page.unwrap().on_exit();
         }
-        page.onEntry();
-        _active_page = someRef(page);
+        page.on_entry();
+        _active_page = some_ref(page);
     }
 
     /// @brief Requests a UI redraw on the next poll cycle
-    void requestRender() noexcept {
-        _renderer.requestRender();
+    void request_render() noexcept {
+        _renderer.request_render();
     }
 
     /// @brief Get readonly access to active page
-    constexpr auto activePage() const noexcept -> kf::Option<Page &> {
+    constexpr auto active_page() const noexcept -> kf::Option<Page &> {
         return _active_page;
     }
 
     /// @brief Add event to processing queue
-    void addEvent(typename Traits::EventImpl event) noexcept {
+    void add_event(typename Traits::EventImpl event) noexcept {
         (void) _events.write(event);// TODO: return
     }
 
@@ -125,13 +125,13 @@ private:
         }
 
         /// @brief Set target page as active on click
-        Request onClick() noexcept override {
-            _target._ui.activePage(_target);
+        Request on_click() noexcept override {
+            _target._ui.active_page(_target);
 
             return Request::Redraw;
         }
 
-        void doRender(typename Traits::RendererImpl &render) const noexcept override {
+        void do_render(typename Traits::RendererImpl &render) const noexcept override {
             render.decoration(Decoration::LongArrowRight);
             render.decoration(Decoration::Space);
             render.value(_target.label());
@@ -158,22 +158,22 @@ public:
             _ui{ui}, _layout{layout} {}
 
         /// @brief Build page content
-        /// @note Not for direct call. Use `Page::requestBuild()`
+        /// @note Not for direct call. Use `Page::request_build()`
         [[nodiscard]] virtual WidgetsView build() noexcept = 0;
 
         /// @brief Page behavior on entry
-        virtual void onEntry() noexcept {}
+        virtual void on_entry() noexcept {}
 
         /// @brief Page behavior on leave
-        virtual void onExit() noexcept {}
+        virtual void on_exit() noexcept {}
 
     protected:
         /// @brief Page behavior on UI polling
-        virtual void onPoll(units::Milliseconds now) noexcept {}
+        virtual void on_poll(units::Milliseconds now) noexcept {}
 
     public:
         /// @brief Request Page content build
-        void requestBuild() noexcept {
+        void request_build() noexcept {
             _build_requested = true;
         }
 
@@ -193,15 +193,15 @@ public:
         }
 
         /// @brief Get selected widget
-        [[nodiscard]] constexpr auto selectedWidget() const noexcept -> Option<Widget const &> {
-            return _widgets.empty() ? none : someRef<Widget const &>(*_widgets[_cursor]);
+        [[nodiscard]] constexpr auto selected_widget() const noexcept -> Option<Widget const &> {
+            return _widgets.empty() ? none : some_ref<Widget const &>(*_widgets[_cursor]);
         }
 
         /// @brief Render page content to display.
         /// @param render Renderer instance.
         /// @note Handles cursor positioning and widget focus.
         void render(typename Traits::RendererImpl &render) noexcept {
-            usize const available = render.beginPage(this->label(), _layout);
+            usize const available = render.begin_page(this->label(), _layout);
 
             if (_widgets.empty()) {
                 // TODO: render placeholder page content
@@ -220,12 +220,12 @@ public:
                 }
             }
 
-            render.endPage();
+            render.end_page();
         }
 
         /// @brief Add event to processing queue
         /// @param event The event to be processed
-        Request onEvent(typename Traits::EventImpl event) noexcept {
+        Request on_event(typename Traits::EventImpl event) noexcept {
             using Kind = typename Traits::EventImpl::Kind;
 
             if (_widgets.empty()) {
@@ -236,17 +236,19 @@ public:
 
             switch (event.kind()) {
                 case Kind::PageCursorMove: {
-                    return moveCursor(event.value());
+                    return move_cursor(event.value());
                 }
                 case Kind::WidgetClick: {
                     if (active_widget.enabled()) {
-                        return active_widget.onClick();
+                        return active_widget.on_click();
                     }
+                    break;
                 }
                 case Kind::WidgetValue: {
                     if (active_widget.enabled()) {
-                        return active_widget.onEventValue(event.value());
+                        return active_widget.on_event_value(event.value());
                     }
+                    break;
                 }
             }
 
@@ -275,7 +277,7 @@ public:
 
         /// @brief Move cursor within page bounds
         /// @param delta Cursor movement delta (positive/negative)
-        [[nodiscard]] Request moveCursor(isize delta) noexcept {
+        [[nodiscard]] Request move_cursor(isize delta) noexcept {
             auto const n = _widgets.length();
             if (n > 1) {
                 _cursor = (_cursor + delta + n) % n;
@@ -286,8 +288,8 @@ public:
         }
 
         KF_IMPL_POLL(Page);
-        void pollImpl(units::Milliseconds now) noexcept {
-            onPoll(now);
+        void poll_impl(units::Milliseconds now) noexcept {
+            on_poll(now);
 
             if (_build_requested) {
                 _build_requested = false;
@@ -297,12 +299,12 @@ public:
                 if (new_widgets.length() == _widgets.length()) {
                     for (auto i = 0u; i < _widgets.length(); i += 1) {
                         if (new_widgets[i] != _widgets[i]) {
-                            _ui.requestRender();
+                            _ui.request_render();
                             break;
                         }
                     }
                 } else {
-                    _ui.requestRender();
+                    _ui.request_render();
                 }
 
                 _widgets = new_widgets;
@@ -317,8 +319,8 @@ private:
     Option<Page &> _active_page{none};        ///< Currently active page for rendering
 
     KF_IMPL_POLL(Self);
-    void pollImpl(units::Milliseconds now) noexcept {
-        if (_active_page.isNone()) { return; }
+    void poll_impl(units::Milliseconds now) noexcept {
+        if (_active_page.is_none()) { return; }
 
         if (not _events.empty()) {
             constexpr usize max_events_per_poll{20};
@@ -327,22 +329,22 @@ private:
             while (not _events.empty() and events_processed < max_events_per_poll) {
                 auto const event = _events.read();
 
-                if (event.isNone()) {
+                if (event.is_none()) {
                     break;
                 }
 
-                auto const request = _active_page.unwrap().onEvent(event.unwrap());
+                auto const request = _active_page.unwrap().on_event(event.unwrap());
 
                 switch (request) {
                     case Request::Nothing:
                         break;
 
                     case Request::Redraw:
-                        _renderer.requestRender();
+                        _renderer.request_render();
                         break;
 
                     case Request::Rebuild:
-                        _active_page.unwrap().requestBuild();
+                        _active_page.unwrap().request_build();
                         break;
                 }
 
@@ -352,10 +354,10 @@ private:
 
         _active_page.unwrap().poll(now);
 
-        if (_renderer.renderRequested()) {
-            _renderer.beginFrame();
+        if (_renderer.render_requested()) {
+            _renderer.begin_frame();
             _active_page.unwrap().render(_renderer);
-            _renderer.endFrame();
+            _renderer.end_frame();
         }
     }
 };

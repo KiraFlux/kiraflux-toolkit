@@ -27,11 +27,11 @@ private:
 
     KF_IMPL_SENSOR_DRIVER(Self, units::Millimeters, void);
 
-    void initImpl() noexcept {
+    void init_impl() noexcept {
         _adc_input.init();
     }
 
-    units::Millimeters readImpl() noexcept {
+    units::Millimeters read_impl() noexcept {
         // correct calculus only with 10-bit ADC resolution
         // TODO: generalize formula
         return 65535.0F / units::Millimeters(_adc_input.read());

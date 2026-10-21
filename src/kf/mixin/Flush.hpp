@@ -12,12 +12,12 @@ namespace kf::mixin {
 struct FlushTag {};
 
 /// @brief Adds `flush()` to force transmission of buffered data.
-/// @tparam Impl Flush implementation class with `void flushImpl() noexcept` method
+/// @tparam Impl Flush implementation class with `void flush_impl() noexcept` method
 template<typename Impl> struct Flush : FlushTag {
 
     /// @brief Flush
     void flush() noexcept {
-        static_cast<Impl *>(this)->flushImpl();
+        static_cast<Impl *>(this)->flush_impl();
     }
 };
 
