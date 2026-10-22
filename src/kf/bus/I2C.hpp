@@ -275,7 +275,7 @@ private:
 
     KF_IMPL_BUS(Self, Error);
 
-    auto initImpl() noexcept -> Result<void, Error> {
+    auto init_impl() noexcept -> Result<void, Error> {
 
         if (not _wire.begin(uncast(this->config().gpio_num_sda), uncast(this->config().gpio_num_scl))) {
             return Error::create(Error::BeginFailed);
@@ -355,7 +355,7 @@ struct IicBusImpl : IicBusBase<IicBusImpl> {
 private:
     KF_IMPL_BUS(Self, Error);
 
-    auto initImpl() noexcept -> Result<void, Error> {
+    auto init_impl() noexcept -> Result<void, Error> {
         return ok();
     }
 

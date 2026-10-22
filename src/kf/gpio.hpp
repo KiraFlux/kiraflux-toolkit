@@ -201,7 +201,7 @@ using enum GpioNumber;
 template<typename Impl, typename InitResult = void> struct GPIO :
 
     mixin::NonCopyable,
-    mixin::Initable<Impl, InitResult()>
+    mixin::Initable<Impl, InitResult>
 
 {
     explicit constexpr GPIO(GpioNumber gpio_num) noexcept :
@@ -216,7 +216,7 @@ private:
     GpioNumber const _gpio_num;
 };
 
-#define KF_IMPL_GPIO(__impl__, __init_result__) KF_IMPL_INITABLE(__impl__, __init_result__())
+#define KF_IMPL_GPIO(...) KF_IMPL_INITABLE(__VA_ARGS__)
 
 /// @brief Digital input pin with configurable pull-up/down and interrupt support
 /// @note The pin must be initialized with `init()` before use.

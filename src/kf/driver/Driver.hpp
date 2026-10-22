@@ -21,10 +21,10 @@ template<typename Impl, typename InitResult> struct Driver :
 
     DriverTag,
     mixin::NonCopyable,
-    mixin::Initable<Impl, InitResult()>
+    mixin::Initable<Impl, InitResult>
 
 {};
 
 }// namespace kf::driver
 
-#define KF_IMPL_DRIVER(__impl__, ...) KF_IMPL_INITABLE(__impl__, __VA_ARGS__())
+#define KF_IMPL_DRIVER(...) KF_IMPL_INITABLE(__VA_ARGS__)

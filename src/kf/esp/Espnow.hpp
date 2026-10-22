@@ -94,7 +94,7 @@ struct Espnow final :
 
     mixin::Singleton<Espnow>,
     mixin::MacAddressed,
-    mixin::Initable<Espnow, Result<void, internal::EspnowError>()>,
+    mixin::Initable<Espnow, Result<void, internal::EspnowError>>,
     mixin::Quitable<Espnow>,
     mixin::Callbacked<void(MacAddress const &, BytesView)>
 
@@ -234,7 +234,7 @@ private:
         Espnow::instance().invoke(source_mac_address, BytesView{data, static_cast<usize>(size)});
     }
 
-    KF_IMPL_INITABLE(Espnow, VoidResult());
+    KF_IMPL_INITABLE(Espnow, VoidResult);
     VoidResult init_impl() noexcept {
         esp_err_t e;
 

@@ -13,27 +13,23 @@ namespace kf::mixin {
 
 struct InitableTag {};
 
-/// @brief CRTP mixin that adds an `init(Args...)` method forwarding to `init_impl(Args...)`
-/// @tparam Impl       Implementation class (must implement `init_impl(Args...)`)
-/// @tparam Signature  Function signature `R(Args...)` - return type and arguments
-template<typename Impl, typename Signature> struct Initable;
+/// @brief CRTP mixin that adds an `init` method forwarding to `init_impl`
+/// @tparam Impl       Implementation class (must implement `init_impl`)
+/// @tparam R          return type
+template<typename Impl, typename R> struct Initable : InitableTag {
 
-template<typename Impl, typename... Args> struct Initable<Impl, void(Args...)> : InitableTag {
-
-    /// @brief Initializes the object with given arguments
-    /// @param args Arguments forwarded to `init_impl`
-    template<typename... InitArgs> void init(InitArgs &&...args) noexcept {
-        static_cast<Impl *>(this)->init_impl(std::forward<InitArgs>(args)...);
+    /// @brief Initializes the object
+    /// @return Value returned by `init_impl`
+    [[nodiscard]] R init() noexcept {
+        return static_cast<Impl *>(this)->init_impl();
     }
 };
 
-template<typename Impl, typename R, typename... Args> struct Initable<Impl, R(Args...)> : InitableTag {
+template<typename Impl> struct Initable<Impl, void> : InitableTag {
 
-    /// @brief Initializes the object with given arguments
-    /// @param args Arguments forwarded to `init_impl`
-    /// @return Value returned by `init_impl`
-    template<typename... InitArgs> [[nodiscard]] R init(InitArgs &&...args) noexcept {
-        return static_cast<Impl *>(this)->init_impl(std::forward<InitArgs>(args)...);
+    /// @brief Initializes the object
+    void init() noexcept {
+        static_cast<Impl *>(this)->init_impl();
     }
 };
 

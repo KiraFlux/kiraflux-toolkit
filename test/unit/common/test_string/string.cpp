@@ -11,7 +11,7 @@ void test() {
 
     kf::String my_string{{buffer}};
 
-    my_string.append_format("Hello {}", "World");
+    (void) my_string.append_format("Hello {}", "World");
 }
 
 void run_tests() {

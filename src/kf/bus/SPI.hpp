@@ -86,7 +86,7 @@ struct SpiBusConfig final {
 template<typename Impl> struct SpiNodeBase :
 
     bus::BusNode<Impl, SpiError>,
-    mixin::Initable<Impl, void()>,
+    mixin::Initable<Impl, void>,
     mixin::Configured<SpiNodeConfig>
 
 {
@@ -191,7 +191,7 @@ private:
         write_bytes(reinterpret_cast<u8 const *>(&packet), sizeof(decltype(packet)));
     }
 
-    KF_IMPL_INITABLE(Self, void());
+    KF_IMPL_INITABLE(Self, void);
     void init_impl() noexcept {
         auto const pin = static_cast<u8>(this->config().gpio_num_cs);
         pinMode(pin, OUTPUT);
@@ -295,7 +295,7 @@ template<typename B> struct SpiNodeImpl : SpiNodeBase<SpiNodeImpl<B>> {
         SpiNodeBase<Self>{config} {}
 
 private:
-    KF_IMPL_INITABLE(Self, void());
+    KF_IMPL_INITABLE(Self, void);
     void init_impl() noexcept {}
 
     KF_IMPL_BUS_NODE(Self, Error);

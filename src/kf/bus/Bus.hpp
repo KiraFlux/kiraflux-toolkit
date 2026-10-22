@@ -41,7 +41,7 @@ template<typename Impl, implements<BusNodeTag> NodeImpl, typename ErrorImpl> str
 
     BusTag,
     mixin::NonCopyable,
-    mixin::Initable<Impl, Result<void, ErrorImpl>()>,
+    mixin::Initable<Impl, Result<void, ErrorImpl>>,
     mixin::Quitable<Impl>
 
 {
@@ -56,6 +56,6 @@ template<typename Impl, implements<BusNodeTag> NodeImpl, typename ErrorImpl> str
     KF_IMPL_BINARY_READABLE(__impl__, __error_impl__); \
     KF_IMPL_BINARY_WRITABLE(__impl__, ::kf::Result<void, __error_impl__>)
 
-#define KF_IMPL_BUS(__impl__, __error_impl__)                         \
-    KF_IMPL_INITABLE(__impl__, ::kf::Result<void, __error_impl__>()); \
+#define KF_IMPL_BUS(__impl__, __error_impl__)                       \
+    KF_IMPL_INITABLE(__impl__, ::kf::Result<void, __error_impl__>); \
     KF_IMPL_QUITABLE(__impl__)

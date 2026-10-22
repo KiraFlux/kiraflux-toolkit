@@ -137,7 +137,7 @@ using AppIoWriteResult = Result<void, AppIoError>;
 struct AppIO :
 
     mixin::NonCopyable,
-    mixin::Initable<AppIO, void()>,
+    mixin::Initable<AppIO, void>,
     mixin::Quitable<AppIO>,
 
     mixin::BinaryReadable<AppIO, AppIoError>,
@@ -191,7 +191,7 @@ private:
         (void) ::sigaction(SIGQUIT, &sa, nullptr);
     }
 
-    KF_IMPL_INITABLE(Self, void());
+    KF_IMPL_INITABLE(Self, void);
     void init_impl() noexcept {
         if (::isatty(STDIN_FILENO)) {
             // Save original terminal settings

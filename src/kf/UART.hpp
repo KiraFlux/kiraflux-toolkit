@@ -51,7 +51,7 @@ using UartWriteResult = Result<void, UartError>;
 template<typename Impl> struct UartBase :
 
     mixin::NonCopyable,
-    mixin::Initable<Impl, void()>,
+    mixin::Initable<Impl, void>,
     mixin::Quitable<Impl>,
 
     mixin::BinaryReadable<Impl, UartError>,
@@ -95,7 +95,7 @@ private:
         _rx_gpio_num,
         _tx_gpio_num;
 
-    KF_IMPL_INITABLE(Self, void());
+    KF_IMPL_INITABLE(Self, void);
     void init_impl() noexcept {
 
         if (this->config().rx_buffer_length.is_some()) {
@@ -233,7 +233,7 @@ struct UART : internal::UartBase<UART> {
     }
 
 private:
-    KF_IMPL_INITABLE(Self, void());
+    KF_IMPL_INITABLE(Self, void);
     void init_impl() noexcept {}
 
     KF_IMPL_QUITABLE(Self);

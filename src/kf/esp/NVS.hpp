@@ -81,7 +81,7 @@ namespace kf::esp {
 struct NVS final :
 
     mixin::NonCopyable,
-    mixin::Initable<NVS, Result<void, internal::NvsError>()>,
+    mixin::Initable<NVS, Result<void, internal::NvsError>>,
     mixin::Quitable<NVS>
 
 {
@@ -136,7 +136,7 @@ private:
         }
     }
 
-    KF_IMPL_INITABLE(NVS, Result<void, Error>());
+    KF_IMPL_INITABLE(NVS, Result<void, Error>);
     auto init_impl() noexcept -> Result<void, Error> {
         if (_handle.is_some()) {
             // Already initialised
