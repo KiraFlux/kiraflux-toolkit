@@ -1,5 +1,9 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    mixin/Singleton.hpp
+/// @brief   Thread‑safe Meyer's singleton via CRTP.
 
 #pragma once
 
@@ -11,6 +15,7 @@ namespace kf::mixin {
 /// @tparam Impl Type to be instantiated as singleton
 /// @note Uses Meyer's singleton (static local variable) for thread safety
 template<typename Impl> struct Singleton : kf::mixin::NonCopyable {
+
     /// @brief Get reference to the single instance
     /// @return Reference to the unique instance of type Impl
     /// @note Instance is created on first call (lazy initialization)

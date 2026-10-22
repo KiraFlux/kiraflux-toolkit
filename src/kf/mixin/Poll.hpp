@@ -1,0 +1,29 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    mixin/Poll.hpp
+/// @brief   Adds poll(now) with a timestamp argument.
+
+#pragma once
+
+#include "kf/units.hpp"
+
+namespace kf::mixin {
+
+struct PollTag {};
+
+/// @brief CRTP mixin poll (Periodic polling)
+/// @tparam Impl The derived class that must implement `poll_impl(units::Milliseconds)`.
+template<typename Impl> struct Poll : PollTag {
+
+    /// @brief Performs time‑aware polling.
+    /// @param now Current timestamp (milliseconds).
+    void poll(units::Milliseconds now) noexcept {
+        static_cast<Impl *>(this)->poll_impl(now);
+    }
+};
+
+}// namespace kf::mixin
+
+#define KF_IMPL_POLL(...) friend struct ::kf::mixin::Poll<__VA_ARGS__>

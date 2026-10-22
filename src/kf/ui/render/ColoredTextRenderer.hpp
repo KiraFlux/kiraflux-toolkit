@@ -1,20 +1,24 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    ui/render/ColoredTextRenderer.hpp
+/// @brief   Text renderer with semantic colours (gfx::Canvas codes).
 
 #pragma once
 
 #include "kf/Slice.hpp"
-#include "kf/mixin/Configurable.hpp"
+#include "kf/mixin/Configured.hpp"
+#include "kf/mixin/DefaultResettable.hpp"
 
 #include "kf/ui/Color.hpp"
 #include "kf/ui/Layout.hpp"
-#include "kf/ui/render/PlainTextRenderer.hpp"
 #include "kf/ui/render/Renderer.hpp"
+#include "kf/ui/render/TextualRenderer.hpp"
 
 namespace kf::internal {
 
-struct ColoredTextRendererConfig final {
-    using TextConfig = ui::render::PlainTextRenderer::Config;
+struct ColoredTextRendererConfig : mixin::DefaultResettable<ColoredTextRendererConfig> {
 
     struct Palette final {
 
@@ -40,63 +44,69 @@ struct ColoredTextRendererConfig final {
 
         Item normal, primary, secondary, success, warning, error, info, disabled, highlight;
 
-        constexpr Item get(ui::Color color) const noexcept {
-            return reinterpret_cast<const Item *>(this)[static_cast<char>(color)];
+        [[nodiscard]] constexpr Item get(ui::Color color) const noexcept {
+            switch (color) {
+                case ui::Color::Normal: return normal;
+                case ui::Color::Primary: return primary;
+                case ui::Color::Secondary: return secondary;
+                case ui::Color::Success: return success;
+                case ui::Color::Warning: return warning;
+                case ui::Color::Error: return error;// same value as ui::Color::Danger
+                case ui::Color::Info: return info;
+                case ui::Color::Disabled: return disabled;
+                case ui::Color::Highlight: return highlight;
+                default: return normal;
+            }
         }
     };
 
-    TextConfig text;
-    Palette normal_foreground_palette, focused_foreground_palette, normal_background_palette, focused_background_palette;
+    ui::render::TextualRenderer::Config textual{};
 
-    [[nodiscard]] static constexpr auto defaults() noexcept {
-        return ColoredTextRendererConfig{
-            .text = TextConfig::defaults(),
-            .normal_foreground_palette = {
-                .normal = Palette::White,
-                .primary = Palette::LightBlue,
-                .secondary = Palette::LightGray,
-                .success = Palette::LightGreen,
-                .warning = Palette::LightYellow,
-                .error = Palette::LightRed,
-                .info = Palette::LightCyan,
-                .disabled = Palette::DarkGray,
-                .highlight = Palette::LightPurple,
-            },
-            .focused_foreground_palette = {
-                .normal = Palette::Black,
-                .primary = Palette::Black,
-                .secondary = Palette::Black,
-                .success = Palette::Black,
-                .warning = Palette::Black,
-                .error = Palette::Black,
-                .info = Palette::Black,
-                .disabled = Palette::LightGray,
-                .highlight = Palette::DarkPurple,
-            },
-            .normal_background_palette = {
-                .normal = Palette::Black,
-                .primary = Palette::DarkBlue,
-                .secondary = Palette::DarkGray,
-                .success = Palette::DarkGreen,
-                .warning = Palette::DarkYellow,
-                .error = Palette::DarkRed,
-                .info = Palette::DarkCyan,
-                .disabled = Palette::DarkGray,
-                .highlight = Palette::DarkPurple,
-            },
-            .focused_background_palette = {
-                .normal = Palette::White,
-                .primary = Palette::LightBlue,
-                .secondary = Palette::LightGray,
-                .success = Palette::LightGreen,
-                .warning = Palette::LightYellow,
-                .error = Palette::LightRed,
-                .info = Palette::LightCyan,
-                .disabled = Palette::LightGray,
-                .highlight = Palette::LightPurple,
-            },
+    Palette
+        normal_foreground_palette{
+            .normal = Palette::White,
+            .primary = Palette::LightBlue,
+            .secondary = Palette::LightGray,
+            .success = Palette::LightGreen,
+            .warning = Palette::LightYellow,
+            .error = Palette::LightRed,
+            .info = Palette::LightCyan,
+            .disabled = Palette::DarkGray,
+            .highlight = Palette::LightPurple,
+        },
+        focused_foreground_palette{
+            .normal = Palette::Black,
+            .primary = Palette::Black,
+            .secondary = Palette::Black,
+            .success = Palette::Black,
+            .warning = Palette::Black,
+            .error = Palette::Black,
+            .info = Palette::Black,
+            .disabled = Palette::LightGray,
+            .highlight = Palette::DarkPurple,
+        },
+        normal_background_palette{
+            .normal = Palette::Black,
+            .primary = Palette::DarkBlue,
+            .secondary = Palette::DarkGray,
+            .success = Palette::DarkGreen,
+            .warning = Palette::DarkYellow,
+            .error = Palette::DarkRed,
+            .info = Palette::DarkCyan,
+            .disabled = Palette::DarkGray,
+            .highlight = Palette::DarkPurple,
+        },
+        focused_background_palette{
+            .normal = Palette::White,
+            .primary = Palette::LightBlue,
+            .secondary = Palette::LightGray,
+            .success = Palette::LightGreen,
+            .warning = Palette::LightYellow,
+            .error = Palette::LightRed,
+            .info = Palette::LightCyan,
+            .disabled = Palette::LightGray,
+            .highlight = Palette::LightPurple,
         };
-    }
 };
 
 };// namespace kf::internal
@@ -106,102 +116,112 @@ namespace kf::ui::render {
 struct ColoredTextRenderer :
 
     Renderer<ColoredTextRenderer>,
-    mixin::Configurable<internal::ColoredTextRendererConfig>
+    mixin::Configured<internal::ColoredTextRendererConfig>
 
 {
-    using Wrapped = PlainTextRenderer;
+    using Wrapped = TextualRenderer;
     using Config = internal::ColoredTextRendererConfig;
 
-    explicit constexpr ColoredTextRenderer(const Config &config, Slice<char> source) noexcept :
-        mixin::Configurable<Config>{config}, _wrapped{config.text, source} {}
+    explicit constexpr ColoredTextRenderer(Config const &config, Slice<char> source) noexcept :
+        mixin::Configured<Config>{config}, _wrapped{config.textual, source} {}
 
-    template<typename F> void callback(F &&callback) noexcept {
-        _wrapped.callback(std::forward<F>(callback));
+    void callback(auto &&callback) noexcept {
+        _wrapped.callback(std::forward<decltype(callback)>(callback));
     }
 
 private:
     Wrapped _wrapped;
     bool _focus_active{false};
 
-    void writeColor(Color color, char base_code, const Config::Palette &palette) noexcept {
-        _wrapped.writeChar(base_code + static_cast<char>(palette.get(color)));
+    void write_color(Color color, char base_code, Config::Palette const &palette) noexcept {
+        _wrapped.write_char(base_code + static_cast<char>(palette.get(color)));
     }
 
-    void writeForegroundColor(Color color, const Config::Palette &palette) noexcept {
-        writeColor(color, '\xF0', palette);
+    void write_foreground_color(Color color, Config::Palette const &palette) noexcept {
+        write_color(color, '\xF0', palette);
     }
 
-    void writeBackgroundColor(Color color, const Config::Palette &palette) noexcept {
-        writeColor(color, '\xB0', palette);
+    void write_background_color(Color color, Config::Palette const &palette) noexcept {
+        write_color(color, '\xB0', palette);
     }
 
-    KF_IMPL(Renderer<ColoredTextRenderer>);
+    KF_IMPL_RENDERER(ColoredTextRenderer);
 
     // control
 
-    void beginFrameImpl() noexcept {
-        _wrapped.beginFrame();
+    void begin_frame_impl() noexcept {
+        _wrapped.begin_frame();
     }
 
-    void endFrameImpl() noexcept {
-        _wrapped.endFrame();
+    void end_frame_impl() noexcept {
+        _wrapped.end_frame();
     }
 
-    usize beginPageImpl(memory::StringView title, Layout layout) noexcept {
-        writeForegroundColor(Color::Normal, this->config().focused_foreground_palette);
-        writeBackgroundColor(Color::Primary, this->config().focused_background_palette);
-        return _wrapped.beginPage(title, layout);
+    usize begin_page_impl(StringView title, Layout layout) noexcept {
+        write_foreground_color(Color::Normal, this->config().focused_foreground_palette);
+        write_background_color(Color::Primary, this->config().focused_background_palette);
+        return _wrapped.begin_page(title, layout);
     }
 
-    void endPageImpl() noexcept {
-        _wrapped.endPage();
+    void end_page_impl() noexcept {
+        _wrapped.end_page();
     }
 
-    void beginWidgetImpl(usize index, bool is_focused) noexcept {
+    void begin_widget_impl(usize index, bool is_focused, usize offset) noexcept {
         _focus_active = is_focused;
+
+        if (_wrapped.layout() == Layout::Vertical) {
+            _wrapped.fill_space(offset * this->config().textual.offset_size);
+        }
     }
 
-    void endWidgetImpl() noexcept {
-        if (not _focus_active) { _wrapped.writeChar('\x80'); }
-        _wrapped.endWidget();
+    void end_widget_impl() noexcept {
+        if (not _focus_active) { _wrapped.write_char('\x80'); }
+        _wrapped.end_widget();
         _focus_active = false;
     }
 
-    void beginBlockImpl(Block block_type) noexcept {
-        _wrapped.beginBlock(block_type);
+    void begin_block_impl(Block block_type) noexcept {
+        _wrapped.begin_block(block_type);
     }
 
-    void endBlockImpl(Block block_type) noexcept {
-        _wrapped.endBlock(block_type);
+    void end_block_impl(Block block_type) noexcept {
+        _wrapped.end_block(block_type);
     }
 
-    void decorationImpl(Decoration decoration) noexcept {
+    void decoration_impl(Decoration decoration) noexcept {
         _wrapped.decoration(decoration);
     }
 
-    void checkboxImpl(bool enabled) noexcept {
+    void checkbox_impl(bool enabled) noexcept {
         this->background(enabled ? Color::Primary : Color::Secondary);
         _wrapped.checkbox(enabled);
     }
 
-    void sliderImpl(f32 fill) noexcept {
+    void slider_impl(f32 fill) noexcept {
         _wrapped.slider(fill);
     }
 
     // value
 
-    template<typename T> void valueImpl(const T &value) {
+    void value_impl(auto const &value) {
         _wrapped.value(value);
     }
 
     // semantic color
 
-    void setForegroundImpl(Color color) noexcept {
-        writeForegroundColor(color, _focus_active ? this->config().focused_foreground_palette : this->config().normal_foreground_palette);
+    void set_foreground_impl(Color color) noexcept {
+        write_foreground_color(color, _focus_active ? this->config().focused_foreground_palette : this->config().normal_foreground_palette);
     }
 
-    void setBackgroundImpl(Color color) noexcept {
-        writeBackgroundColor(color, _focus_active ? this->config().focused_background_palette : this->config().normal_background_palette);
+    void set_background_impl(Color color) noexcept {
+        write_background_color(color, _focus_active ? this->config().focused_background_palette : this->config().normal_background_palette);
+    }
+
+    // Properties
+
+    constexpr Layout get_layout_impl() const noexcept {
+        return _wrapped.layout();
     }
 };
 

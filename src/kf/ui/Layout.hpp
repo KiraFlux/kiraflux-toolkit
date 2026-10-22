@@ -1,5 +1,9 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    ui/Layout.hpp
+/// @brief   Enum for UI layout hints (vertical, horizontal, grid).
 
 #pragma once
 
@@ -22,7 +26,10 @@ enum class Layout : char {
     Horizontal,
 
     /// @brief Grid with N columns and M rows (up to N*M widgets)
-    Grid2x2, Grid3x2, Grid2x3, Grid3x3 
+    Grid2x2,
+    Grid3x2,
+    Grid2x3,
+    Grid3x3
 };
 
 }// namespace kf::ui

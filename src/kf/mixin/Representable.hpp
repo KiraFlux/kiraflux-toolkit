@@ -1,0 +1,28 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    mixin/Representable.hpp
+/// @brief   Adds repr() method for string representation.
+
+#pragma once
+
+namespace kf::mixin {
+
+struct RepresentableTag {};
+
+/// @brief CRTP mixin that adds a `repr()` method
+/// @tparam Impl       Implementation class (must implement `ReprType repr_impl() const noexcept`)
+/// @tparam ReprType Return type of `repr()`
+template<typename Impl, typename ReprType> struct Representable : RepresentableTag {
+
+    /// @brief Get string representation of the object
+    /// @return String of type `ReprType`
+    [[nodiscard]] constexpr ReprType repr() const noexcept {
+        return static_cast<Impl const *>(this)->repr_impl();
+    }
+};
+
+}// namespace kf::mixin
+
+#define KF_IMPL_REPRESENTABLE(...) friend struct ::kf::mixin::Representable<__VA_ARGS__>
