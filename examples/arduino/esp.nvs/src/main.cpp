@@ -68,5 +68,5 @@ void kf::main(kf::Init &init) {
 
     // --- Cleanup ---
     // Always release NVS resources when done.
-    my_nvs.quit();
+    my_nvs.deinit();
 }

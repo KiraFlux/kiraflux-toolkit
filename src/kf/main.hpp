@@ -116,7 +116,6 @@ void loop() {}// not used
 #include "kf/mixin/Flush.hpp"
 #include "kf/mixin/Initable.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Quitable.hpp"
 #include "kf/mixin/ReadAvailable.hpp"
 #include "kf/mixin/WriteAvailable.hpp"
 
@@ -138,7 +137,6 @@ struct AppIO :
 
     mixin::NonCopyable,
     mixin::Initable<AppIO, void>,
-    mixin::Quitable<AppIO>,
 
     mixin::BinaryReadable<AppIO, AppIoError>,
     mixin::ReadAvailable<AppIO>,
@@ -224,8 +222,7 @@ private:
         std::ios_base::sync_with_stdio(false);
     }
 
-    KF_IMPL_QUITABLE(Self);
-    void quit_impl() noexcept {
+    void deinit_impl() noexcept {
         restore_terminal();
     }
 
@@ -350,7 +347,7 @@ KF_PLATFORM_APP_FUNCTION_DECLARATION {
 
     main(init);
 
-    init.io.quit();
+    init.io.deinit();
 
     return KF_PLATFORM_APP_QUIT();
 }

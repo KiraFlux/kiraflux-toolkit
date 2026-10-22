@@ -204,7 +204,7 @@ CRTP mixins in `kf/mixin/`. Each provides a `KF_IMPL_*` macro; place it in the `
 
 | Group                 | Mixins                                                                                        | What it adds                                      |
 | --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Type contract         | `NonCopyable`, `Initable`, `Quitable`                                                         | Copy deletion, `init()`, `quit()`                 |
+| Type contract         | `NonCopyable`, `Initable`                                                                     | Copy deletion, `init()`, `deinit()`               |
 | Type state            | `Resettable`, `DefaultResettable`, `Invariant`                                                | `reset()`, Some/None-style checks                 |
 | Scheduling            | `Poll`, `Flush`, `Drain`                                                                      | `poll(now)`, `flush()`, `drain()`                 |
 | Injected dependencies | `Configured`, `Callbacked<Args...>`, `ValueCallbacked<T>`                                     | Config reference, optional callbacks              |

@@ -14,7 +14,6 @@
 #include "kf/mixin/BinaryWritable.hpp"
 #include "kf/mixin/Initable.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Quitable.hpp"
 
 namespace kf::bus {
 
@@ -35,14 +34,13 @@ struct BusTag {};
 /// @tparam Impl Concrete bus implementation (must inherit from this class).
 /// @tparam NodeImpl Type of node that will be created by the bus (must satisfy BinaryReadable and BinaryWritable).
 /// @tparam ErrorImpl Error type used by bus operations.
-/// @note The bus implementation must provide methods `init_impl()` and `quit_impl()`.
+/// @note The bus implementation must provide methods `init_impl()` and `deinit_impl()`.
 ///       Nodes are created via `create_node` and are expected to be movable.
 template<typename Impl, implements<BusNodeTag> NodeImpl, typename ErrorImpl> struct Bus :
 
     BusTag,
     mixin::NonCopyable,
-    mixin::Initable<Impl, Result<void, ErrorImpl>>,
-    mixin::Quitable<Impl>
+    mixin::Initable<Impl, Result<void, ErrorImpl>>
 
 {
     [[nodiscard]] constexpr NodeImpl create_node(typename NodeImpl::Config const &config) noexcept {
@@ -56,6 +54,5 @@ template<typename Impl, implements<BusNodeTag> NodeImpl, typename ErrorImpl> str
     KF_IMPL_BINARY_READABLE(__impl__, __error_impl__); \
     KF_IMPL_BINARY_WRITABLE(__impl__, ::kf::Result<void, __error_impl__>)
 
-#define KF_IMPL_BUS(__impl__, __error_impl__)                       \
-    KF_IMPL_INITABLE(__impl__, ::kf::Result<void, __error_impl__>); \
-    KF_IMPL_QUITABLE(__impl__)
+#define KF_IMPL_BUS(__impl__, __error_impl__) \
+    KF_IMPL_INITABLE(__impl__, ::kf::Result<void, __error_impl__>)

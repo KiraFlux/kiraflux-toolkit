@@ -300,7 +300,7 @@ private:
         return ok();
     }
 
-    void quit_impl() noexcept {
+    void deinit_impl() noexcept {
         (void) _wire.end();// just ignore
     }
 };
@@ -359,7 +359,7 @@ private:
         return ok();
     }
 
-    void quit_impl() noexcept {}
+    void deinit_impl() noexcept {}
 };
 
 #endif

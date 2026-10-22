@@ -27,7 +27,6 @@
 #include "kf/mixin/Initable.hpp"
 #include "kf/mixin/MacAddressed.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Quitable.hpp"
 #include "kf/mixin/Representable.hpp"
 #include "kf/mixin/Singleton.hpp"
 
@@ -95,7 +94,6 @@ struct Espnow final :
     mixin::Singleton<Espnow>,
     mixin::MacAddressed,
     mixin::Initable<Espnow, Result<void, internal::EspnowError>>,
-    mixin::Quitable<Espnow>,
     mixin::Callbacked<void(MacAddress const &, BytesView)>
 
 {
@@ -248,8 +246,7 @@ private:
         return Error::from_esp_err(e);
     }
 
-    KF_IMPL_QUITABLE(Espnow);
-    void quit_impl() noexcept {
+    void deinit_impl() noexcept {
         (void) esp_now_unregister_recv_cb();
         (void) esp_now_deinit();
     }

@@ -9,14 +9,32 @@
 
 #include <utility>// std::forward
 
-namespace kf::mixin {
+namespace kf {
+
+namespace mixin {
 
 struct InitableTag {};
 
-/// @brief CRTP mixin that adds an `init` method forwarding to `init_impl`
+}// namespace mixin
+
+namespace internal {
+
+template<typename Impl> struct InitableBase : mixin::InitableTag {
+
+    /// @brief Uninitializes the object
+    void deinit() noexcept {
+        return static_cast<Impl *>(this)->deinit_impl();
+    }
+};
+
+}// namespace internal
+
+namespace mixin {
+
+/// @brief CRTP mixin that adds an `init`, 'deinit' method forwarding to `init_impl`
 /// @tparam Impl       Implementation class (must implement `init_impl`)
 /// @tparam R          return type
-template<typename Impl, typename R> struct Initable : InitableTag {
+template<typename Impl, typename R> struct Initable : internal::InitableBase<Impl> {
 
     /// @brief Initializes the object
     /// @return Value returned by `init_impl`
@@ -25,7 +43,7 @@ template<typename Impl, typename R> struct Initable : InitableTag {
     }
 };
 
-template<typename Impl> struct Initable<Impl, void> : InitableTag {
+template<typename Impl> struct Initable<Impl, void> : internal::InitableBase<Impl> {
 
     /// @brief Initializes the object
     void init() noexcept {
@@ -33,6 +51,11 @@ template<typename Impl> struct Initable<Impl, void> : InitableTag {
     }
 };
 
-}// namespace kf::mixin
+}// namespace mixin
 
-#define KF_IMPL_INITABLE(...) friend struct ::kf::mixin::Initable<__VA_ARGS__>
+}// namespace kf
+
+#define KF_IMPL_INITABLE(__impl__, ...) \
+    friend struct ::kf::mixin::Initable<__impl__, __VA_ARGS__>;\
+    friend struct ::kf::internal::InitableBase<__impl__>
+

@@ -23,7 +23,6 @@
 #include "kf/mixin/Flush.hpp"
 #include "kf/mixin/Initable.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Quitable.hpp"
 #include "kf/mixin/ReadAvailable.hpp"
 #include "kf/mixin/WriteAvailable.hpp"
 
@@ -52,7 +51,6 @@ template<typename Impl> struct UartBase :
 
     mixin::NonCopyable,
     mixin::Initable<Impl, void>,
-    mixin::Quitable<Impl>,
 
     mixin::BinaryReadable<Impl, UartError>,
     mixin::ReadAvailable<Impl>,
@@ -116,8 +114,7 @@ private:
             this->config().inverted);
     }
 
-    KF_IMPL_QUITABLE(Self);
-    void quit_impl() noexcept {
+    void deinit_impl() noexcept {
         _serial.end();
     }
 
@@ -236,8 +233,7 @@ private:
     KF_IMPL_INITABLE(Self, void);
     void init_impl() noexcept {}
 
-    KF_IMPL_QUITABLE(Self);
-    void quit_impl() noexcept {}
+    void deinit_impl() noexcept {}
 
     KF_IMPL_BINARY_READABLE(Self, Error);
 

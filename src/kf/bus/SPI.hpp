@@ -278,7 +278,7 @@ private:
         return ok();
     }
 
-    void quit_impl() noexcept {
+    void deinit_impl() noexcept {
         _spi.end();
     }
 };
@@ -337,7 +337,7 @@ private:
         return ok();
     }
 
-    void quit_impl() noexcept {}
+    void deinit_impl() noexcept {}
 };
 
 #endif

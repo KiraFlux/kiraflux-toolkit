@@ -19,7 +19,6 @@
 
 #include "kf/mixin/Initable.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Quitable.hpp"
 #include "kf/mixin/Representable.hpp"
 
 namespace kf::internal {
@@ -81,8 +80,7 @@ namespace kf::esp {
 struct NVS final :
 
     mixin::NonCopyable,
-    mixin::Initable<NVS, Result<void, internal::NvsError>>,
-    mixin::Quitable<NVS>
+    mixin::Initable<NVS, Result<void, internal::NvsError>>
 
 {
     using Error = internal::NvsError;
@@ -170,8 +168,7 @@ private:
         return ok();
     }
 
-    KF_IMPL_QUITABLE(NVS);
-    void quit_impl() noexcept {
+    void deinit_impl() noexcept {
         if (_handle.is_some()) {
             nvs_close(_handle.unwrap());
             _handle.reset();
