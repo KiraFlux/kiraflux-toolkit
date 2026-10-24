@@ -1,0 +1,42 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    filter/Filter.hpp
+/// @brief   CRTP base for single‑sample filters (calc()).
+
+#pragma once
+
+#include "kf/core.hpp"
+
+#include "kf/mixin/NonCopyable.hpp"
+#include "kf/mixin/Reset.hpp"
+
+namespace kf::filter {
+
+struct FilterTag {};
+
+/// @brief Filter static interface
+/// @tparam Impl Derived filter implementation
+/// @tparam T    Input/output type
+template<typename Impl, arithmetic T> struct Filter :
+
+    FilterTag,
+    mixin::NonCopyable,
+    mixin::Reset<Impl>
+
+{
+
+    /// @brief Updates the filter with a new sample.
+    /// @param value The new input value.
+    /// @return The filtered value after the update.
+    [[nodiscard]] T calc(T const &value) noexcept {
+        return static_cast<Impl *>(this)->calc_impl(value);
+    }
+};
+
+}// namespace kf::filter
+
+#define KF_IMPL_FILTER(__impl__, ...)                          \
+    friend struct ::kf::filter::Filter<__impl__, __VA_ARGS__>; \
+    KF_IMPL_RESETTABLE(__impl__)

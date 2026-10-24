@@ -1,0 +1,90 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    driver/actuator/PwmPositionServo.hpp
+/// @brief   PWM‑controlled servo with angle‑to‑pulse mapping and safe range.
+
+#pragma once
+
+#include "kf/gpio.hpp"
+#include "kf/math.hpp"
+#include "kf/units.hpp"
+
+#include "kf/mixin/Configured.hpp"
+
+#include "kf/driver/actuator/ActuatorDriver.hpp"
+
+namespace kf::internal {
+
+struct PwmPositionServoConfig final {
+    using AngleRange = math::Range<units::Degrees>;
+    using PulseRange = math::Range<units::Microseconds>;
+
+    gpio::PwmOutput::Config pwm;
+    AngleRange angle_range;
+    PulseRange pulse_range;
+
+    /// @brief Convert angle to pulse width using linear interpolation
+    /// @param angle Target servo angle
+    /// @return Required pulse width in microseconds
+    [[nodiscard]] constexpr units::Microseconds pulse_width_from_angle(units::Degrees angle) const noexcept {
+        return math::linear_map<i32>(angle, angle_range.start, angle_range.end, pulse_range.start, pulse_range.end);
+    }
+};
+
+}// namespace kf::internal
+
+namespace kf::driver::actuator {
+
+/// @brief PWM-controlled position servo driver for ESP32 LEDC hardware
+/// @note Converts angular positions to PWM pulse widths for standard RC servos
+struct PwmPositionServo final :
+
+    ActuatorDriver<PwmPositionServo, units::Degrees, bool>,
+    mixin::Configured<internal::PwmPositionServoConfig>
+
+{
+
+    /// @brief Configuration for PWM position servo (angle <-> pulse width mapping)
+    /// @note Contains hardware‑independent mapping and is self‑validating
+    using Config = internal::PwmPositionServoConfig;
+
+    /// @brief Construct servo with the same angle range for both mapping and safe operation
+    /// @param config Mapping between angle and pulse width
+    /// @param gpio_num PWM output gpio number
+    explicit constexpr PwmPositionServo(Config const &config, gpio::GpioNumber gpio_num) noexcept :
+        mixin::Configured<Config>{config}, _angle_safe_range{config.angle_range}, _pwm_output{config.pwm, gpio_num} {}
+
+    /// @brief Construct servo with separate safe angle range (may be narrower than config range)
+    /// @param config Mapping between angle and pulse width
+    /// @param gpio_num PWM output gpio number
+    /// @param angle_safe_range Additional clamping range for safety (e.g., to avoid mechanical limits)
+    explicit constexpr PwmPositionServo(Config const &config, gpio::GpioNumber gpio_num, Config::AngleRange angle_safe_range) noexcept :
+        mixin::Configured<Config>{config}, _angle_safe_range{angle_safe_range}, _pwm_output{config.pwm, gpio_num} {}
+
+private:
+    Config::AngleRange _angle_safe_range;///< Safe operating angle range (clamped before mapping)
+    gpio::PwmOutput _pwm_output;         ///< PWM output gpio
+
+    KF_IMPL_ACTUATOR_DRIVER(PwmPositionServo, units::Degrees, bool);
+
+    bool init_impl() noexcept {
+        return _pwm_output.init();
+    }
+
+    void deinit_impl() noexcept {
+        this->set(0);
+        _pwm_output.deinit();
+    }
+
+    void set_impl(units::Degrees angle) noexcept {
+        _pwm_output.write_pulse(this->config().pulse_width_from_angle(_angle_safe_range.clamped(angle)));
+    }
+
+    void stop_impl() noexcept {
+        _pwm_output.write(0);
+    }
+};
+
+}// namespace kf::driver::actuator

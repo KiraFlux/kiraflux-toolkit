@@ -1,9 +1,11 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 #pragma once
 
-#include "kf/primitives.hpp"
+#include "kf/core.hpp"
+#include "kf/units.hpp"
 
 #include "kf/tuner/Tuner.hpp"
 
@@ -14,20 +16,19 @@ namespace kf::tuner {
 /// @tparam T    Configuration type that will be updated after calculation.
 /// @note The derived class must provide:
 ///
-///       - `void resetImpl() noexcept`   – called when collection begins.
+///       - `void reset_impl() noexcept`   – called when collection begins.
 ///
-///       - `void pollImpl() noexcept`    – called for each sample; should process the current sample (e.g., update min/max/sum).
+///       - `void poll_impl(kf::units::Milliseconds now) noexcept`    – called for each sample; should process the current sample (e.g., update min/max/sum).
 ///
-///       - `void calculateImpl(T&) noexcept` – called after all samples are collected; updates the configuration.
+///       - `void calculate_impl(T&) noexcept` – called after all samples are collected; updates the configuration.
 ///
 /// @note This class manages a state machine (Idle -> Running -> Calculating -> Idle).
 ///          After `reset()`, the caller must repeatedly call `poll()` until `running()` returns false.
-///          The `poll()` implementation of this class will invoke the derived class's `pollImpl()`
+///          The `poll()` implementation of this class will invoke the derived class's `poll_impl()`
 ///          for each sample and, once the required number of samples is reached, transition to
-///          the Calculating state and call `calculateImpl()`.
+///          the Calculating state and call `calculate_impl()`.
 template<typename Impl, typename T> struct SampleCollectingTuner : Tuner<SampleCollectingTuner<Impl, T>> {
     using ConfigType = T;
-    using SampleCounterType = u16;
 
     enum class State : u8 {
         Idle,
@@ -36,35 +37,31 @@ template<typename Impl, typename T> struct SampleCollectingTuner : Tuner<SampleC
     };
 
     /// @brief Total number of samples to collect before calculating.
-    const SampleCounterType samples_total;
+    usize const samples_total;
 
-    explicit SampleCollectingTuner(ConfigType &config, SampleCounterType samples) noexcept :
+    explicit constexpr SampleCollectingTuner(ConfigType &config, usize samples) noexcept :
         _config{config}, samples_total{samples} {}
 
 private:
     ConfigType &_config;
-    SampleCounterType _samples_processed{0};
+    usize _samples_processed{0};
     State _state{State::Idle};
 
-    // impl
+    KF_IMPL_TUNER(SampleCollectingTuner<Impl, T>);
 
-    using This = SampleCollectingTuner<Impl, T>;
-
-    KF_IMPL_RESETTABLE(This);
-    void resetImpl() noexcept {
+    constexpr void reset_impl() noexcept {
         _state = State::Running;
         _samples_processed = 0;
-        impl().resetImpl();
+        impl().reset_impl();
     }
 
-    KF_IMPL_POLLABLE(This);
-    void pollImpl() noexcept {
+    void poll_impl(kf::units::Milliseconds now) noexcept {
         switch (_state) {
             case State::Idle://
                 return;
 
             case State::Running: {
-                impl().pollImpl();
+                impl().poll_impl(now);
                 _samples_processed += 1;
 
                 if (_samples_processed >= samples_total) {
@@ -74,15 +71,14 @@ private:
                 return;
 
             case State::Calculating: {
-                impl().calculateImpl(_config);
+                impl().calculate_impl(_config);
                 _state = State::Idle;
             }
                 return;
         }
     }
 
-    KF_IMPL_TUNER(This);
-    [[nodiscard]] bool runningImpl() const noexcept {
+    [[nodiscard]] bool running_impl() const noexcept {
         return _state != State::Idle;
     }
 
@@ -91,9 +87,14 @@ private:
         return *static_cast<Impl *>(this);
     }
 
-    const Impl &impl() const noexcept {
-        return *static_cast<const Impl *>(this);
+    Impl const &impl() const noexcept {
+        return *static_cast<Impl const *>(this);
     }
 };
 
 }// namespace kf::tuner
+
+#define KF_IMPL_SAMPLE_COLLECTING_TUNER(__impl__, ...)                       \
+    friend struct ::kf::tuner::SampleCollectingTuner<__impl__, __VA_ARGS__>; \
+    KF_IMPL_RESETTABLE(__impl__);                                            \
+    KF_IMPL_POLL(__impl__)

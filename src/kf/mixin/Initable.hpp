@@ -1,38 +1,61 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    mixin/Initable.hpp
+/// @brief   Adds init() forwarding to init_impl().
 
 #pragma once
 
-#include <utility>
+#include <utility>// std::forward
 
-namespace kf::mixin {
+namespace kf {
+
+namespace mixin {
 
 struct InitableTag {};
 
-/// @brief CRTP mixin that adds an `init(Args...)` method forwarding to `initImpl(Args...)`
-/// @tparam Impl       Implementation class (must implement `initImpl(Args...)`)
-/// @tparam Signature  Function signature `R(Args...)` - return type and arguments
-template<typename Impl, typename Signature> struct Initable;
+}// namespace mixin
 
-template<typename Impl, typename... Args> struct Initable<Impl, void(Args...)> : InitableTag {
+namespace internal {
 
-    /// @brief Initializes the object with given arguments
-    /// @param args Arguments forwarded to `initImpl`
-    void init(Args... args) noexcept {
-        static_cast<Impl *>(this)->initImpl(std::forward<Args>(args)...);
+template<typename Impl> struct InitableBase : mixin::InitableTag {
+
+    /// @brief Uninitializes the object
+    void deinit() noexcept {
+        return static_cast<Impl *>(this)->deinit_impl();
     }
 };
 
-template<typename Impl, typename R, typename... Args> struct Initable<Impl, R(Args...)> : InitableTag {
+}// namespace internal
 
-    /// @brief Initializes the object with given arguments
-    /// @param args Arguments forwarded to `initImpl`
-    /// @return Value returned by `initImpl`
-    [[nodiscard]] R init(Args... args) noexcept {
-        return static_cast<Impl *>(this)->initImpl(std::forward<Args>(args)...);
+namespace mixin {
+
+/// @brief CRTP mixin that adds an `init`, 'deinit' method forwarding to `init_impl`
+/// @tparam Impl       Implementation class (must implement `init_impl`)
+/// @tparam R          return type
+template<typename Impl, typename R> struct Initable : internal::InitableBase<Impl> {
+
+    /// @brief Initializes the object
+    /// @return Value returned by `init_impl`
+    [[nodiscard]] R init() noexcept {
+        return static_cast<Impl *>(this)->init_impl();
     }
 };
 
-}// namespace kf::mixin
+template<typename Impl> struct Initable<Impl, void> : internal::InitableBase<Impl> {
 
-#define KF_IMPL_INITABLE(__impl__, ...) friend struct ::kf::mixin::Initable<__impl__, __VA_ARGS__>
+    /// @brief Initializes the object
+    void init() noexcept {
+        static_cast<Impl *>(this)->init_impl();
+    }
+};
+
+}// namespace mixin
+
+}// namespace kf
+
+#define KF_IMPL_INITABLE(__impl__, ...) \
+    friend struct ::kf::mixin::Initable<__impl__, __VA_ARGS__>;\
+    friend struct ::kf::internal::InitableBase<__impl__>
+
