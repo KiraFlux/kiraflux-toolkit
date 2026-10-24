@@ -65,16 +65,32 @@ struct MainPage : MyUI::Page {
         slider_config,// by ref
     };
 
-    kf::Array<MyUI::Widget *, 5> widgets_storage{.items{
+    kf::Array<MyUI::Display<int>, 10> displays{};
+
+    static constexpr auto base_widgets = 6;
+
+    MyUI::Fold fold{
+        widgets_storage.slice().first(base_widgets),
+        "Fold",
+    };
+
+    kf::Array<MyUI::Widget *, (base_widgets + decltype(displays)::items_total)> widgets_storage{.items{
         nullptr,// link widget will be init in setup()
         &click_button,
         &check_box,
         &value_display,
         &slider,
+        &fold,
     }};
 
     explicit MainPage(MyUI &ui) : Page{ui} {
         this->label("Main");
+
+        for (auto i = 0; i < displays.length(); i += 1) {
+            auto &w = displays[i];
+            w.value(i);
+            widgets_storage[i + base_widgets] = &w;
+        }
 
         click_button.callback([this]() {
             logger.info("Test button clicked!");
@@ -93,7 +109,7 @@ struct MainPage : MyUI::Page {
     // Page virtual methods
 
     WidgetsView build() noexcept override {
-        return widgets_storage.slice();
+        return widgets_storage.slice().first(fold.expanded() ? widgets_storage.length() : base_widgets);
     }
 
     // behavior on entry
@@ -211,7 +227,7 @@ void kf::main(kf::Init &init) {
 
     MyUI::Traits::RendererImpl::Config my_renderer_config{
         .row_max_length = 50,// console width = 50 chars
-        .rows_total = 5,     // only 5 rows available (for scrolling)
+        .rows_total = 10,    // only 10 rows available (for scrolling)
         .float_places = 3,   // float rendering like:  1234.567
         .double_places = 6,  // double rendering like: 1.2345670
         .title_centered = false,

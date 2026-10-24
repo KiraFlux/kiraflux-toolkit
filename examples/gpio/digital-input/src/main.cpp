@@ -5,7 +5,7 @@
 // KiraFlux-Toolkit Example 'gpio/digital-input'
 
 // Demonstrates reading a digital input pin with configurable pull resistor.
-// The example reads the pin state every 100 ms and logs it.
+// The loop is bounded so that deinit() is reachable.
 
 #include <kf/gpio.hpp>
 #include <kf/main.hpp>
@@ -24,15 +24,16 @@ void kf::main(kf::Init &init) {
     // Initialize the GPIO pin as an input with the specified pull configuration.
     my_digital_input_pin.init();
 
-    // Main loop: read and log the pin state every 100 ms.
-    while (true) {
-        // Read the current logic level (true = HIGH, false = LOW).
+    // Read and log the pin state every 100 ms for 10 seconds.
+    for (int i = 0; i < 100; i += 1) {
         bool const level = my_digital_input_pin.level();
-
-        // Log the current state.
         init.logger.info("level: {}", level);
 
         // Wait 100 ms before the next read.
         rtos::Task::sleep(100);
     }
+
+    // Release the GPIO pin (detaches any interrupt, if attached).
+    my_digital_input_pin.deinit();
+    init.logger.info("Digital input deinitialized");
 }

@@ -18,21 +18,16 @@
 using kf::driver::display::Orientation;
 using kf::driver::display::ST7735;
 
-// Pixel format: RGB565 (16‑bit)
 using P = ST7735::PixelImpl;
 using Palette = kf::gfx::Palette<P>;
 
-// Predefined colors (using hardware-specific RGB conversion)
 constexpr auto red = P::from_rgb(0xFF, 0x00, 0x00);
 constexpr auto green = P::from_rgb(0x00, 0xFF, 0x00);
 constexpr auto blue = P::from_rgb(0x00, 0x00, 0xFF);
 constexpr auto black = Palette::black;
 constexpr auto white = Palette::white;
 
-// --- Helper: run a demo sequence for a given orientation ---
-
 void run_demo(kf::Init &init, ST7735 &display, char const *orientation_name) {
-    // Wrap the display framebuffer into a Canvas
     kf::gfx::Canvas<P> canvas{kf::image::DynamicImage<P>{display.image()}};
     canvas.font(kf::gfx::fonts::gyver_5x7_en);
 
@@ -93,9 +88,7 @@ void kf::main(kf::Init &init) {
 
     bus::SPI spi_bus{spi_bus_config};
 
-    // Initialize the SPI bus
-    auto init_result = spi_bus.init();
-    if (init_result.is_error()) {
+    if (auto const result = spi_bus.init(); result.is_error()) {
         init.logger.error("SPI bus init failed");
         return;
     }
@@ -116,7 +109,7 @@ void kf::main(kf::Init &init) {
         .init_orientation = Orientation::Normal,
     };
 
-    // Driver instance (static: SHOULD NOT lay on stack cuz buffer image is 40KiB)
+    // static: framebuffer is ~40 KiB, must not land on the stack.
     static ST7735 display{
         spi_bus,      // used to create node
         driver_config,// by const reference
@@ -128,11 +121,11 @@ void kf::main(kf::Init &init) {
     auto display_init = display.init();
     if (display_init.is_error()) {
         init.logger.error("Display init failed");
+        // The bus was successfully initialized — release it before returning.
+        spi_bus.deinit();
         return;
     }
     init.logger.info("Display initialized");
-
-    // --- Test all orientations (6 supported modes) ---
 
     Orientation orientations[] = {
         Orientation::Normal,
@@ -161,5 +154,12 @@ void kf::main(kf::Init &init) {
         }
     }
 
-    init.logger.info("Demo completed.");
+    // Teardown. `display` is static (framebuffer ~40 KiB), but deinit() is still required:
+    // it sends DISPOFF, releases the SPI node (CS -> HIGH + INPUT) and the DC/RST GPIOs.
+    display.deinit();
+    init.logger.info("Display deinitialized");
+
+    // Bus goes down after the node that uses it.
+    spi_bus.deinit();
+    init.logger.info("SPI bus deinitialized");
 }

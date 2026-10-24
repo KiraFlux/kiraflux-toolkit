@@ -105,7 +105,7 @@ private:
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         if constexpr (type_like<T, char>) {
             return char_writable.append_null_terminated_string(this->data(), this->length());
         } else {

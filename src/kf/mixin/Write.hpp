@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
-/// @file    mixin/Writable.hpp
+/// @file    mixin/Write.hpp
 
 #pragma once
 
@@ -20,7 +20,7 @@
 
 namespace kf::mixin {
 
-template<typename T> struct WritableTag {
+template<typename T> struct WriteTag {
     struct WriteTraits {
         using Type = T;
     };
@@ -30,7 +30,7 @@ template<typename T> struct WritableTag {
 
 namespace kf::internal {
 
-template<typename Impl, typename T> struct WritableBase : mixin::WritableTag<T> {
+template<typename Impl, typename T> struct WriteBase : mixin::WriteTag<T> {
 
     /// @brief Write Value
     /// @param value Value to write (perfect-forwarded)
@@ -166,13 +166,13 @@ template<typename... Args> using FormatString = BasicFormatString<std::type_iden
 namespace kf::mixin {
 
 /// @brief Add `write(auto &&) -> bool`
-/// @tparam Impl Writable mixin implementation class
+/// @tparam Impl Write mixin implementation class
 /// @tparam T Value type
-template<typename Impl, typename T> struct Writable;
+template<typename Impl, typename T> struct Write;
 
-template<typename Impl, typename T> struct Writable : internal::WritableBase<Impl, T> {};
+template<typename Impl, typename T> struct Write : internal::WriteBase<Impl, T> {};
 
-template<typename Impl> struct Writable<Impl, char> : internal::WritableBase<Impl, char> {
+template<typename Impl> struct Write<Impl, char> : internal::WriteBase<Impl, char> {
 
     // static dispatching
 
@@ -303,4 +303,4 @@ private:
 
 }// namespace kf::mixin
 
-#define KF_IMPL_WRITABLE(...) friend struct ::kf::internal::WritableBase<__VA_ARGS__>
+#define KF_IMPL_WRITE(...) friend struct ::kf::internal::WriteBase<__VA_ARGS__>

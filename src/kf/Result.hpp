@@ -147,7 +147,7 @@ private:
     }
 
     KF_IMPL_REPR_TO(Result<void, E>);
-    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         usize ret = 0;
         if (this->is_error()) {
             ret += char_writable.append("error(");
@@ -222,7 +222,7 @@ private:
     }
 
     KF_IMPL_REPR_TO(Result<void, E>);
-    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         if (this->is_error()) {
             return (
                 char_writable.append("error(") +

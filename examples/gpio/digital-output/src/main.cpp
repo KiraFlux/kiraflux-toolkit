@@ -6,6 +6,7 @@
 
 // Demonstrates basic digital output control using kf::gpio::DigitalOutput.
 // The example toggles a GPIO pin every second, logging the current state.
+// The loop is bounded so that deinit() is reachable.
 
 #include <kf/gpio.hpp>
 #include <kf/main.hpp>
@@ -14,8 +15,6 @@
 void kf::main(kf::Init &init) {
     init.logger.info("KiraFlux-Toolkit Example: gpio/digital-output");
 
-    // Create a digital output object on GPIO pin 4.
-    // The pin number is specified using the gpio::GpioNumber enum class.
     gpio::DigitalOutput my_digital_output_pin{
         gpio::G4,
     };
@@ -26,9 +25,8 @@ void kf::main(kf::Init &init) {
 
     bool level = true;
 
-    // Main loop: toggle the output every second.
-    while (true) {
-        // Write the current logic level (true = HIGH, false = LOW).
+    // Toggle the output 10 times (10 seconds).
+    for (int i = 0; i < 10; i += 1) {
         my_digital_output_pin.level(level);
 
         // Log the current state for monitoring.
@@ -40,4 +38,8 @@ void kf::main(kf::Init &init) {
         // Wait 1 second before the next toggle.
         rtos::Task::sleep(1000);
     }
+
+    // Release the pin (sets output LOW and returns the pin to INPUT mode).
+    my_digital_output_pin.deinit();
+    init.logger.info("Digital output deinitialized");
 }

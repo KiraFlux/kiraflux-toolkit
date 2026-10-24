@@ -11,17 +11,17 @@
 
 namespace kf::mixin {
 
-template<typename> struct WritableTag;// forward declaration
+template<typename> struct WriteTag;// forward declaration
 
 struct ReprToTag {};
 
 /// @brief CRTP mixin that adds a `usize repr_to(char_writable)` method
-/// @tparam Impl Implementation class (must implement `usize repr_to_impl(kf::implements<kf::mixin::WritableTag<char>> auto &char_writable) const noexcept`)
+/// @tparam Impl Implementation class (must implement `usize repr_to_impl(kf::implements<kf::mixin::WriteTag<char>> auto &char_writable) const noexcept`)
 template<typename Impl> struct ReprTo : ReprToTag {
 
     /// @brief Represent object to the writable
     /// @returns numbers of chars written
-    constexpr usize repr_to(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         return static_cast<Impl const *>(this)->repr_to_impl(char_writable);
     }
 };

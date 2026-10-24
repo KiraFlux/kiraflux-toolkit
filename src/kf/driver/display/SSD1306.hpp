@@ -161,6 +161,10 @@ private:
         return _i2c_node.write_buffer({init_commands});
     }
 
+    void deinit_impl() noexcept {
+        (void) power(false);
+    }
+
     constexpr void reset_impl() const noexcept {}
 
     auto send_impl() noexcept -> internal::IicWriteResult {

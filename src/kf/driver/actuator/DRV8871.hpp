@@ -63,6 +63,12 @@ private:
         return true;
     }
 
+    void deinit_impl() noexcept {
+        this->set(0);
+        _pwm_gpio_forward.deinit();
+        _pwm_gpio_backward.deinit();
+    }
+
     void set_impl(Config::InputType value) noexcept {
         if (value < 0) {
             _pwm_gpio_forward.write(0);

@@ -12,7 +12,7 @@
 
 #include "kf/mixin/Initable.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 #include "kf/driver/Driver.hpp"
 #include "kf/driver/display/Orientation.hpp"
@@ -28,7 +28,7 @@ template<typename Impl, implements<image::ImageTag> ImageImpl, typename Operatio
 
     DisplayDriverTag,
     Driver<Impl, OperationResult>,
-    mixin::Resettable<Impl>
+    mixin::Reset<Impl>
 
 {
 

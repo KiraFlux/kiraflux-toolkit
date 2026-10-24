@@ -28,6 +28,7 @@
 #include "kf/ui/widget/CheckBox.hpp"
 #include "kf/ui/widget/ComboBox.hpp"
 #include "kf/ui/widget/Display.hpp"
+#include "kf/ui/widget/Fold.hpp"
 #include "kf/ui/widget/Labeled.hpp"
 #include "kf/ui/widget/Slider.hpp"
 #include "kf/ui/widget/SpinBox.hpp"
@@ -48,6 +49,11 @@ template<implements<UiTraitsTag> U> struct UI :
     struct Traits : U {};
 
     using Widget = typename U::Widget;
+
+    /// @brief Fold widget
+    struct Fold : widget::Fold<Traits> {
+        using widget::Fold<Traits>::Fold;
+    };
 
     /// @brief Button widget with click handler
     struct Button : widget::Button<Traits> {

@@ -18,7 +18,7 @@ void kf::main(kf::Init &init) {
 
     kf::String str{init.arena.allocate<char>(256)};// Construct from Slice<char>
 
-    // String provides compile-time format string validation via `mixin::Writable<Impl, char>`
+    // String provides compile-time format string validation via `mixin::Write<Impl, char>`
     // Use `{}` as anchor, `{{` or `}}` to display literal braces
     // Supported types: StringView, C-strings, integers, floats, booleans, char, and custom types via `Representable`
     (void) str.append_format(
@@ -54,7 +54,7 @@ void kf::main(kf::Init &init) {
     init.logger.info("after reset - available_for_read: {}, available_for_write: {}",
                      str.available_for_read(), str.available_for_write());
 
-    // Append various types (inherited from mixin::Writable<Impl, char>)
+    // Append various types (inherited from mixin::Write<Impl, char>)
     (void) str.append(kf::StringView{"sv"});// any Sequence<char>
     (void) str.append("c-str");             // C-string
     (void) str.append(true);                // boolean

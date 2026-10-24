@@ -86,11 +86,10 @@ void kf::main(kf::Init &init) {
     // --- Create peers ---
 
     broadcast_peer = create_peer(init, {0xff, 0xff, 0xff, 0xff, 0xff, 0xff});
-    target_peer = create_peer(init, {0x01, 0x02, 0x03, 0x04, 0x05, 0x06});// replace with real MAC
+    target_peer = create_peer(init, {0x01, 0x02, 0x03, 0x04, 0x05, 0x06});
 
-    // --- Main loop ---
-
-    while (true) {
+    // Bounded ping loop: 10 pings, ~5 s apart.
+    for (int iteration = 0; iteration < 10; iteration += 1) {
         if (broadcast_peer.is_some()) {
             init.logger.info("Sending: broadcast");
             auto const result = broadcast_peer.unwrap().write_packet("[broadcast]: ping");
@@ -110,4 +109,13 @@ void kf::main(kf::Init &init) {
         rtos::Task::sleep(5000);
         init.logger.debug("Tick: {}", rtos::Clock::now());
     }
+
+    // Peers must be released BEFORE deinit of ESP-NOW —
+    // Peer::~Peer() calls esp_now_del_peer(), which fails after esp_now_deinit().
+    broadcast_peer.reset();
+    target_peer.reset();
+
+    // Stop ESP-NOW and unregister the receive callback.
+    Espnow::instance().deinit();
+    init.logger.info("ESP-NOW deinitialized");
 }

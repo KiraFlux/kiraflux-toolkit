@@ -31,6 +31,10 @@ private:
         _adc_input.init();
     }
 
+    void deinit_impl() noexcept {
+        _adc_input.deinit();
+    }
+
     units::Millimeters read_impl() noexcept {
         // correct calculus only with 10-bit ADC resolution
         // TODO: generalize formula

@@ -5,8 +5,8 @@
 // KiraFlux-Toolkit Example 'gpio/pwm-output'
 
 // Demonstrates PWM output generation using the kf::gpio::PwmOutput class.
-// The example generates a sawtooth waveform by linearly ramping the duty cycle from 0 to maximum and back,
-// and also shows how to set pulse width in microseconds (useful for servo control).
+// The example generates a sawtooth waveform by linearly ramping the duty cycle
+// from 0 to maximum and back. The loop is bounded so that deinit() is reachable.
 
 #include <kf/gpio.hpp>
 #include <kf/main.hpp>
@@ -44,10 +44,8 @@ void kf::main(kf::Init &init) {
 
     auto current_duty = 0;
 
-    // Main loop: generates a sawtooth waveform.
-    // The duty cycle increases from 0 to max_duty, then resets to 0.
-    while (true) {
-        // Write the current duty cycle to the PWM output.
+    // Two full sawtooth cycles (2 * 1024 steps = 2048 steps, ~2 seconds at 1 ms/step).
+    for (int i = 0; i < 2048; i += 1) {
         my_pwm_output.write(current_duty);
 
         // Log the current duty value for monitoring.
@@ -64,8 +62,11 @@ void kf::main(kf::Init &init) {
         rtos::Task::sleep(1);
     }
 
+    // Release the PWM pin (writes duty=0 and detaches the LEDC channel).
+    my_pwm_output.deinit();
+    init.logger.info("PWM output deinitialized");
+
     // Alternative: setting pulse width directly in microseconds.
-    // This is convenient for servo motors (typical range: 500–2500 us).
-    // Uncomment the line below to set a fixed pulse width (e.g., 500 us).
+    // Useful for servo motors (typical range: 500–2500 us).
     // my_pwm_output.write_pulse(500);
 }

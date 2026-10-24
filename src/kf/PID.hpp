@@ -14,7 +14,7 @@
 
 #include "kf/mixin/Configured.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf::internal {
 
@@ -45,7 +45,7 @@ namespace kf {
 struct PID final :
 
     mixin::NonCopyable,
-    mixin::Resettable<PID>,
+    mixin::Reset<PID>,
     mixin::Configured<internal::PidConfig>
 
 {

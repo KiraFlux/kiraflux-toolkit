@@ -115,6 +115,10 @@ private:
         _adc_input.init();
     }
 
+    void deinit_impl() noexcept {
+        _adc_input.deinit();
+    }
+
     [[nodiscard]] f32 read_impl() noexcept {
         // Applies dead zone, filtering, and optional inversion
         auto const deviation = static_cast<Config::AdcSignedValue>(read_raw()) - this->config().range_negative;

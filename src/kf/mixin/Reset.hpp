@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
-/// @file    mixin/Resettable.hpp
+/// @file    mixin/Reset.hpp
 /// @brief   Adds reset() method to reset object state.
 
 #pragma once
 
 namespace kf::mixin {
 
-struct ResettableTag {};
+struct ResetTag {};
 
 /// @brief CRTP mixin reset.
 /// @tparam Impl The derived class that must implement `reset_impl()`.
-template<typename Impl> struct Resettable : ResettableTag {
+template<typename Impl> struct Reset : ResetTag {
 
     /// @brief Reset: full state-reset
     constexpr void reset() noexcept {
@@ -23,4 +23,4 @@ template<typename Impl> struct Resettable : ResettableTag {
 
 }// namespace kf::mixin
 
-#define KF_IMPL_RESETTABLE(...) friend struct ::kf::mixin::Resettable<__VA_ARGS__>
+#define KF_IMPL_RESETTABLE(...) friend struct ::kf::mixin::Reset<__VA_ARGS__>

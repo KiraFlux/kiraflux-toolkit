@@ -18,7 +18,7 @@ void kf::main(kf::Init &init) {
     init.logger.warn("warn");
     init.logger.error("error");
 
-    // The logger supports compile-time format string validation via `mixin::Writable<Impl, char>`
+    // The logger supports compile-time format string validation via `mixin::Write<Impl, char>`
     // Many built-in types are supported: strings, bool, integers, floats, and custom types via `Representable`
     init.logger.debug("Hello {}!, bool is {}, int: {} float: {}", "World", true, 123'456'789'0, -123.056);
 

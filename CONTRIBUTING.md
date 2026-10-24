@@ -90,7 +90,7 @@ A header's namespace is its path relative to `src/kf/`, joined by `::` and prefi
 
 - `src/kf/bus/I2C.hpp` -> `kf::bus`
 - `src/kf/driver/display/SSD1306.hpp` -> `kf::driver::display`
-- `src/kf/mixin/Resettable.hpp` -> `kf::mixin`
+- `src/kf/mixin/Reset.hpp` -> `kf::mixin`
 
 Only `kf::internal` is allowed as an implementation-detail namespace.
 
@@ -202,17 +202,17 @@ Always define a tag struct (`MyBaseTag`) for interface checking. Impl methods us
 
 CRTP mixins in `kf/mixin/`. Each provides a `KF_IMPL_*` macro; place it in the `private` section of the derived class.
 
-| Group                 | Mixins                                                                                        | What it adds                                      |
-| --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Type contract         | `NonCopyable`, `Initable`                                                                     | Copy deletion, `init()`, `deinit()`               |
-| Type state            | `Resettable`, `DefaultResettable`, `Invariant`                                                | `reset()`, Some/None-style checks                 |
-| Scheduling            | `Poll`, `Flush`, `Drain`                                                                      | `poll(now)`, `flush()`, `drain()`                 |
-| Injected dependencies | `Configured`, `Callbacked<Args...>`, `ValueCallbacked<T>`                                     | Config reference, optional callbacks              |
-| Presentation          | `Labeled`, `Styled`, `Representable`, `ReprTo`                                                | Label, style, `repr()` / `repr_to()`              |
-| Container interface   | `Equatable`, `Indexable`, `Length`, `Match`                                                   | `==`, `[]`, `length()`, key matching              |
-| Data streams          | `Readable`, `Writable`, `ReadAvailable`, `WriteAvailable`, `BinaryReadable`, `BinaryWritable` | Text and binary I/O with availability             |
-| Object identity       | `Singleton`, `MacAddressed`                                                                   | Meyer's singleton access, owned MAC address       |
-| Arena                 | `ExtraAllocationLength`                                                                       | Extra allocation length for arena-created objects |
+| Group                 | Mixins                                                                                    | What it adds                                      |
+| --------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Type contract         | `NonCopyable`, `Initable`                                                                 | Copy deletion, `init()`, `deinit()`               |
+| Type state            | `Reset`, `DefaultResettable`, `Invariant`                                                 | `reset()`, Some/None-style checks                 |
+| Scheduling            | `Poll`, `Flush`, `Drain`                                                                  | `poll(now)`, `flush()`, `drain()`                 |
+| Injected dependencies | `Configured`, `Callbacked<Args...>`, `ValueCallbacked<T>`                                 | Config reference, optional callbacks              |
+| Presentation          | `Labeled`, `Styled`, `Representable`, `ReprTo`                                            | Label, style, `repr()` / `repr_to()`              |
+| Container interface   | `Equatable`, `Indexable`, `Length`, `Match`                                               | `==`, `[]`, `length()`, key matching              |
+| Data streams          | `Read`, `Writable`, `ReadAvailable`, `WriteAvailable`, `BinaryReadable`, `BinaryWritable` | Text and binary I/O with availability             |
+| Object identity       | `Singleton`, `MacAddressed`                                                               | Meyer's singleton access, owned MAC address       |
+| Arena                 | `ExtraAllocationLength`                                                                   | Extra allocation length for arena-created objects |
 
 Do not duplicate mixin functionality in your own types.
 

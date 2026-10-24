@@ -73,6 +73,11 @@ private:
         return _pwm_output.init();
     }
 
+    void deinit_impl() noexcept {
+        this->set(0);
+        _pwm_output.deinit();
+    }
+
     void set_impl(units::Degrees angle) noexcept {
         _pwm_output.write_pulse(this->config().pulse_width_from_angle(_angle_safe_range.clamped(angle)));
     }

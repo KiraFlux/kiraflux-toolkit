@@ -192,9 +192,15 @@ private:
     }
 
     KF_IMPL_INITABLE(Self, void);
+
     void init_impl() noexcept {
         auto const pin = static_cast<u8>(this->config().gpio_num_cs);
         pinMode(pin, OUTPUT);
+        digitalWrite(pin, HIGH);
+    }
+
+    void deinit_impl() noexcept {
+        auto const pin = static_cast<u8>(this->config().gpio_num_cs);
         digitalWrite(pin, HIGH);
     }
 
@@ -297,6 +303,8 @@ template<typename B> struct SpiNodeImpl : SpiNodeBase<SpiNodeImpl<B>> {
 private:
     KF_IMPL_INITABLE(Self, void);
     void init_impl() noexcept {}
+
+    void deinit_impl() noexcept {}
 
     KF_IMPL_BUS_NODE(Self, Error);
 

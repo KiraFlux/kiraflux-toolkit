@@ -6,6 +6,7 @@
 
 // Demonstrates analog-to-digital conversion using kf::gpio::AdcInput.
 // The example sets ADC resolution globally, reads the value every 100 ms and logs it.
+// The loop is bounded so that the full init() -> read() -> deinit() lifecycle is visible.
 
 #include <kf/gpio.hpp>
 #include <kf/main.hpp>
@@ -31,9 +32,8 @@ void kf::main(kf::Init &init) {
     // Initialize the ADC pin (configures pin mode as INPUT).
     my_adc_input.init();
 
-    // Main loop: read and log the ADC value every 100 ms.
-    while (true) {
-        // Read the raw analog value (0 .. (2^resolution - 1)).
+    // Read and log the ADC value every 100 ms for 10 seconds.
+    for (int i = 0; i < 100; i += 1) {
         auto const value = my_adc_input.read();
 
         // Log the current value.
@@ -42,4 +42,8 @@ void kf::main(kf::Init &init) {
         // Wait 100 ms before the next read.
         rtos::Task::sleep(100);
     }
+
+    // Release the ADC pin.
+    my_adc_input.deinit();
+    init.logger.info("ADC input deinitialized");
 }

@@ -173,14 +173,14 @@ Reusable CRTP mixins. Each provides a `KF_IMPL_*` macro to place in the `private
 
 | Group                 | Mixins                                                                                        | Purpose                                                      |
 | --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Lifecycle             | `NonCopyable`, `Initable`, `Resettable`, `DefaultResettable`, `Quitable`                      | Construction, initialisation, reset, and release hooks       |
+| Lifecycle             | `NonCopyable`, `Initable`, `Reset`, `DefaultResettable`, `Quitable`                      | Construction, initialisation, reset, and release hooks       |
 | Periodic              | `Poll`, `Flush`, `Drain`                                                                      | Recurring or on-demand operations                            |
 | Config                | `Configured`                                                                                  | Stores a `const&` to a configuration object                  |
 | Callbacks             | `Callbacked<Args...>`, `ValueCallbacked<T>`                                                   | Optional callbacks and value-triggered callbacks             |
 | Labels / styling      | `Labeled`, `Styled`                                                                           | Text label and semantic style                                |
 | Invariant             | `Invariant`                                                                                   | Some/None-style state checks on optional-like types          |
 | Comparison / indexing | `Equatable`, `Indexable`, `Length`                                                            | Equality, indexing, and length                               |
-| Streams               | `Readable`, `Writable`, `ReadAvailable`, `WriteAvailable`, `BinaryReadable`, `BinaryWritable` | Text and binary I/O with availability queries                |
+| Streams               | `Read`, `Write`, `ReadAvailable`, `WriteAvailable`, `BinaryReadable`, `BinaryWritable` | Text and binary I/O with availability queries                |
 | Matching              | `Match`                                                                                       | Key-value matching                                           |
 | Stringification       | `Representable`, `ReprTo`                                                                     | Return a string, or write to a `char`-writable sink          |
 | Arena helpers         | `ExtraAllocationLength`                                                                       | Report extra allocation length for arena-created objects     |

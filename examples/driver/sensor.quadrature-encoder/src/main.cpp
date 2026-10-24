@@ -52,10 +52,8 @@ void kf::main(kf::Init &init) {
                      encoder.position_ticks(),
                      encoder.position_units());
 
-    // --- Main loop: read and log position every 200 ms ---
-
-    while (true) {
-        // Accumulated ticks (updated by ISR).
+    // Bounded loop: 100 iterations * 200 ms = 20 seconds.
+    for (int i = 0; i < 100; i += 1) {
         auto ticks = encoder.position_ticks();
 
         // Convert ticks to physical units using the config.
@@ -65,14 +63,11 @@ void kf::main(kf::Init &init) {
 
         // Wait a bit before next read.
         rtos::Task::sleep(200);
-
-        // Optional: demonstrate resetting position.
-        // Uncomment to reset position to zero after some time.
-        // static bool reset_done = false;
-        // if (not reset_done and ticks > 1000) {
-        //     encoder.reset();                        // reset ticks to 0
-        //     init.logger.info("Encoder reset");
-        //     reset_done = true;
-        // }
     }
+
+    // CRITICAL: deinit() detaches the ISR on both phase pins.
+    // Without this call, GPIO interrupts remain armed after main() returns,
+    // which is undefined behaviour on ESP32.
+    encoder.deinit();
+    init.logger.info("Encoder deinitialized");
 }

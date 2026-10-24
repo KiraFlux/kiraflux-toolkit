@@ -56,4 +56,9 @@ void kf::main(kf::Init &init) {
     // Stop the motor
     motor.stop();
     init.logger.info("Stopped");
+
+    // deinit() — release the two PWM pins (detach LEDC channels).
+    // stop() only sets duty to zero; deinit() actually frees hardware resources.
+    motor.deinit();
+    init.logger.info("Motor deinitialized");
 }

@@ -15,13 +15,13 @@
 #include "kf/core.hpp"
 
 #include "kf/mixin/Match.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf {
 
 namespace internal {
 
-template<typename T> struct RegistryBase : mixin::Resettable<RegistryBase<T>> {
+template<typename T> struct RegistryBase : mixin::Reset<RegistryBase<T>> {
 
     explicit constexpr RegistryBase(Arena &arena, usize count) noexcept :
         _items{arena.allocate<T *>(count)} {}

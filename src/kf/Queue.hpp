@@ -14,10 +14,10 @@
 #include "kf/core.hpp"
 
 #include "kf/mixin/Length.hpp"
+#include "kf/mixin/Read.hpp"
 #include "kf/mixin/ReadAvailable.hpp"
-#include "kf/mixin/Readable.hpp"
-#include "kf/mixin/Resettable.hpp"
-#include "kf/mixin/Writable.hpp"
+#include "kf/mixin/Reset.hpp"
+#include "kf/mixin/Write.hpp"
 #include "kf/mixin/WriteAvailable.hpp"
 
 namespace kf {
@@ -30,11 +30,11 @@ template<typename T> struct Queue :
 
     QueueTag,
     mixin::Length<Queue<T>, usize>,
-    mixin::Readable<Queue<T>, T>,
+    mixin::Read<Queue<T>, T>,
     mixin::ReadAvailable<Queue<T>>,
-    mixin::Writable<Queue<T>, T>,
+    mixin::Write<Queue<T>, T>,
     mixin::WriteAvailable<Queue<T>>,
-    mixin::Resettable<Queue<T>>
+    mixin::Reset<Queue<T>>
 
 {
 
@@ -102,7 +102,7 @@ private:
         return _length;
     }
 
-    KF_IMPL_READABLE(Self, T);
+    KF_IMPL_READ(Self, T);
     constexpr auto read_impl() noexcept -> Option<T> {
         if (this->empty()) {
             return none;
@@ -122,7 +122,7 @@ private:
         return this->length();
     }
 
-    KF_IMPL_WRITABLE(Self, T);
+    KF_IMPL_WRITE(Self, T);
     constexpr bool write_impl(auto &&item) noexcept {
         if (this->full()) {
             return false;

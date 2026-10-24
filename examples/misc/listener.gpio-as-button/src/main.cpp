@@ -45,19 +45,19 @@ void kf::main(kf::Init &init) {
         init.logger.info("Button clicked");
     });
 
-    // --- Main loop ---
-
-    while (true) {
-        // Read the current GPIO level (debounced internally).
+    // Bounded loop: 1000 iterations * 10 ms ≈ 10 seconds.
+    for (int i = 0; i < 1000; i += 1) {
         bool level = button_gpio.level();
 
         // Feed the current level to the listener.
         button_listener.set(level);
 
         // Poll the listener to detect stable transitions and invoke callbacks.
-        button_listener.poll(rtos::Clock::now());
-
         // Small delay to avoid busy-loop.
         rtos::Task::sleep(10);
     }
+
+    // Release the GPIO pin (detaches any interrupt, if attached).
+    button_gpio.deinit();
+    init.logger.info("GPIO deinitialized");
 }

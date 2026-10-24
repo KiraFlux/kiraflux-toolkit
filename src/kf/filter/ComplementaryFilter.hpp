@@ -11,7 +11,7 @@
 #include "kf/core.hpp"
 #include "kf/mixin/Configured.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf::internal {
 
@@ -30,7 +30,7 @@ template<arithmetic T> struct ComplementaryFilter final :
 
     mixin::Configured<internal::ComplementaryFilterConfig>,
     mixin::NonCopyable,
-    mixin::Resettable<ComplementaryFilter<T>>
+    mixin::Reset<ComplementaryFilter<T>>
 
 {
     using ValueType = T;

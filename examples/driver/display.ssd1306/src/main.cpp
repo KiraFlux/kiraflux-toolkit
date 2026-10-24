@@ -110,13 +110,12 @@ void kf::main(kf::Init &init) {
     auto display_init = display.init();
     if (display_init.is_error()) {
         init.logger.error("Display init failed: {}", display_init.error());
+        // The bus was successfully initialized — release it before returning.
+        i2c_bus.deinit();
         return;
     }
     init.logger.info("Display initialized");
 
-    // --- Test supported orientations ---
-
-    // SSD1306 supports: Normal, MirrorX, MirrorY
     char const *orientation_names[] = {"Normal", "Mirror X", "Mirror Y"};
     Orientation orientations[] = {
         Orientation::Normal,
@@ -133,5 +132,12 @@ void kf::main(kf::Init &init) {
         }
     }
 
-    init.logger.info("Demo completed.");
+    // Teardown. Even though `display` is static (framebuffer is 1 KiB here),
+    // deinit() must still be called explicitly — static is not a license to skip teardown.
+    display.deinit();
+    init.logger.info("Display deinitialized");
+
+    // Bus goes down after the node that uses it.
+    i2c_bus.deinit();
+    init.logger.info("I2C bus deinitialized");
 }

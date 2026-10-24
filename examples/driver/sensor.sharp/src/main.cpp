@@ -34,15 +34,13 @@ void kf::main(kf::Init &init) {
     // --- Main loop: read distance every 50 ms for 10 seconds ---
 
     for (int i = 0; i < 200; i += 1) {
-        // Read distance in millimeters.
-        // The sensor uses the ADC value and a conversion formula.
         auto const distance_mm = distance_sensor.read();
 
         init.logger.info("Distance: {} mm", distance_mm);
-
-        // Wait 50 ms between readings.
         rtos::Task::sleep(50);
     }
 
-    init.logger.info("Demo finished");
+    // Release the ADC pin.
+    distance_sensor.deinit();
+    init.logger.info("Sharp sensor deinitialized");
 }

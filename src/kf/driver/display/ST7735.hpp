@@ -134,6 +134,13 @@ private:
         return ok();
     }
 
+    void deinit_impl() noexcept {
+        (void) send_command(Command::DISPOFF);
+        _spi_node.deinit();
+        _gpio_data_command.deinit();
+        _gpio_hardware_reset.deinit();
+    }
+
     void reset_impl() const noexcept {
         // Required after power‑up to initialise the internal state machine.
         _gpio_hardware_reset.level(false);

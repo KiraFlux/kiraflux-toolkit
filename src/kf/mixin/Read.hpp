@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
-/// @file    mixin/Readable.hpp
+/// @file    mixin/Read.hpp
 /// @brief   Adds read() -> Option<T> for consuming items.
 
 #pragma once
@@ -13,12 +13,12 @@
 
 namespace kf::mixin {
 
-struct ReadableTag {};
+struct ReadTag {};
 
 /// @brief Add `read() -> Option<T>`
-/// @tparam Impl Readable mixin implementation class
+/// @tparam Impl Read mixin implementation class
 /// @tparam T Value type
-template<typename Impl, typename T> struct Readable : ReadableTag {
+template<typename Impl, typename T> struct Read : ReadTag {
 
     /// @brief Read Value
     /// @return Option with moved value if read success, `none` otherwise
@@ -29,4 +29,4 @@ template<typename Impl, typename T> struct Readable : ReadableTag {
 
 }// namespace kf::mixin
 
-#define KF_IMPL_READABLE(...) friend struct ::kf::mixin::Readable<__VA_ARGS__>
+#define KF_IMPL_READ(...) friend struct ::kf::mixin::Read<__VA_ARGS__>

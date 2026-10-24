@@ -6,7 +6,7 @@
 
 #include "kf/mixin/NonCopyable.hpp"
 #include "kf/mixin/Poll.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf::tuner {
 
@@ -18,14 +18,14 @@ struct TunerTag {};
 ///
 ///       - `bool running_impl() const noexcept`
 ///
-///       - `void reset_impl() noexcept` (from mixin::Resettable)
+///       - `void reset_impl() noexcept` (from mixin::Reset)
 ///
 ///       - `void poll_impl(kf::units::Milliseconds now) noexcept` (from mixin::Poll)
 template<typename Impl> struct Tuner :
 
     TunerTag,
     mixin::NonCopyable,
-    mixin::Resettable<Impl>,
+    mixin::Reset<Impl>,
     mixin::Poll<Impl>
 
 {

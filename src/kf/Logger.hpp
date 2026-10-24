@@ -12,7 +12,7 @@
 
 #include "kf/mixin/Flush.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Writable.hpp"
+#include "kf/mixin/Write.hpp"
 
 namespace kf {
 
@@ -21,7 +21,7 @@ struct Logger :
 
     mixin::NonCopyable,
     mixin::Flush<Logger>,
-    private mixin::Writable<Logger, char>
+    private mixin::Write<Logger, char>
 
 {
 
@@ -65,7 +65,7 @@ private:
         _stack.reset();
     }
 
-    KF_IMPL_WRITABLE(Logger, char);
+    KF_IMPL_WRITE(Logger, char);
     bool write_impl(char c) noexcept {
         if (nullptr == writer) {
             return false;

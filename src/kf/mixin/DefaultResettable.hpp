@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <kf/mixin/Resettable.hpp>
+#include <kf/mixin/Reset.hpp>
 
 namespace kf::mixin {
 
@@ -18,7 +18,7 @@ struct DefaultResettableTag {};
 template<typename Impl> struct DefaultResettable :
 
     DefaultResettableTag,
-    Resettable<DefaultResettable<Impl>>
+    Reset<DefaultResettable<Impl>>
 
 {
 private:

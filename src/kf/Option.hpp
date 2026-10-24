@@ -18,7 +18,7 @@
 
 #include "kf/mixin/Invariant.hpp"
 #include "kf/mixin/ReprTo.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf {
 
@@ -30,7 +30,7 @@ namespace internal {
 
 template<typename Impl> struct StorageBase :
 
-    mixin::Resettable<Impl>,
+    mixin::Reset<Impl>,
     mixin::Invariant<Impl>
 
 {};
@@ -84,7 +84,7 @@ private:
     }
 
     KF_IMPL_REPR_TO(Self);
-    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         return char_writable.append(_is_some ? "some()" : "none");
     }
 };
@@ -505,7 +505,7 @@ private:
     }
 
     KF_IMPL_REPR_TO(Option<T>);
-    constexpr usize repr_to_impl(implements<mixin::WritableTag<char>> auto &char_writable) const noexcept {
+    constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         if (this->is_some()) {
             return (
                 char_writable.append("some(") +

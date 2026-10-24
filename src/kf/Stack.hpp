@@ -13,10 +13,10 @@
 #include "kf/Slice.hpp"
 #include "kf/core.hpp"
 
+#include "kf/mixin/Read.hpp"
 #include "kf/mixin/ReadAvailable.hpp"
-#include "kf/mixin/Readable.hpp"
-#include "kf/mixin/Resettable.hpp"
-#include "kf/mixin/Writable.hpp"
+#include "kf/mixin/Reset.hpp"
+#include "kf/mixin/Write.hpp"
 #include "kf/mixin/WriteAvailable.hpp"
 
 #include "kf/Sequence.hpp"
@@ -31,11 +31,11 @@ template<typename T> struct Stack :
 
     StackTag,
     Sequence<Stack<T>, T>,
-    mixin::Readable<Stack<T>, T>,
+    mixin::Read<Stack<T>, T>,
     mixin::ReadAvailable<Stack<T>>,
-    mixin::Writable<Stack<T>, T>,
+    mixin::Write<Stack<T>, T>,
     mixin::WriteAvailable<Stack<T>>,
-    mixin::Resettable<Stack<T>>
+    mixin::Reset<Stack<T>>
 
 {
 
@@ -87,7 +87,7 @@ private:
         return _length;
     }
 
-    KF_IMPL_READABLE(Self, T);
+    KF_IMPL_READ(Self, T);
     constexpr auto read_impl() noexcept -> Option<T> {
         if (this->empty()) {
             return none;
@@ -106,7 +106,7 @@ private:
         return this->length();
     }
 
-    KF_IMPL_WRITABLE(Self, T);
+    KF_IMPL_WRITE(Self, T);
     constexpr bool write_impl(auto &&item) noexcept {
         if (this->full()) {
             return false;

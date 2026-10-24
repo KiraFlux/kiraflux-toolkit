@@ -10,7 +10,7 @@
 #include "kf/core.hpp"
 
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf::filter {
 
@@ -23,7 +23,7 @@ template<typename Impl, arithmetic T> struct Filter :
 
     FilterTag,
     mixin::NonCopyable,
-    mixin::Resettable<Impl>
+    mixin::Reset<Impl>
 
 {
 

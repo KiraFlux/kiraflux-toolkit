@@ -59,7 +59,12 @@ void kf::main(kf::Init &init) {
 
     rtos::Task::sleep(1000);
 
-    // Stop the servo (disable PWM signal)
+    // stop() — logical "off": PWM duty is set to 0 (no pulse to the servo).
     servo.stop();
     init.logger.info("Stopped");
+
+    // deinit() — release the PWM pin (detach LEDC channel).
+    // stop() only sets duty to zero; deinit() actually frees hardware resources.
+    servo.deinit();
+    init.logger.info("Servo deinitialized");
 }

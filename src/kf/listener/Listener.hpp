@@ -14,7 +14,7 @@
 #include "kf/mixin/Callbacked.hpp"
 #include "kf/mixin/NonCopyable.hpp"
 #include "kf/mixin/Poll.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf::listener {
 
@@ -24,7 +24,7 @@ template<typename Impl, typename InputType, typename CallbackSignature> struct L
 
     ListenerTag,
     mixin::NonCopyable,
-    mixin::Resettable<Impl>,
+    mixin::Reset<Impl>,
     mixin::Poll<Impl>,
     mixin::Callbacked<CallbackSignature>
 

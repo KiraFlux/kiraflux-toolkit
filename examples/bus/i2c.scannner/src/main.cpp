@@ -65,4 +65,8 @@ void kf::main(kf::Init &init) {
     // --- Done ---
 
     init.logger.info("Scan completed.");
+
+    // Release the I2C bus (calls Wire.end()).
+    i2c_bus.deinit();
+    init.logger.info("I2C bus deinitialized");
 }

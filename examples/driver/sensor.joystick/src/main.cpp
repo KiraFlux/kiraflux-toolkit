@@ -108,23 +108,20 @@ void kf::main(kf::Init &init) {
     Timer log_timer{Timer::Config{.value = 500}};
     log_timer.start(rtos::Clock::now());
 
-    // --- Main loop ---
-
-    while (true) {
+    // Bounded loop: 1000 iterations * 10 ms ≈ 10 seconds.
+    for (int i = 0; i < 1000; i += 1) {
         auto now = rtos::Clock::now();
 
-        // Read normalized values (filtered and calibrated).
         float x_norm = joystick.axis_x.read();
         float y_norm = joystick.axis_y.read();
 
-        // Log raw and normalized values every 500 ms (debug).
         if (log_timer.expired(now)) {
             log_timer.start(now);
 
             int x_raw = joystick.axis_x.read_raw();
             int y_raw = joystick.axis_y.read_raw();
 
-            auto const [x, y, magnitude] = joystick.read();// normalized to unit circle
+            auto const [x, y, magnitude] = joystick.read();
 
             init.logger.debug(
                 "Ax: {} {}\tAy: {} {}\tBoth: ({}, {}) {}",
@@ -133,12 +130,13 @@ void kf::main(kf::Init &init) {
                 x, y, magnitude);
         }
 
-        // Update listener with the current normalized vector.
-        // This triggers direction change events and autorepeat.
         my_listener.set(math::Vector2f::create(x_norm, y_norm));
         my_listener.poll(now);
 
-        // Small delay to avoid flooding the system.
         rtos::Task::sleep(10);
     }
+
+    // Release both ADC pins.
+    joystick.deinit();
+    init.logger.info("Joystick deinitialized");
 }

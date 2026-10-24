@@ -17,7 +17,7 @@
 
 #include "kf/mixin/ExtraAllocationLength.hpp"
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 namespace kf {
 
@@ -25,7 +25,7 @@ namespace kf {
 /// @note The caller is responsible for calling destructors for all allocated objects
 ///       before resetting the arena or discarding the memory.
 ///       Use with container types (like Stack, Queue,  etc..) that manage lifetime automatically.
-struct Arena : mixin::NonCopyable, mixin::Resettable<Arena> {
+struct Arena : mixin::NonCopyable, mixin::Reset<Arena> {
     using Self = Arena;
 
     /// @param buffer Raw memory for the arena

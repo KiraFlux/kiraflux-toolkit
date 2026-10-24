@@ -11,7 +11,7 @@
 #include "kf/gpio.hpp"
 
 #include "kf/mixin/Configured.hpp"
-#include "kf/mixin/Resettable.hpp"
+#include "kf/mixin/Reset.hpp"
 
 #include "kf/driver/sensor/SensorDriver.hpp"
 
@@ -51,7 +51,7 @@ namespace kf::driver::sensor {
 template<typename T> struct QuadratureEncoder final :
 
     driver::sensor::SensorDriver<QuadratureEncoder<T>, typename internal::QuadratureEncoderConfig<T>::PhaseStateType, void>,
-    mixin::Resettable<QuadratureEncoder<T>>,
+    mixin::Reset<QuadratureEncoder<T>>,
     mixin::Configured<internal::QuadratureEncoderConfig<T>>
 
 {
@@ -126,6 +126,11 @@ private:
         _gpio_phase_b.attachInterrupt(on_any_phase_change, static_cast<void *>(this), gpio::DigitalInput::Interrupt::OnChange);
 
         this->reset();
+    }
+
+    void deinit_impl() noexcept {
+        _gpio_phase_a.deinit();
+        _gpio_phase_b.deinit();
     }
 
     typename Config::PhaseStateType read_impl() const noexcept {

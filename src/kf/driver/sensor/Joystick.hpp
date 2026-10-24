@@ -84,6 +84,11 @@ private:
         axis_y.init();
     }
 
+    void deinit_impl() noexcept {
+        axis_x.deinit();
+        axis_y.deinit();
+    }
+
     [[nodiscard]] Value read_impl() noexcept {
         // Output is normalized to unit circle (clamped at magnitude 1.0)
 

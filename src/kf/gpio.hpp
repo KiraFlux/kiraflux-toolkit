@@ -345,6 +345,10 @@ private:
         ::pinMode(static_cast<u8>(this->num()), static_cast<u8>(_pull));
 #endif
     }
+
+    void deinit_impl() noexcept {
+        detachInterrupt();
+    }
 };
 
 /// @brief Analog input pin (ADC) with global resolution control
@@ -397,6 +401,10 @@ private:
         ::pinMode(static_cast<u8>(this->num()), INPUT);
 #endif
     }
+
+    void deinit_impl() noexcept {
+        // no op
+    }
 };
 
 /// @brief Digital output pin
@@ -420,6 +428,13 @@ private:
     void init_impl() noexcept {
 #ifdef ARDUINO
         ::pinMode(static_cast<u8>(this->num()), OUTPUT);
+#endif
+    }
+
+    void deinit_impl() noexcept {
+        level(false);
+#ifdef ARDUINO
+        ::pinMode(static_cast<u8>(this->num()), INPUT);
 #endif
     }
 };
@@ -469,6 +484,13 @@ private:
             true
 #endif
         );
+    }
+
+    void deinit_impl() noexcept {
+#ifdef ARDUINO
+        write(0);
+        ::ledcDetach(static_cast<u8>(this->num()));
+#endif
     }
 };
 
