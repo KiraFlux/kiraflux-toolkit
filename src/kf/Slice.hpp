@@ -12,9 +12,11 @@
 
 namespace kf {
 
+struct SliceTag {};
+
 /// @brief   Non‑owning view of a contiguous memory region with slicing and iteration.
 /// @tparam T Element type
-template<typename T> struct Slice : Sequence<Slice<T>, T> {
+template<typename T> struct Slice : SliceTag, Sequence<Slice<T>, T> {
 
     /// @brief Construct empty slice
     constexpr Slice() noexcept :

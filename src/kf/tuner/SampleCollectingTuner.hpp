@@ -30,7 +30,7 @@ namespace kf::tuner {
 template<typename Impl, typename T> struct SampleCollectingTuner : Tuner<SampleCollectingTuner<Impl, T>> {
     using ConfigType = T;
 
-    enum class State : u8 {
+    enum struct State : u8 {
         Idle,
         Running,
         Calculating,

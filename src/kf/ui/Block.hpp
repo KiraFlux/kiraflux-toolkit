@@ -13,7 +13,7 @@ namespace kf::ui {
 /// @note Blocks define visual containers (e.g., borders, background, spacing) independent of the actual renderer.
 /// The renderer maps each block type to an appropriate visual representation.
 /// For monochrome or limited displays, the renderer may ignore or substitute styles.
-enum class Block : char {
+enum struct Block : char {
     Standard,   ///< Standard content block (default appearance)
     Alternative,///< Visually distinct block (e.g., inset, highlight, secondary)
 };

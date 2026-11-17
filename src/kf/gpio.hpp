@@ -11,6 +11,7 @@
 #include <Arduino.h>
 #endif
 
+#include "kf/Result.hpp"
 #include "kf/core.hpp"
 #include "kf/units.hpp"
 
@@ -25,6 +26,11 @@
 #endif
 
 namespace kf::internal {
+
+enum struct GpioError {
+    NoSlot,
+    LedcAttachFailed,
+};
 
 struct PwmOutputConfig final {
     u32 frequency_hz;  ///< PWM frequency (Hz)
@@ -47,7 +53,7 @@ namespace kf::gpio {
 /// @note Pins 34–39 are input‑only – no output driver, no internal pull‑up/down
 /// @note ADC2 (pins 0, 2, 4, 12–15, 25–27) is unavailable when Wi‑Fi is active
 /// @note Strapping pins (0, 2, 5, 12, 15) affect boot mode – handle carefully
-enum class GpioNumber : u8 {
+enum struct GpioNumber : u8 {
 
     /// @brief GPIO 0
     /// @note STRAPPING PIN, `ADC2_CH1`, `TOUCH`, `UART`, `PWM`
@@ -195,15 +201,16 @@ enum class GpioNumber : u8 {
 using enum GpioNumber;
 
 /// @brief CRTP base for GPIO object
-/// @tparam Impl        The implementation class (CRTP)
-/// @tparam InitResult  Result type of the initialization (default void)
-/// @note Stores the GPIO number and provides `init()` via `mixin::Initable`.
-template<typename Impl, typename InitResult = void> struct GPIO :
+/// @tparam Impl The implementation class (CRTP)
+/// @note Stores the GPIO number
+template<typename Impl> struct GPIO :
 
     mixin::NonCopyable,
-    mixin::Initable<Impl, InitResult>
+    mixin::Initable<Impl, mixin::InitableTraits<internal::GpioError>>
 
 {
+    using Error = internal::GpioError;
+
     explicit constexpr GPIO(GpioNumber gpio_num) noexcept :
         _gpio_num{gpio_num} {}
 
@@ -224,7 +231,7 @@ private:
 struct DigitalInput : GPIO<DigitalInput> {
 
     /// @brief Pull configuration options
-    enum class Pull : u8 {
+    enum struct Pull : u8 {
         External = (
 #ifdef INPUT
             INPUT
@@ -251,7 +258,7 @@ struct DigitalInput : GPIO<DigitalInput> {
     };
 
     /// @brief Interrupt trigger modes
-    enum class Interrupt : u8 {
+    enum struct Interrupt : u8 {
         Disabled = (
 #ifdef DISABLED
             DISABLED
@@ -318,7 +325,7 @@ struct DigitalInput : GPIO<DigitalInput> {
     }
 
     /// @brief Attach interrupt handler to this pin
-    void attachInterrupt(InterruptHandler handler, void *arg, Interrupt mode) noexcept {
+    void attach_interrupt(InterruptHandler handler, void *arg, Interrupt mode) noexcept {
 #ifdef ARDUINO
         ::attachInterruptArg(static_cast<u8>(this->num()), handler, arg, static_cast<int>(mode));
 #else
@@ -329,7 +336,7 @@ struct DigitalInput : GPIO<DigitalInput> {
     }
 
     /// @brief Detach any previously attached interrupt
-    void detachInterrupt() noexcept {
+    void detach_interrupt() noexcept {
 #ifdef ARDUINO
         ::detachInterrupt(static_cast<u8>(this->num()));
 #endif
@@ -338,16 +345,17 @@ struct DigitalInput : GPIO<DigitalInput> {
 private:
     Pull const _pull;
 
-    KF_IMPL_GPIO(DigitalInput, void);
+    KF_IMPL_GPIO(DigitalInput);
 
-    void init_impl() noexcept {
+    auto init_impl() noexcept -> Traits::ActionResult {
 #ifdef ARDUINO
         ::pinMode(static_cast<u8>(this->num()), static_cast<u8>(_pull));
 #endif
+        return ok();
     }
 
     void deinit_impl() noexcept {
-        detachInterrupt();
+        detach_interrupt();
     }
 };
 
@@ -394,12 +402,13 @@ struct AdcInput : GPIO<AdcInput> {
 private:
     inline static usize resolution_bits{12};// Arduino default resolution on ESP32 is 12-bits
 
-    KF_IMPL_GPIO(AdcInput, void);
+    KF_IMPL_GPIO(AdcInput);
 
-    void init_impl() noexcept {
+    auto init_impl() noexcept -> Traits::ActionResult {
 #ifdef ARDUINO
         ::pinMode(static_cast<u8>(this->num()), INPUT);
 #endif
+        return ok();
     }
 
     void deinit_impl() noexcept {
@@ -423,12 +432,13 @@ struct DigitalOutput : GPIO<DigitalOutput> {
     }
 
 private:
-    KF_IMPL_GPIO(DigitalOutput, void);
+    KF_IMPL_GPIO(DigitalOutput);
 
-    void init_impl() noexcept {
+    auto init_impl() noexcept -> Traits::ActionResult {
 #ifdef ARDUINO
         ::pinMode(static_cast<u8>(this->num()), OUTPUT);
 #endif
+        return ok();
     }
 
     void deinit_impl() noexcept {
@@ -445,7 +455,7 @@ private:
 /// @note Supports writing duty cycle directly or via pulse width in microseconds.
 struct PwmOutput :
 
-    GPIO<PwmOutput, bool>,
+    GPIO<PwmOutput>,
     mixin::Configured<internal::PwmOutputConfig>
 
 {
@@ -456,7 +466,7 @@ struct PwmOutput :
     using Duty = u16;
 
     explicit constexpr PwmOutput(Config const &config, GpioNumber gpio_num) noexcept :
-        GPIO<PwmOutput, bool>{gpio_num}, mixin::Configured<Config>{config} {}
+        GPIO<PwmOutput>{gpio_num}, mixin::Configured<Config>{config} {}
 
     /// @brief Write duty cycle (0..max_duty)
     void write(Duty duty) const noexcept {
@@ -474,16 +484,18 @@ struct PwmOutput :
     }
 
 private:
-    KF_IMPL_GPIO(PwmOutput, bool);
+    KF_IMPL_GPIO(PwmOutput);
 
-    bool init_impl() noexcept {
-        return (
+    auto init_impl() noexcept -> Traits::ActionResult {
 #ifdef ARDUINO
-            ::ledcAttach(static_cast<u8>(this->num()), this->config().frequency_hz, this->config().resolution_bits)
+        if (::ledcAttach(static_cast<u8>(this->num()), this->config().frequency_hz, this->config().resolution_bits)) {
+            return ok();
+        } else {
+            return error(Error::LedcAttachFailed);
+        }
 #else
-            true
+        return ok();
 #endif
-        );
     }
 
     void deinit_impl() noexcept {

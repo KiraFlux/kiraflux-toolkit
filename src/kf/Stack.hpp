@@ -13,6 +13,7 @@
 #include "kf/Slice.hpp"
 #include "kf/core.hpp"
 
+#include "kf/mixin/Capacity.hpp"
 #include "kf/mixin/Read.hpp"
 #include "kf/mixin/ReadAvailable.hpp"
 #include "kf/mixin/Reset.hpp"
@@ -31,6 +32,7 @@ template<typename T> struct Stack :
 
     StackTag,
     Sequence<Stack<T>, T>,
+    mixin::Capacity<Stack<T>>,
     mixin::Read<Stack<T>, T>,
     mixin::ReadAvailable<Stack<T>>,
     mixin::Write<Stack<T>, T>,
@@ -50,11 +52,6 @@ template<typename T> struct Stack :
     /// @param init_length  Initial number of elements already in buffer (default 0)
     explicit constexpr Stack(Slice<T> buffer, usize init_length = 0) noexcept :
         _buffer{buffer}, _length{init_length} {}
-
-    /// @brief Get Stack capacity (max length)
-    [[nodiscard]] constexpr usize capacity() const noexcept {
-        return _buffer.length();
-    }
 
     /// @brief Is Stack reach max length
     [[nodiscard]] constexpr bool full() const noexcept {
@@ -85,6 +82,11 @@ private:
 
     constexpr usize length_impl() const noexcept {
         return _length;
+    }
+
+    KF_IMPL_CAPACITY(Self);
+    constexpr usize capacity_impl() const noexcept {
+        return _buffer.length();
     }
 
     KF_IMPL_READ(Self, T);

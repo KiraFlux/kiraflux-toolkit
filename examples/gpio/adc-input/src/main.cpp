@@ -4,46 +4,33 @@
 
 // KiraFlux-Toolkit Example 'gpio/adc-input'
 
-// Demonstrates analog-to-digital conversion using kf::gpio::AdcInput.
-// The example sets ADC resolution globally, reads the value every 100 ms and logs it.
-// The loop is bounded so that the full init() -> read() -> deinit() lifecycle is visible.
-
 #include <kf/gpio.hpp>
 #include <kf/main.hpp>
 #include <kf/rtos/Task.hpp>
 
+using kf::gpio::AdcInput;
+
 void kf::main(kf::Init &init) {
     init.logger.info("KiraFlux-Toolkit Example: gpio/adc-input");
 
-    // Create an ADC input object on GPIO pin 35.
-    // The pin number is specified using the gpio::GpioNumber enum class.
-    gpio::AdcInput my_adc_input{
-        gpio::G35,
-    };
+    AdcInput::resolution(12);
 
-    // Set the ADC resolution globally (in bits).
-    // This affects all ADC readings on the device. Default is 12 bits on ESP32.
-    gpio::AdcInput::resolution(12);
+    auto adc_pool = init.arena.create_pool<AdcInput>(1).unwrap();
 
-    // Query the current resolution (returns the number of bits).
-    // gpio::AdcInput::Value is a u16 type representing the raw ADC reading.
-    gpio::AdcInput::Value const r = gpio::AdcInput::resolution();
+    auto const result = AdcInput::create(adc_pool, gpio::G35);
+    if (result.is_error()) {
+        init.logger.error("AdcInput creation failed: {}", result.error());
+        return;
+    }
+    auto &my_adc_input = result.ok();
+    kf_defer(
+        my_adc_input.destroy(adc_pool);
+        init.logger.info("ADC input deinitialized"););
 
-    // Initialize the ADC pin (configures pin mode as INPUT).
-    my_adc_input.init();
-
-    // Read and log the ADC value every 100 ms for 10 seconds.
     for (int i = 0; i < 100; i += 1) {
         auto const value = my_adc_input.read();
-
-        // Log the current value.
         init.logger.info("value: {}", value);
 
-        // Wait 100 ms before the next read.
         rtos::Task::sleep(100);
     }
-
-    // Release the ADC pin.
-    my_adc_input.deinit();
-    init.logger.info("ADC input deinitialized");
 }

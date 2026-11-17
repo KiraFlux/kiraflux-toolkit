@@ -19,6 +19,7 @@
 #include "kf/mixin/Invariant.hpp"
 #include "kf/mixin/ReprTo.hpp"
 #include "kf/mixin/Reset.hpp"
+#include "kf/mixin/Storage.hpp"
 
 namespace kf {
 
@@ -189,6 +190,14 @@ protected:
         return std::move(_value);
     }
 
+    /// @note Available only through `Option<T>::emplace` for non-reference T.
+    /// @warning If the resulting value coincides with the sentinel (usize/float/enum),
+    ///          `Option<T>::is_some()` returns `false` afterwards.
+    template<typename... Args> [[nodiscard]] T &emplace_impl(Args &&...args) noexcept {
+        _value = T(std::forward<Args>(args)...);
+        return _value;
+    }
+
 private:
     T _value;
 
@@ -212,6 +221,8 @@ template<typename T> struct SentinelStorage<T &> : StorageBase<SentinelStorage<T
 
     constexpr SentinelStorage(T &value) noexcept :
         _ptr{&value} {}
+
+    // no emplace_impl: references cannot be constructed
 
 protected:
     [[nodiscard]] constexpr T &get() noexcept {
@@ -260,6 +271,13 @@ protected:
 
     [[nodiscard]] constexpr T &&get() && noexcept {
         return std::move(_value);
+    }
+
+    template<typename... Args> [[nodiscard]] T &emplace_impl(Args &&...args) noexcept {
+        if (_is_some) { _value.~T(); }
+        new (static_cast<void *>(&_value)) T(std::forward<Args>(args)...);
+        _is_some = true;
+        return _value;
     }
 
 private:
@@ -375,12 +393,18 @@ protected:
         return std::move(*reinterpret_cast<T *>(_buffer));
     }
 
+    template<typename... Args> [[nodiscard]] T &emplace_impl(Args &&...args) noexcept {
+        this->reset();
+        construct(std::forward<Args>(args)...);
+        return this->get();
+    }
+
 private:
     alignas(T) u8 _buffer[sizeof(T)]{};
     bool _is_some{};
 
-    void construct(auto &&value) noexcept {
-        new (static_cast<void *>(_buffer)) T(std::forward<decltype(value)>(value));
+    template<typename... Args> void construct(Args &&...args) noexcept {
+        new (static_cast<void *>(_buffer)) T(std::forward<Args>(args)...);
         _is_some = true;
     }
 
@@ -398,7 +422,7 @@ private:
     }
 };
 
-template<typename T> using Storage = std::conditional_t<
+template<typename T> using StorageChoice = std::conditional_t<
 
     can_use_sentinel<T>::value,
     SentinelStorage<T>,
@@ -411,12 +435,13 @@ template<typename T> using Storage = std::conditional_t<
 template<typename T> struct Option :
 
     OptionTag,
-    internal::Storage<T>,
-    mixin::ReprTo<Option<T>>
+    internal::StorageChoice<T>,
+    mixin::ReprTo<Option<T>>,
+    mixin::Storage<Option<T>, T>
 
 {
 private:
-    using Base = internal::Storage<T>;
+    using Base = internal::StorageChoice<T>;
 
 public:
     // constructors
@@ -432,6 +457,18 @@ public:
     template<typename U> explicit constexpr Option(U &&value) noexcept
         requires(not std::is_same_v<std::decay_t<U>, Option>)
         : Base(std::forward<U>(value)) {}
+
+    // emplace
+
+    /// @brief Construct T in place, replacing current content.
+    /// @note Available for any non-reference T.
+    /// @warning For sentinel storages (`usize`, `float`, `enum`): if the resulting
+    ///          value coincides with the sentinel, `is_some()` returns `false` afterwards.
+    template<typename... Args> [[nodiscard]] T &emplace(Args &&...args) noexcept
+        requires(not std::is_reference_v<T>)
+    {
+        return this->emplace_impl(std::forward<Args>(args)...);
+    }
 
     // unwrap
 
@@ -498,6 +535,23 @@ public:
     }
 
 private:
+    KF_IMPL_STORAGE(Option<T>, T);
+
+    template<typename... Args> Option<T &> alloc_impl(Args &&...args) noexcept
+        requires(not std::is_reference_v<T>)
+    {
+        if (this->is_some()) { return none; }
+        return some_ref(this->emplace(std::forward<Args>(args)...));
+    }
+
+    void free_impl(T &) noexcept {
+        this->reset();
+    }
+
+    bool contains_impl(std::remove_reference_t<T> const *ptr) const noexcept {
+        return this->is_some() and ptr == &this->get();
+    }
+
     constexpr void check() const noexcept {
         if (this->is_none()) {
             abort();

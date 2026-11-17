@@ -13,6 +13,7 @@
 #include "kf/Slice.hpp"
 #include "kf/core.hpp"
 
+#include "kf/mixin/Capacity.hpp"
 #include "kf/mixin/Length.hpp"
 #include "kf/mixin/Read.hpp"
 #include "kf/mixin/ReadAvailable.hpp"
@@ -29,6 +30,7 @@ struct QueueTag {};
 template<typename T> struct Queue :
 
     QueueTag,
+    mixin::Capacity<Queue<T>>,
     mixin::Length<Queue<T>, usize>,
     mixin::Read<Queue<T>, T>,
     mixin::ReadAvailable<Queue<T>>,
@@ -49,11 +51,6 @@ template<typename T> struct Queue :
     /// @param init_length  Initial number of elements already in buffer (default 0)
     explicit constexpr Queue(Slice<T> buffer, usize init_length = 0) noexcept :
         _buffer{buffer}, _length{init_length} {}
-
-    /// @brief Get queue capacity (max number of elements)
-    [[nodiscard]] constexpr usize capacity() const noexcept {
-        return _buffer.length();
-    }
 
     /// @brief Check if queue is empty
     [[nodiscard]] constexpr bool empty() const noexcept {
@@ -95,6 +92,11 @@ private:
     /// @note Call only when this->capacity() > 0
     [[nodiscard]] constexpr usize index_at(usize offset) const noexcept {
         return (_head + offset) % this->capacity();
+    }
+
+    KF_IMPL_CAPACITY(Self);
+    constexpr usize capacity_impl() const noexcept {
+        return _buffer.length();
     }
 
     KF_IMPL_LENGTH(Self, usize);

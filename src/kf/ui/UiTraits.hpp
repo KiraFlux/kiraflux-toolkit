@@ -68,8 +68,10 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
 
 #define KF_IMPL_ADJUSTER(...) friend struct Adjuster<__VA_ARGS__>
 
+    struct ArithmeticAdjusterTag {};
+
     /// @brief Arithmetic mode: value += direction * step
-    template<arithmetic T> struct ArithmeticAdjuster final : Adjuster<ArithmeticAdjuster<T>, T> {
+    template<arithmetic T> struct ArithmeticAdjuster final : ArithmeticAdjusterTag, Adjuster<ArithmeticAdjuster<T>, T> {
     private:
         KF_IMPL_ADJUSTER(ArithmeticAdjuster<T>, T);
         static constexpr T adjust_impl(T value, T step, int direction) noexcept {
@@ -78,7 +80,7 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
     };
 
     /// @brief ArithmeticPositiveOnly mode: value += direction * step, clamp >= 0
-    template<arithmetic T> struct ArithmeticPositiveOnlyAdjuster final : Adjuster<ArithmeticPositiveOnlyAdjuster<T>, T> {
+    template<arithmetic T> struct ArithmeticPositiveOnlyAdjuster final : ArithmeticAdjusterTag, Adjuster<ArithmeticPositiveOnlyAdjuster<T>, T> {
     private:
         KF_IMPL_ADJUSTER(ArithmeticPositiveOnlyAdjuster<T>, T);
         static constexpr T adjust_impl(T value, T step, int direction) noexcept {
@@ -86,8 +88,10 @@ template<implements<widget::WidgetTag> W> struct UiTraits : UiTraitsTag {
         }
     };
 
+    struct GeometricAdjusterTag {};
+
     /// @brief Geometric mode: value *= step for positive direction, /= for negative
-    template<arithmetic T> struct GeometricAdjuster final : Adjuster<GeometricAdjuster<T>, T> {
+    template<arithmetic T> struct GeometricAdjuster final : GeometricAdjusterTag, Adjuster<GeometricAdjuster<T>, T> {
     private:
         KF_IMPL_ADJUSTER(GeometricAdjuster<T>, T);
         static constexpr T adjust_impl(T value, T step, int direction) noexcept {

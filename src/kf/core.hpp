@@ -10,14 +10,51 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#include <utility>
 
 namespace kf {
 
+namespace internal {
+
+template<typename F> struct Defer {
+
+    explicit Defer(F f) noexcept : fn{std::move(f)} {}
+
+    Defer(Defer const &) = delete;
+    Defer &operator=(Defer const &) = delete;
+    Defer(Defer &&) = delete;
+    Defer &operator=(Defer &&) = delete;
+
+    ~Defer() noexcept {
+        if (active) fn();
+    }
+
+    F fn;
+    bool active{true};
+};
+
+template<typename F> Defer(F) -> Defer<F>;
+
+#define KF_CONCAT_IMPL(a, b) a##b
+#define KF_CONCAT(a, b) KF_CONCAT_IMPL(a, b)
+
+#define kf_defer(...)                                                                 \
+    [[maybe_unused]] ::kf::internal::Defer KF_CONCAT(kf_detail_defer_, __COUNTER__) { \
+        [&]() noexcept { __VA_ARGS__ }                                                \
+    }
+
+#define kf_errdefer(...)                                       \
+    [[maybe_unused]] ::kf::internal::Defer kf_errdefer_state { \
+        [&]() noexcept { __VA_ARGS__ }                         \
+    }
+
+#define kf_errdefer_cancel() (kf_errdefer_state.active = false)
+
+}// namespace internal
+
 /// @brief Tag type for constructing an empty Option (None).
 /// @note Use the global constant kf::none to create empty options.
-struct NoneType final {
-    explicit NoneType() = default;
-};
+struct NoneType final {};
 
 /// @brief Global constant for constructing an empty Option (None).
 constexpr NoneType none{};
@@ -114,7 +151,7 @@ concept c_string = (
 
     std::is_same_v<T, char *> or
     std::is_same_v<T, char const *> or
-    (std::is_array_v<T> and std::is_same_v<std::remove_extent_t<T>, char>)
+    (std::is_array_v<T> and std::is_same_v<std::remove_cv_t<std::remove_extent_t<T>>, char>)
 
 );
 

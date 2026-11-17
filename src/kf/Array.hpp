@@ -31,6 +31,7 @@ template<typename T, usize N> struct Array :
 
     T items[N];
 
+    // TODO: move to sequence
     constexpr void fill(T const &value) noexcept {
         for (auto &item: *this) {
             item = value;

@@ -16,7 +16,7 @@
 
 namespace kf::internal {
 
-enum class JoystickListenerDirection : u8 {
+enum struct JoystickListenerDirection : u8 {
     Up = 0,
     Down = 1,
     Left = 2,

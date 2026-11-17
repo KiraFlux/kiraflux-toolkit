@@ -86,7 +86,7 @@ struct TextualRenderer :
 
     /// @brief Helper to write character with cursor tracking
     void write_char(char ch) noexcept {
-        if (_buffer.full() or _cursor.row >= this->config().rows_total) { return; }
+        if (_buffer.full() or _cursor.row > this->config().rows_total) { return; }
 
         if (ch == '\n') {
             _cursor.newline();
@@ -194,11 +194,11 @@ private:
                 return;
 
             case Decoration::ShortArrowLeft:
-                write_char('>');
+                write_char('<');
                 return;
 
             case Decoration::ShortArrowRight:
-                write_char('<');
+                write_char('>');
                 return;
 
             case Decoration::ShortArrowUp:

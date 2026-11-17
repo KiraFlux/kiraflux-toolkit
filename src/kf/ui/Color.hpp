@@ -15,7 +15,7 @@ namespace kf::ui {
 ///       The concrete renderer maps each semantic color to an appropriate visual representation.
 ///
 ///       For monochrome or limited displays, the renderer may ignore or substitute colors.
-enum class Color : unsigned char {
+enum struct Color : unsigned char {
 
     /// @brief Default text/foreground color
     /// @note For foreground: standard content text (e.g., labels, values). Should have high contrast with background.

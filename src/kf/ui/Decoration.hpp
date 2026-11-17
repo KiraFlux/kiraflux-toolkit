@@ -14,7 +14,7 @@ namespace kf::ui {
 ///       that carry meaning independent of the actual renderer.
 ///       The renderer maps each decoration to an appropriate symbol or glyph.
 ///       For monochrome or limited displays, the renderer may substitute with a simple character.
-enum class Decoration : char {
+enum struct Decoration : char {
     /// @brief Horizontal space between primitives
     Space,
 

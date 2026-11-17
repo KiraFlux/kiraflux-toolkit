@@ -12,6 +12,7 @@
 
 #include "kf/Bytes.hpp"
 #include "kf/Option.hpp"
+#include "kf/Pool.hpp"
 #include "kf/Slice.hpp"
 #include "kf/core.hpp"
 
@@ -86,6 +87,28 @@ struct Arena : mixin::NonCopyable, mixin::Reset<Arena> {
         }
 
         return some_ref(*static_cast<T *>(ptr));
+    }
+
+    /// @brief Create a `Pool<T>` with `count` slots, carved from this arena.
+    /// @param count Number of slots.
+    /// @return Pool with capacity `count`, or `none` if arena lacks memory.
+    /// @note The `Pool` object is returned by value; its slot arrays are arena-backed.
+    ///       The caller must keep the returned `Pool` alive while in use.
+    /// @note All slots start free (`used[i] = false`).
+    template<typename T> [[nodiscard]] auto create_pool(usize count) noexcept -> Option<Pool<T>> {
+        auto slots = allocate<T>(count);
+        auto used = allocate<bool>(count);
+
+        if (slots.empty() or used.empty()) {
+            return none;
+        }
+
+        for (auto &u: used) {
+            u = false;
+        }
+        // TODO: fill
+
+        return some(Pool<T>{slots, used});
     }
 
 private:

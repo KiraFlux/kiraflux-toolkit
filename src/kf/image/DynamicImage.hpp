@@ -26,7 +26,7 @@ template<implements<pixel::PixelTag> P> struct DynamicImage final : Image<Dynami
     using ColorType = typename P::ColorType;
 
     /// @brief Possible errors when creating DynamicImage
-    enum class Error : u8 {
+    enum struct Error : u8 {
         BufferTooSmall,   ///< Buffer size too small for this region
         SizeTooSmall,     ///< Region dimensions are less than 1 pixel
         SizeTooLarge,     ///< Sub-region exceeds parent bounds

@@ -122,10 +122,9 @@ void kf::main(kf::Init &init) {
 
     // --- 6. Availability and ownership ---
     init.logger.info("Remaining bytes: {}", arena.available());
-    int *outside = new int(42);
+    int outside = 42;
     init.logger.info("owns(scores) = {}", arena.owns(scores.data()));
-    init.logger.info("owns(outside) = {}", arena.owns(outside));
-    delete outside;
+    init.logger.info("owns(outside) = {}", arena.owns(&outside));
 
     // --- 7. Reset — O(1) discard all allocations ---
     init.logger.info("Resetting arena...");

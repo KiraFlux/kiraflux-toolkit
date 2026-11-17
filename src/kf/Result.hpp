@@ -15,10 +15,17 @@
 
 namespace kf {
 
+struct ResultTag {};
+
 namespace internal {
 
 /// @brief Base class for result error handling logic (CRTP)
-template<typename Impl, trivial E> struct ResultErrorController {
+template<typename Impl, trivial E> struct ResultBase :
+
+    ResultTag,
+    mixin::ReprTo<Impl>
+
+{
 
     /// @brief Check if result contains an error
     [[nodiscard]] constexpr bool is_error() const noexcept {
@@ -26,11 +33,15 @@ template<typename Impl, trivial E> struct ResultErrorController {
     }
 
     /// @brief Get the stored error (panic if not error)
-    [[nodiscard]] E const &error() const noexcept {
+    [[nodiscard]] constexpr E const &error() const noexcept {
         if (is_error()) { return static_cast<Impl const *>(this)->get_error_impl(); }
         abort();
     }
 };
+
+#define KF_IMPL_RESULT_BASE(__impl__, __error__)                   \
+    friend struct ::kf::internal::ResultBase<__impl__, __error__>; \
+    KF_IMPL_REPR_TO(__impl__)
 
 /// @brief Internal wrapper for a success value (used with kf::ok)
 template<typename T> struct ResultValueWrapper {
@@ -47,20 +58,15 @@ template<typename E> struct ResultErrorWrapper {
 
 }// namespace internal
 
-struct ResultTag {};
-
 /// @brief Result type that can hold either a value or an error
 /// @tparam T Type of successful result value
 /// @tparam E Type of error value
 /// @note Embedded‑friendly alternative to exceptions.
 ///       Use kf::ok() and kf::error() to create instances.
 /// @see kf::ok, kf::error
-template<typename T, typename E> struct Result final :
+template<typename T, typename E> struct Result final : internal::ResultBase<Result<T, E>, E> {
 
-    ResultTag,
-    internal::ResultErrorController<Result<T, E>, E>
-
-{
+    using Self = Result<T, E>;
     using ValueType = T;
 
     /// @brief Construct from ResultValueWrapper
@@ -73,7 +79,7 @@ template<typename T, typename E> struct Result final :
     constexpr Result(internal::ResultErrorWrapper<E> error) noexcept :
         _is_ok{false}, _error{std::move(error.value)} {}
 
-    ~Result() noexcept {
+    constexpr ~Result() noexcept {
         if (_is_ok) {
             _ok.~T();
         } else {
@@ -136,17 +142,16 @@ private:
     };
     bool _is_ok;
 
-    friend struct ::kf::internal::ResultErrorController<Result<T, E>, E>;
+    KF_IMPL_RESULT_BASE(Self, E);
 
-    [[nodiscard]] bool is_error_impl() const noexcept {
+    [[nodiscard]] constexpr bool is_error_impl() const noexcept {
         return not _is_ok;
     }
 
-    [[nodiscard]] E const &get_error_impl() const noexcept {
+    [[nodiscard]] constexpr E const &get_error_impl() const noexcept {
         return _error;
     }
 
-    KF_IMPL_REPR_TO(Result<void, E>);
     constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         usize ret = 0;
         if (this->is_error()) {
@@ -161,15 +166,105 @@ private:
     }
 };
 
+/// @brief Result type that can hold either reference to a value or an error
+/// @tparam T Type of successful result value
+/// @tparam E Type of error value
+/// @note Embedded‑friendly alternative to exceptions.
+///       Use kf::ok_ref() and kf::error() to create instances.
+/// @see kf::ok_ref, kf::error
+template<typename T, typename E> struct Result<T &, E> final : internal::ResultBase<Result<T &, E>, E> {
+
+    using Self = Result<T &, E>;
+    using ValueType = T &;
+
+    /// @brief Construct from ResultValueWrapper
+    /// @see kf::ok_ref(T&)
+    constexpr Result(internal::ResultValueWrapper<T &> ok) noexcept :
+        _ok{&ok.value} {}
+
+    /// @brief Construct from ResultErrorWrapper
+    /// @see kf::error(E)
+    constexpr Result(internal::ResultErrorWrapper<E> error) noexcept :
+        _ok{nullptr}, _error{std::move(error.value)} {}
+
+    constexpr ~Result() noexcept {
+        if (this->is_error()) {
+            _error.~E();
+        }
+    }
+
+    /// @brief Check if result contains a value (success)
+    [[nodiscard]] constexpr bool is_ok() const noexcept {
+        return nullptr != _ok;
+    }
+
+    [[nodiscard]] T &ok() const noexcept {
+        if (this->is_error()) { abort(); }
+        return *_ok;
+    }
+
+    /// @brief Transform the success value using a function
+    /// @param f Mapping function: T& -> U
+    /// @return Result<U, E> containing the mapped value on success,
+    ///         otherwise the original error.
+    [[nodiscard]] auto map(auto &&f) const noexcept -> Result<decltype(f(std::declval<T &>())), E> {
+        if (this->is_ok()) {
+            if constexpr (std::is_void_v<decltype(f(std::declval<T &>()))>) {
+                f(*_ok);
+                return {internal::ResultValueWrapper<void>{}};
+            } else {
+                return {internal::ResultValueWrapper<decltype(f(std::declval<T &>()))>{f(*_ok)}};
+            }
+        } else {
+            return {internal::ResultErrorWrapper<E>{_error}};
+        }
+    }
+
+    /// @brief Transform the error value using a function
+    /// @param f Mapping function: E -> W
+    /// @return Result<T&, W> containing the mapped error on failure,
+    ///         otherwise the original success value.
+    [[nodiscard]] auto map_error(auto &&f) const noexcept -> Result<T &, decltype(f(std::declval<E>()))> {
+        if (this->is_ok()) {
+            return {internal::ResultValueWrapper<T &>{*_ok}};
+        } else {
+            return {internal::ResultErrorWrapper<decltype(f(std::declval<E>()))>{f(_error)}};
+        }
+    }
+
+private:
+    T *_ok;
+    E _error;
+
+    KF_IMPL_RESULT_BASE(Self, E);
+
+    constexpr bool is_error_impl() const noexcept {
+        return nullptr == _ok;
+    }
+
+    constexpr E const &get_error_impl() const noexcept {
+        return _error;
+    }
+
+    constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
+        usize ret = 0;
+        if (this->is_error()) {
+            ret += char_writable.append("error(");
+            ret += char_writable.append(_error);
+        } else {
+            ret += char_writable.append("ok_ref(");
+            ret += char_writable.append(*_ok);
+        }
+        ret += char_writable.append(')');
+        return ret;
+    }
+};
+
 /// @brief Specialization of Result for void success value
 /// @tparam E Type of error value
-template<typename E> struct Result<void, E> final :
+template<typename E> struct Result<void, E> final : internal::ResultBase<Result<void, E>, E> {
 
-    ResultTag,
-    internal::ResultErrorController<Result<void, E>, E>,
-    mixin::ReprTo<Result<void, E>>
-
-{
+    using Self = Result<void, E>;
     using ValueType = void;
 
     /// @brief Construct from ResultValueWrapper<void>
@@ -182,7 +277,7 @@ template<typename E> struct Result<void, E> final :
     constexpr Result(internal::ResultErrorWrapper<E> error) noexcept :
         _is_error{true}, _error{std::move(error.value)} {}
 
-    ~Result() noexcept {
+    constexpr ~Result() noexcept {
         if (_is_error) {
             _error.~E();
         }
@@ -211,7 +306,7 @@ private:
     E _error;
     bool _is_error;
 
-    friend struct ::kf::internal::ResultErrorController<Result<void, E>, E>;
+    KF_IMPL_RESULT_BASE(Self, E);
 
     [[nodiscard]] bool is_error_impl() const noexcept {
         return _is_error;
@@ -221,7 +316,6 @@ private:
         return _error;
     }
 
-    KF_IMPL_REPR_TO(Result<void, E>);
     constexpr usize repr_to_impl(implements<mixin::WriteTag<char>> auto &char_writable) const noexcept {
         if (this->is_error()) {
             return (
@@ -241,6 +335,10 @@ constexpr auto ok(auto &&value) noexcept -> internal::ResultValueWrapper<std::de
     return {std::forward<decltype(value)>(value)};
 }
 
+template<typename T> constexpr auto ok_ref(T &value) noexcept -> internal::ResultValueWrapper<T &> {
+    return {value};
+}
+
 /// @brief Create a successful Result<void,  E>
 /// @return internal::ResultValueWrapper<void> for implicit conversion to Result<void, E>
 constexpr auto ok() noexcept -> internal::ResultValueWrapper<void> {
@@ -257,15 +355,23 @@ constexpr auto error(auto &&error) noexcept -> internal::ResultErrorWrapper<std:
 }// namespace kf
 
 /// @brief Early-return macro for Result error propagation
-/// @param __expression__ Expression of type `Result<T, E>`
+/// @param __expr__ Expression of type `Result<T, E>`
 /// @return The success value `T`, or returns the error from the enclosing function
 /// @note Expression evaluated once. Requires GNU statement expressions.
-#define KF_TRY(__expression__)                                                                                              \
+#define kf_try(__expr__)                                                                                                    \
     ({                                                                                                                      \
-        auto result = (__expression__);                                                                                     \
-        static_assert(std::is_base_of_v<::kf::ResultTag, std::decay_t<decltype(result)>>, "KF_TRY requires a Result type"); \
+        auto &&result = (__expr__);                                                                                         \
+        static_assert(std::is_base_of_v<::kf::ResultTag, std::decay_t<decltype(result)>>, "kf_try requires a Result type"); \
         if (result.is_error()) {                                                                                            \
             return ::kf::error(result.error());                                                                             \
         }                                                                                                                   \
         result.ok();                                                                                                        \
+    })
+
+#define kf_try_map_err(__expr__, __error__)                                                                                     \
+    ({                                                                                                                          \
+        auto &&_r = (__expr__);                                                                                                 \
+        static_assert(std::is_base_of_v<::kf::ResultTag, std::decay_t<decltype(_r)>>, "kf_try_map_err requires a Result type"); \
+        if (_r.is_error()) return ::kf::error(__error__);                                                                       \
+        _r.ok();                                                                                                                \
     })

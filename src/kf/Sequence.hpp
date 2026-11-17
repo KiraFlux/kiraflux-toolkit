@@ -17,7 +17,9 @@ namespace kf {
 
 template<typename> struct Slice;// forward declaration
 
-template<typename T> struct SequenceTag {
+struct SequenceTag {};
+
+template<typename T> struct SequenceOf : SequenceTag {
     struct SequenceTraits {
         using Type = T;
     };
@@ -28,7 +30,7 @@ template<typename T> struct SequenceTag {
 /// @tparam T Item type
 template<typename Impl, typename T> struct Sequence :
 
-    SequenceTag<T>,
+    SequenceOf<T>,
     mixin::Indexable<Sequence<Impl, T>, T>,
     mixin::ReprTo<Sequence<Impl, T>>,
     mixin::Length<Impl, usize>
@@ -97,6 +99,10 @@ template<typename Impl, typename T> struct Sequence :
         }
         return none;
     }
+
+    // TODO: fill
+
+    // TODO: contains
 
 private:
     KF_IMPL_INDEXABLE(Self, T);

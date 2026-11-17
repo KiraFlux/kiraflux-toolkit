@@ -12,7 +12,7 @@ namespace kf::ui {
 /// @brief Action requested by a widget after handling user input
 /// @note Widgets return one of these values to tell the page what to do next.
 /// @note This allows fine-grained control over UI updates without unnecessary work.
-enum class Request : char {
+enum struct Request : char {
 
     /// @brief Nothing needs to be done
     /// @note Used when the widget's state didn't change (e.g., clicking a disabled button).

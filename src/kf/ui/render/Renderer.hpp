@@ -15,7 +15,6 @@
 #include "kf/math.hpp"
 
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/mixin/Representable.hpp"
 
 #include "kf/ui/Block.hpp"
 #include "kf/ui/Color.hpp"
@@ -120,9 +119,7 @@ template<typename Impl> struct Renderer :
     void value(auto const &v) noexcept {
         using T = decltype(v);
 
-        if constexpr (std::is_base_of_v<mixin::RepresentableTag, T>) {
-            this->value(v.repr());
-        } else if constexpr (std::is_base_of_v<OptionTag, T>) {
+        if constexpr (std::is_base_of_v<OptionTag, T>) {
 
             if (v.is_some()) {
                 this->value(v.unwrap());

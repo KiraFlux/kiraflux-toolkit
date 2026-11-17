@@ -3,59 +3,110 @@
 // KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 /// @file    mixin/Initable.hpp
-/// @brief   Adds init() forwarding to init_impl().
+/// @brief   Storage-based create()/destroy() for resource-dependent objects.
 
 #pragma once
 
-#include <utility>// std::forward
+#include <concepts>   // std::convertible_to
+#include <type_traits>// std::is_void_v
+#include <utility>    // std::forward
 
-namespace kf {
+#include "kf/Result.hpp"
+#include "kf/core.hpp"
 
-namespace mixin {
+#include "kf/mixin/Storage.hpp"
 
+namespace kf::mixin {
+
+/// @brief Marker for Initable traits bundles.
+struct InitableTraitsTag {};
+
+/// @brief Traits bundle for `mixin::Initable`.
+/// @tparam E Error enum with `NoSlot`.
+/// @tparam R Resource for `init_impl`/`deinit_impl`; `void` - none.
+template<typename E, typename R = void>
+    requires requires { { E::NoSlot } -> std::convertible_to<E>; }
+struct InitableTraits : InitableTraitsTag {
+    using Error = E;
+    using Resource = R;
+
+    using ActionResult = Result<void, Error>;
+};
+
+/// @brief Marker for Initable interface.
 struct InitableTag {};
 
-}// namespace mixin
+/// @brief CRTP mixin: construct Impl in storage, call `init_impl` (rollback on failure), free on destroy.
+/// @tparam Impl Concrete type. Must implement `init_impl([R]) -> Result<void, E>` and `deinit_impl([R]) -> void`.
+/// @tparam D    `InitableTraits<E, R>`.
+template<typename Impl, implements<InitableTraitsTag> D> struct Initable : InitableTag {
 
-namespace internal {
+    struct Traits : D {
+        using TraitsBase = D;
+    };
 
-template<typename Impl> struct InitableBase : mixin::InitableTag {
+    using R = Result<Impl &, typename Traits::Error>;
 
-    /// @brief Uninitializes the object
-    void deinit() noexcept {
-        return static_cast<Impl *>(this)->deinit_impl();
+    // create
+
+    [[nodiscard]] static R create(implements<StorageOf<Impl>> auto &storage, auto &&...args) noexcept
+        requires std::is_void_v<typename Traits::Resource>
+    {
+        return construct(storage, [](auto &self) { return self.init_impl(); }, std::forward<decltype(args)>(args)...);
+    }
+
+    [[nodiscard]] static R create(implements<StorageOf<Impl>> auto &storage, auto &&resource, auto &&...args) noexcept
+        requires(not std::is_void_v<typename Traits::Resource>)
+    {
+        return construct(storage, [&resource](auto &self) { return self.init_impl(resource); }, std::forward<decltype(args)>(args)...);
+    }
+
+    // destroy (instance) - delegate to static
+
+    void destroy(implements<StorageOf<Impl>> auto &storage) noexcept
+        requires std::is_void_v<typename Traits::Resource>
+    {
+        destroy(static_cast<Impl *>(this), storage);
+    }
+
+    void destroy(implements<StorageOf<Impl>> auto &storage, auto &&resource) noexcept
+        requires(not std::is_void_v<typename Traits::Resource>)
+    {
+        destroy(static_cast<Impl *>(this), storage, std::forward<decltype(resource)>(resource));
+    }
+
+    // destroy (static, null-safe, owner-safe, idempotent)
+
+    static void destroy(Impl *ptr, implements<StorageOf<Impl>> auto &storage) noexcept
+        requires std::is_void_v<typename Traits::Resource>
+    {
+        if (nullptr == ptr or not storage.contains(ptr)) { return; }
+        ptr->deinit_impl();
+        storage.free(*ptr);
+    }
+
+    static void destroy(Impl *ptr, implements<StorageOf<Impl>> auto &storage, auto &&resource) noexcept
+        requires(not std::is_void_v<typename Traits::Resource>)
+    {
+        if (nullptr == ptr or not storage.contains(ptr)) { return; }
+        ptr->deinit_impl(resource);
+        storage.free(*ptr);
+    }
+
+private:
+    [[nodiscard]] static R construct(implements<StorageOf<Impl>> auto &storage, auto &&init, auto &&...args) noexcept {
+        auto maybe = storage.alloc(std::forward<decltype(args)>(args)...);
+        if (maybe.is_none()) { return error(Traits::Error::NoSlot); }
+
+        auto &self = maybe.unwrap();
+        if (auto r = init(self); r.is_error()) {
+            storage.free(self);
+            return error(r.error());
+        }
+        return ok_ref(self);
     }
 };
 
-}// namespace internal
+}// namespace kf::mixin
 
-namespace mixin {
-
-/// @brief CRTP mixin that adds an `init`, 'deinit' method forwarding to `init_impl`
-/// @tparam Impl       Implementation class (must implement `init_impl`)
-/// @tparam R          return type
-template<typename Impl, typename R> struct Initable : internal::InitableBase<Impl> {
-
-    /// @brief Initializes the object
-    /// @return Value returned by `init_impl`
-    [[nodiscard]] R init() noexcept {
-        return static_cast<Impl *>(this)->init_impl();
-    }
-};
-
-template<typename Impl> struct Initable<Impl, void> : internal::InitableBase<Impl> {
-
-    /// @brief Initializes the object
-    void init() noexcept {
-        static_cast<Impl *>(this)->init_impl();
-    }
-};
-
-}// namespace mixin
-
-}// namespace kf
-
-#define KF_IMPL_INITABLE(__impl__, ...) \
-    friend struct ::kf::mixin::Initable<__impl__, __VA_ARGS__>;\
-    friend struct ::kf::internal::InitableBase<__impl__>
-
+#define KF_IMPL_INITABLE(...) friend struct ::kf::mixin::Initable<__VA_ARGS__, typename Traits::TraitsBase>

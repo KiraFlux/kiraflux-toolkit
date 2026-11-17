@@ -84,12 +84,12 @@ template<implements<render::RenderTag> R, implements<EventTag> E> struct Widget 
     }
 
     /// @brief Get Widget offset
-    [[nodiscard]] constexpr usize offset() const noexcept {
+    [[nodiscard]] constexpr u8 offset() const noexcept {
         return _offset;
     }
 
     /// @brief Set Widget offset
-    constexpr void offset(usize new_offset) noexcept {
+    constexpr void offset(u8 new_offset) noexcept {
         _offset = static_cast<u8>(new_offset);
     }
 

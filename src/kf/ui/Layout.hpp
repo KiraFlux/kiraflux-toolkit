@@ -15,7 +15,7 @@ namespace kf::ui {
 /// A page can suggest a preferred layout to the renderer.
 /// The renderer is free to ignore or adapt the suggestion based on display capabilities and available space.
 /// Fallback to `Vertical` is recommended when the requested layout is not supported.
-enum class Layout : char {
+enum struct Layout : char {
 
     /// @brief Vertical list (one widget per line), the default fallback.
     /// @note Supports scrolling and works on any display.

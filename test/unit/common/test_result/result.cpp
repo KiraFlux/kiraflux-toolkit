@@ -183,7 +183,7 @@ Result<void, Error> kf_try() {
 
     Result<void, Error> r{kf::ok()};
 
-    KF_TRY(r);
+    kf_try(r);
 
     return kf::ok();
 }
@@ -192,7 +192,7 @@ Result<int, Error> kf_try_value() {
 
     Result<int, Error> r{kf::ok(12345)};
 
-    int a = KF_TRY(r);
+    int a = kf_try(r);
 
     return kf::ok(a);
 }

@@ -33,7 +33,7 @@ template<usize N> struct Event : EventTag {
     static constexpr auto type_mask{static_cast<Storage>(event_value_full & (~value_mask))};
     static constexpr auto sign_bit_mask{static_cast<Storage>(Storage{1} << (value_bits - 1))};
 
-    enum class Kind : Storage {
+    enum struct Kind : Storage {
         PageCursorMove = static_cast<Storage>(Storage{0} << value_bits),
         WidgetClick = static_cast<Storage>(Storage{1} << value_bits),
         WidgetValue = static_cast<Storage>(Storage{2} << value_bits),

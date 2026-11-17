@@ -48,7 +48,7 @@ private:
     int _samples_collected{0};
     int _min{0}, _max{0}, _sum{0};
 
-    enum class State : kf::u8 {
+    enum struct State : kf::u8 {
         Idle,
         Collecting,
         Calculating,

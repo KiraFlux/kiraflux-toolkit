@@ -4,36 +4,35 @@
 
 // KiraFlux-Toolkit Example 'gpio/digital-input'
 
-// Demonstrates reading a digital input pin with configurable pull resistor.
-// The loop is bounded so that deinit() is reachable.
-
 #include <kf/gpio.hpp>
 #include <kf/main.hpp>
 #include <kf/rtos/Task.hpp>
 
+using kf::gpio::DigitalInput;
+
 void kf::main(kf::Init &init) {
     init.logger.info("KiraFlux-Toolkit Example: gpio/digital-input");
 
-    // Create a digital input object on GPIO pin 4 with internal pull-down.
-    // Pull options: InternalDown (INPUT_PULLDOWN), InternalUp (INPUT_PULLUP), External (INPUT).
-    gpio::DigitalInput my_digital_input_pin{
+    auto gpio_pool = init.arena.create_pool<DigitalInput>(1).unwrap();
+
+    auto const result = DigitalInput::create(
+        gpio_pool,
         gpio::G4,
-        gpio::DigitalInput::Pull::InternalDown,
-    };
+        DigitalInput::Pull::InternalDown);
 
-    // Initialize the GPIO pin as an input with the specified pull configuration.
-    my_digital_input_pin.init();
+    if (result.is_error()) {
+        init.logger.error("DigitalInput creation failed: {}", result.error());
+        return;
+    }
+    auto &my_digital_input_pin = result.ok();
+    kf_defer(
+        my_digital_input_pin.destroy(gpio_pool);
+        init.logger.info("Digital input deinitialized"););
 
-    // Read and log the pin state every 100 ms for 10 seconds.
     for (int i = 0; i < 100; i += 1) {
         bool const level = my_digital_input_pin.level();
         init.logger.info("level: {}", level);
 
-        // Wait 100 ms before the next read.
         rtos::Task::sleep(100);
     }
-
-    // Release the GPIO pin (detaches any interrupt, if attached).
-    my_digital_input_pin.deinit();
-    init.logger.info("Digital input deinitialized");
 }

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <charconv>
+#include <concepts>// std::convertible_to
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -16,7 +17,6 @@
 #include "kf/math.hpp"
 
 #include "kf/mixin/ReprTo.hpp"
-#include "kf/mixin/Representable.hpp"
 
 namespace kf::mixin {
 
@@ -188,6 +188,12 @@ template<typename Impl> struct Write<Impl, char> : internal::WriteBase<Impl, cha
         return append_null_terminated_string(static_cast<char const *>(value));
     }
 
+    [[nodiscard]] constexpr usize append(auto *value) noexcept
+        requires(not c_string<decltype(value)>)
+    {
+        return append_integer(reinterpret_cast<usize>(value));
+    }
+
     [[nodiscard]] constexpr usize append(integer_type auto value) noexcept {
         return append_integer(value);
     }
@@ -197,14 +203,14 @@ template<typename Impl> struct Write<Impl, char> : internal::WriteBase<Impl, cha
     }
 
     [[nodiscard]] constexpr usize append(enum_type auto value) noexcept {
-        return (
-            append_null_terminated_string("enum(") +
-            append_integer(static_cast<usize>(value)) +
-            append(')'));
-    }
-
-    [[nodiscard]] constexpr usize append(implements<RepresentableTag> auto const &value) noexcept {
-        return append(value.repr());
+        if constexpr (requires { { repr(value) } -> std::convertible_to<StringView>; }) {
+            return append(repr(value));
+        } else {
+            return (
+                append_null_terminated_string("enum(") +
+                append_integer(static_cast<usize>(value)) +
+                append(')'));
+        }
     }
 
     [[nodiscard]] constexpr usize append(implements<ReprToTag> auto const &value) noexcept {

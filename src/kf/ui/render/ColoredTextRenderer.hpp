@@ -61,7 +61,6 @@ struct ColoredTextRendererConfig : mixin::DefaultResettable<ColoredTextRendererC
     };
 
     ui::render::TextualRenderer::Config textual{};
-
     Palette
         normal_foreground_palette{
             .normal = Palette::White,
@@ -71,7 +70,7 @@ struct ColoredTextRendererConfig : mixin::DefaultResettable<ColoredTextRendererC
             .warning = Palette::LightYellow,
             .error = Palette::LightRed,
             .info = Palette::LightCyan,
-            .disabled = Palette::DarkGray,
+            .disabled = Palette::LightGray,
             .highlight = Palette::LightPurple,
         },
         focused_foreground_palette{
@@ -82,7 +81,7 @@ struct ColoredTextRendererConfig : mixin::DefaultResettable<ColoredTextRendererC
             .warning = Palette::Black,
             .error = Palette::Black,
             .info = Palette::Black,
-            .disabled = Palette::LightGray,
+            .disabled = Palette::DarkGray,
             .highlight = Palette::DarkPurple,
         },
         normal_background_palette{
@@ -170,7 +169,8 @@ private:
     void begin_widget_impl(usize index, bool is_focused, usize offset) noexcept {
         _focus_active = is_focused;
 
-        if (_wrapped.layout() == Layout::Vertical) {
+        if (offset > 0 and _wrapped.layout() == Layout::Vertical) {
+            this->background(Color::Normal);
             _wrapped.fill_space(offset * this->config().textual.offset_size);
         }
     }

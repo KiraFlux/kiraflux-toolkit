@@ -88,7 +88,7 @@ void kf::main(kf::Init &init) {
     Option<float> opt_float_empty = none;
     init.logger.debug("float: {}, empty: {}", opt_float, opt_float_empty);
 
-    enum class Color {
+    enum struct Color {
         Red,
         Green,
         Blue

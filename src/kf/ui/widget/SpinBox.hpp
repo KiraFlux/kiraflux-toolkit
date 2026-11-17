@@ -79,7 +79,11 @@ template<implements<UiTraitsTag> U, arithmetic T, implements<typename U::Adjuste
         render.begin_block(Block::Alternative);
 
         if (_is_step_setting_mode) {
-            render.decoration(Decoration::Colon);
+            if constexpr (implements<A, typename U::GeometricAdjusterTag>) {
+                render.value('*');
+            } else {
+                render.value('+');
+            }
             render.value(_step);
         } else {
             render.value(this->value());

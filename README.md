@@ -51,37 +51,35 @@ The library is **header-only**, **C++20**, targets **ESP32 + Arduino framework**
 |            | [Logger](src/kf/Logger.hpp)         | Formatted logging with level prefixes and optional buffering                                |
 | Control    | [PID](src/kf/PID.hpp)               | PID controller with derivative filtering and integral anti-windup                           |
 | I/O        | [GPIO](src/kf/gpio.hpp)             | Digital, analog, and PWM pin abstractions with Arduino backend                              |
-|            | [UART](src/kf/UART.hpp)             | Buffered UART with the same binary I/O interface as other transports                        |
+|            | [UART](src/kf/drv/UART.hpp)         | Buffered UART with the same binary I/O interface as other transports                        |
 | Networking | [MacAddress](src/kf/MacAddress.hpp) | Six-byte MAC address wrapper                                                                |
 | App        | [Main](src/kf/main.hpp)             | Application entry point that bundles arena, logger, and standard I/O into an `Init` context |
 
 ### Buses
-[`kf/bus/`](src/kf/bus/)
+[`kf/drv/`](src/kf/drv/)
 
 | Module                    | Description                                                              |
 | ------------------------- | ------------------------------------------------------------------------ |
-| [Bus](src/kf/bus/Bus.hpp) | CRTP base for buses that hand out node objects                           |
-| [I2C](src/kf/bus/I2C.hpp) | I2C bus and node abstraction with a typed error enum and Arduino backend |
-| [SPI](src/kf/bus/SPI.hpp) | SPI bus and node abstraction with Arduino backend                        |
+| [Bus](src/kf/drv/Bus.hpp) | CRTP base for buses that hand out node objects                           |
+| [I2C](src/kf/drv/I2C.hpp) | I2C bus and node abstraction with a typed error enum and Arduino backend |
+| [SPI](src/kf/drv/SPI.hpp) | SPI bus and node abstraction with Arduino backend                        |
 
 ### Drivers
-[`kf/driver/`](src/kf/driver/)
+[`kf/drv/`](src/kf/drv/)
 
-| Group    | Module                                                            | Description                                                                |
-| -------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Core     | [Driver](src/kf/driver/Driver.hpp)                                | CRTP base for drivers with a uniform init step                             |
-| Actuator | [ActuatorDriver](src/kf/driver/actuator/ActuatorDriver.hpp)       | CRTP base for actuators that set an output and stop                        |
-|          | [DRV8871](src/kf/driver/actuator/DRV8871.hpp)                     | H-bridge motor driver with dead-zone compensation                          |
-|          | [PwmPositionServo](src/kf/driver/actuator/PwmPositionServo.hpp)   | Servo driver that maps angle to PWM pulse width with a safe range          |
-| Display  | [DisplayDriver](src/kf/driver/display/DisplayDriver.hpp)          | CRTP base for displays: framebuffer, orientation, and transfer to hardware |
-|          | [Orientation](src/kf/driver/display/Orientation.hpp)              | Enumeration of display orientation modes                                   |
-|          | [SSD1306](src/kf/driver/display/SSD1306.hpp)                      | Monochrome I2C OLED driver                                                 |
-|          | [ST7735](src/kf/driver/display/ST7735.hpp)                        | RGB565 SPI TFT driver with all six orientations                            |
-| Sensor   | [SensorDriver](src/kf/driver/sensor/SensorDriver.hpp)             | CRTP base for sensors that read a measurement                              |
-|          | [Joystick](src/kf/driver/sensor/Joystick.hpp)                     | Two-axis analog joystick with calibration and unit-circle normalisation    |
-|          | [NormalizedAdcInput](src/kf/driver/sensor/NormalizedAdcInput.hpp) | Single analog axis with dead-zone filtering and calibration                |
-|          | [QuadratureEncoder](src/kf/driver/sensor/QuadratureEncoder.hpp)   | Quadrature encoder with 4× decoding and unit conversion                    |
-|          | [Sharp](src/kf/driver/sensor/Sharp.hpp)                           | Analog Sharp IR distance sensor                                            |
+| Group    | Module                                                       | Description                                                                |
+| -------- | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Core     | [Driver](src/kf/drv/Driver.hpp)                              | CRTP base for drivers with a uniform init step                             |
+| Actuator | [Actuator](src/kf/drv/actuator/Actuator.hpp)                 | CRTP base for actuators that set an output and stop                        |
+|          | [DRV8871](src/kf/drv/actuator/DRV8871.hpp)                   | H-bridge motor driver with dead-zone compensation                          |
+|          | [Servo](src/kf/drv/actuator/Servo.hpp)                       | Servo driver that maps angle to PWM pulse width with a safe range          |
+| Display  | [Display](src/kf/drv/display/Display.hpp)                    | CRTP base for displays: framebuffer, orientation, and transfer to hardware |
+|          | [SSD1306](src/kf/drv/display/SSD1306.hpp)                    | Monochrome I2C OLED driver                                                 |
+|          | [ST7735](src/kf/drv/display/ST7735.hpp)                      | RGB565 SPI TFT driver with all six orientations                            |
+| Sensor   | [Sensor](src/kf/drv/sensor/Sensor.hpp)                       | CRTP base for sensors that read a measurement                              |
+|          | [LinearAxis](src/kf/drv/sensor/LinearAxis.hpp)               | Single analog axis with dead-zone filtering and calibration                |
+|          | [QuadratureEncoder](src/kf/drv/sensor/QuadratureEncoder.hpp) | Quadrature encoder with 4× decoding and unit conversion                    |
+|          | [Sharp](src/kf/drv/sensor/Sharp.hpp)                         | Analog Sharp IR distance sensor                                            |
 
 ### Filters
 [`kf/filter/`](src/kf/filter/)
@@ -141,7 +139,7 @@ The library is **header-only**, **C++20**, targets **ESP32 + Arduino framework**
 
 ### UI
 [`kf/ui/`](src/kf/ui/)
-
+ 
 | Group     | Module                                                          | Description                                                                    |
 | --------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Framework | [UI](src/kf/ui/UI.hpp)                                          | Page-based UI framework with widgets, events, and a pluggable renderer         |
@@ -171,29 +169,29 @@ The library is **header-only**, **C++20**, targets **ESP32 + Arduino framework**
 
 Reusable CRTP mixins. Each provides a `KF_IMPL_*` macro to place in the `private` section of the derived class.
 
-| Group                 | Mixins                                                                                        | Purpose                                                      |
-| --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Lifecycle             | `NonCopyable`, `Initable`, `Reset`, `DefaultResettable`, `Quitable`                      | Construction, initialisation, reset, and release hooks       |
-| Periodic              | `Poll`, `Flush`, `Drain`                                                                      | Recurring or on-demand operations                            |
-| Config                | `Configured`                                                                                  | Stores a `const&` to a configuration object                  |
-| Callbacks             | `Callbacked<Args...>`, `ValueCallbacked<T>`                                                   | Optional callbacks and value-triggered callbacks             |
-| Labels / styling      | `Labeled`, `Styled`                                                                           | Text label and semantic style                                |
-| Invariant             | `Invariant`                                                                                   | Some/None-style state checks on optional-like types          |
-| Comparison / indexing | `Equatable`, `Indexable`, `Length`                                                            | Equality, indexing, and length                               |
+| Group                 | Mixins                                                                                 | Purpose                                                      |
+| --------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Lifecycle             | `NonCopyable`, `Initable`, `Reset`, `DefaultResettable`, `Quitable`                    | Construction, initialisation, reset, and release hooks       |
+| Periodic              | `Poll`, `Flush`, `Drain`                                                               | Recurring or on-demand operations                            |
+| Config                | `Configured`                                                                           | Stores a `const&` to a configuration object                  |
+| Callbacks             | `Callbacked<Args...>`, `ValueCallbacked<T>`                                            | Optional callbacks and value-triggered callbacks             |
+| Labels / styling      | `Labeled`, `Styled`                                                                    | Text label and semantic style                                |
+| Invariant             | `Invariant`                                                                            | Some/None-style state checks on optional-like types          |
+| Comparison / indexing | `Equatable`, `Indexable`, `Length`                                                     | Equality, indexing, and length                               |
 | Streams               | `Read`, `Write`, `ReadAvailable`, `WriteAvailable`, `BinaryReadable`, `BinaryWritable` | Text and binary I/O with availability queries                |
-| Matching              | `Match`                                                                                       | Key-value matching                                           |
-| Stringification       | `Representable`, `ReprTo`                                                                     | Return a string, or write to a `char`-writable sink          |
-| Arena helpers         | `ExtraAllocationLength`                                                                       | Report extra allocation length for arena-created objects     |
-| Identity              | `MacAddressed`                                                                                | Owns a MAC address with read-only access                     |
-| Singleton             | `Singleton`                                                                                   | Meyer's singleton access (hardware-guaranteed services only) |
+| Matching              | `Match`                                                                                | Key-value matching                                           |
+| Stringification       | `Representable`, `ReprTo`                                                              | Return a string, or write to a `char`-writable sink          |
+| Arena helpers         | `ExtraAllocationLength`                                                                | Report extra allocation length for arena-created objects     |
+| Identity              | `MacAddressed`                                                                         | Owns a MAC address with read-only access                     |
+| Singleton             | `Singleton`                                                                            | Meyer's singleton access (hardware-guaranteed services only) |
 
 ### ESP-specific
-[`kf/esp/`](src/kf/esp/)
+[`kf/drv/`](src/kf/drv/)
 
 | Module                          | Description                                                |
 | ------------------------------- | ---------------------------------------------------------- |
-| [Espnow](src/kf/esp/Espnow.hpp) | ESP-NOW singleton for peer-to-peer messaging               |
-| [NVS](src/kf/esp/NVS.hpp)       | Non-volatile storage wrapper for reading and writing blobs |
+| [Espnow](src/kf/drv/Espnow.hpp) | ESP-NOW singleton for peer-to-peer messaging               |
+| [NVS](src/kf/drv/NVS.hpp)       | Non-volatile storage wrapper for reading and writing blobs |
 
 ## Quick Start
 

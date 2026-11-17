@@ -41,7 +41,7 @@ This document defines code style, architectural conventions, and review process.
 - **Header-only, C++20, ESP32 (Arduino)** - no `.cpp` except tests/examples; algorithmic code compiles natively.
 - **CRTP over virtual** - virtual only for UI widgets and type-erased callables.
 - **No exceptions** - errors via `bool`, `Option<T>`, or `Result<T, E>` (see [Error Handling](#error-handling)).
-- **No mutable global state** - pass dependencies explicitly. `mixin::Singleton` is allowed only for hardware-guaranteed singletons (e.g., `kf::esp::Espnow`); justify new uses in the PR.
+- **No mutable global state** - pass dependencies explicitly. `mixin::Singleton` is allowed only for hardware-guaranteed singletons (e.g., `kf::drv::Espnow`); justify new uses in the PR.
 - **No default constructors for resource-dependent types** - construct with all dependencies.
 - **Single internal namespace** - `kf::internal` only; `kf::<module>::internal` is forbidden.
 - **Minimal dependencies** - algorithmic code must not include `<Arduino.h>`; use portable abstractions (`kf::math`, `kf::clamp`, etc.).
@@ -88,8 +88,8 @@ Resolve conflicts locally. Force push is allowed only on feature branches, never
 ### Folders - Namespaces
 A header's namespace is its path relative to `src/kf/`, joined by `::` and prefixed with `kf`. Depth mirrors the folder structure exactly.
 
-- `src/kf/bus/I2C.hpp` -> `kf::bus`
-- `src/kf/driver/display/SSD1306.hpp` -> `kf::driver::display`
+- `src/kf/drv/I2C.hpp` -> `kf::bus`
+- `src/kf/drv/display/SSD1306.hpp` -> `kf::driver::display`
 - `src/kf/mixin/Reset.hpp` -> `kf::mixin`
 
 Only `kf::internal` is allowed as an implementation-detail namespace.
@@ -106,7 +106,7 @@ Only `kf::internal` is allowed as an implementation-detail namespace.
 | Functions, methods          | `snake_case`             | `unwrap_or`, `read_buffer`  |
 | Variables, fields           | `snake_case`             | `max_duty`, `write_count`   |
 | Private / protected fields  | `_` + `snake_case`       | `_buffer`, `_active_page`   |
-| Constants, macros           | `UPPER_SNAKE_CASE`       | `KF_TRY`, `KF_PLACE_IRAM`   |
+| Constants, macros           | `UPPER_SNAKE_CASE`       | `kf_try`, `KF_PLACE_IRAM`   |
 | Concrete impl aliases       | `PascalCase` + `Impl`    | `RendererImpl`, `PixelImpl` |
 | CRTP tag structs            | `PascalCase` + `Tag`     | `GpioTag`, `SensorTag`      |
 | Config instances (examples) | `snake_case` + `_config` | `pwm_config`, `bus_config`  |
@@ -227,7 +227,7 @@ Do not duplicate mixin functionality in your own types.
 Rules:
 - Never throw. No `std::optional` / `std::variant` / `std::expected`.
 - Always check return values.
-- Prefer `KF_TRY` for early propagation.
+- Prefer `kf_try` for early propagation.
 - `kf::some()` / `kf::none` for `Option`; `kf::ok()` / `kf::error()` for `Result`.
 - `unwrap()` is safe when a checked invariant guarantees success:
 

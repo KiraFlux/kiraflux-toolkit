@@ -23,10 +23,21 @@ void kf::main(kf::Init &init) {
 
     // --- GPIO input (moved into the listener) ---
 
-    gpio::DigitalInput button_gpio{
+    auto gpio_pool = init.arena.create_pool<gpio::DigitalInput>(1).unwrap();
+
+    auto const result = gpio::DigitalInput::create(
+        gpio_pool,
         gpio::G25,
-        gpio::DigitalInput::Pull::InternalUp,
-    };
+        gpio::DigitalInput::Pull::InternalDown);
+
+    if (result.is_error()) {
+        init.logger.error("DigitalInput creation failed: {}", result.error());
+        return;
+    }
+    auto &button_gpio = result.ok();
+    kf_defer(
+        init.logger.info("GPIO deinitialized");
+        button_gpio.destroy(gpio_pool););
 
     // --- Listener instance ---
     // Config is passed by const reference (must stay alive).
@@ -36,7 +47,6 @@ void kf::main(kf::Init &init) {
     };
 
     // Initialize the GPIO pin (sets pin mode and pull-up).
-    button_gpio.init();
     init.logger.info("GPIO initialized");
 
     // Set up callback for button clicks.
@@ -56,8 +66,4 @@ void kf::main(kf::Init &init) {
         // Small delay to avoid busy-loop.
         rtos::Task::sleep(10);
     }
-
-    // Release the GPIO pin (detaches any interrupt, if attached).
-    button_gpio.deinit();
-    init.logger.info("GPIO deinitialized");
 }
