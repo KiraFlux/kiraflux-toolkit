@@ -1,5 +1,9 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    ui/Layout.hpp
+/// @brief   Enum for UI layout hints (vertical, horizontal, grid).
 
 #pragma once
 
@@ -11,7 +15,7 @@ namespace kf::ui {
 /// A page can suggest a preferred layout to the renderer.
 /// The renderer is free to ignore or adapt the suggestion based on display capabilities and available space.
 /// Fallback to `Vertical` is recommended when the requested layout is not supported.
-enum class Layout : char {
+enum struct Layout : char {
 
     /// @brief Vertical list (one widget per line), the default fallback.
     /// @note Supports scrolling and works on any display.
@@ -22,7 +26,10 @@ enum class Layout : char {
     Horizontal,
 
     /// @brief Grid with N columns and M rows (up to N*M widgets)
-    Grid2x2, Grid3x2, Grid2x3, Grid3x3 
+    Grid2x2,
+    Grid3x2,
+    Grid2x3,
+    Grid3x3
 };
 
 }// namespace kf::ui

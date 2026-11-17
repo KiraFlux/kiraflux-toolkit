@@ -1,5 +1,6 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
 
 #pragma once
 
@@ -29,11 +30,11 @@ struct OnlyCopyable {
         constructor_calls += 1;
     }
 
-    OnlyCopyable(const OnlyCopyable &other) noexcept : value{other.value} {
+    OnlyCopyable(OnlyCopyable const &other) noexcept : value{other.value} {
         copy_constructor_calls += 1;
     }
 
-    OnlyCopyable &operator=(const OnlyCopyable &other) noexcept {
+    OnlyCopyable &operator=(OnlyCopyable const &other) noexcept {
         copy_assignment_calls += 1;
 
         return *this;
@@ -47,7 +48,7 @@ struct OnlyCopyable {
         destructor_calls += 1;
     }
 
-    bool operator==(const OnlyCopyable &other) const noexcept {
+    bool operator==(OnlyCopyable const &other) const noexcept {
         return value == other.value;
     }
 
@@ -98,9 +99,9 @@ struct OnlyMovable {
         return *this;
     }
 
-    OnlyMovable(const OnlyMovable &) noexcept = delete;
+    OnlyMovable(OnlyMovable const &) noexcept = delete;
 
-    OnlyMovable &operator=(const OnlyMovable &) noexcept = delete;
+    OnlyMovable &operator=(OnlyMovable const &) noexcept = delete;
 
     ~OnlyMovable() noexcept {
         destructor_calls += 1;
@@ -140,7 +141,7 @@ struct CopyableMovable {
         constructor_calls += 1;
     }
 
-    CopyableMovable(const CopyableMovable &other) noexcept : value{other.value} {
+    CopyableMovable(CopyableMovable const &other) noexcept : value{other.value} {
         copy_constructor_calls += 1;
     }
 
@@ -150,7 +151,7 @@ struct CopyableMovable {
         other.value = 0;
     }
 
-    CopyableMovable &operator=(const CopyableMovable &other) noexcept {
+    CopyableMovable &operator=(CopyableMovable const &other) noexcept {
         copy_assignment_calls += 1;
 
         return *this;

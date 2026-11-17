@@ -1,8 +1,12 @@
-#include <kf/algorithm.hpp>
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+#include <kf/math.hpp>
 #include <runner.hpp>
 
-using kf::clamp;
-using kf::linearMap;
+using kf::math::clamp;
+using kf::math::linear_map;
 
 template<typename T> struct Vals {
     static constexpr T low = T(10);
@@ -47,10 +51,10 @@ template<typename T> struct AlgorithmTester {
         TEST_ASSERT_EQUAL(V::high, clamp(V::high, V::low, V::high));
     }
 
-    static void test_linearMap() {
-        auto low = linearMap(V::low, V::low, V::high, V::out_low, V::out_high);
-        auto high = linearMap(V::high, V::low, V::high, V::out_low, V::out_high);
-        auto mid = linearMap(V::inside, V::low, V::high, V::out_low, V::out_high);
+    static void test_linear_map() {
+        auto low = linear_map(V::low, V::low, V::high, V::out_low, V::out_high);
+        auto high = linear_map(V::high, V::low, V::high, V::out_low, V::out_high);
+        auto mid = linear_map(V::inside, V::low, V::high, V::out_low, V::out_high);
 
         if constexpr (std::is_floating_point_v<T>) {
             TEST_ASSERT_FLOAT_WITHIN(V::eps, V::out_low, low);
@@ -67,7 +71,7 @@ template<typename T> struct AlgorithmTester {
 
 #define RUN_ALGORITHM_TESTS(T)                \
     RUN_TEST(AlgorithmTester<T>::test_clamp); \
-    RUN_TEST(AlgorithmTester<T>::test_linearMap)
+    RUN_TEST(AlgorithmTester<T>::test_linear_map)
 
 void run_tests() {
     RUN_ALGORITHM_TESTS(int);

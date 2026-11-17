@@ -1,0 +1,22 @@
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+#pragma once
+
+#include <kf/core.hpp>// For kf::usize
+
+namespace kf::mixin {
+
+struct ExtraAllocationLengthTag {};
+
+template<typename Impl> struct ExtraAllocationLength : ExtraAllocationLengthTag {
+
+    [[nodiscard]] static constexpr usize extra_allocation_length(auto const &...args) noexcept {
+        return Impl::get_extra_allocation_length_impl(args...);
+    }
+};
+
+}// namespace kf::mixin
+
+#define KF_IMPL_EXTRA_ALLOCATION_LENGTH(...) friend struct ::kf::mixin::ExtraAllocationLength<__VA_ARGS__>

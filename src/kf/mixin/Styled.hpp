@@ -1,5 +1,9 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    mixin/Styled.hpp
+/// @brief   Adds foreground/background colors and a Style object.
 
 #pragma once
 
@@ -10,35 +14,36 @@ namespace kf::mixin {
 
 struct Styled {
 
-    explicit constexpr Styled(const ui::Style &style) noexcept : _style{style} {}
+    explicit constexpr Styled(ui::Style const &style) noexcept :
+        _style{style} {}
 
     /// @brief Get style
-    [[nodiscard]] const ui::Style &style() const noexcept {
+    [[nodiscard]] constexpr ui::Style const &style() const noexcept {
         return _style;
     }
 
     /// @brief Set style
-    void style(const ui::Style &new_style) noexcept {
+    constexpr void style(ui::Style const &new_style) noexcept {
         _style = new_style;
     }
 
     /// @brief Get Foreground color
-    [[nodiscard]] ui::Color foreground() const noexcept {
+    [[nodiscard]] constexpr ui::Color foreground() const noexcept {
         return _style.foreground_color;
     }
 
     /// @brief Set Foreground color
-    void foreground(ui::Color color) noexcept {
+    constexpr void foreground(ui::Color color) noexcept {
         _style.foreground_color = color;
     }
 
     /// @brief Get Background color
-    [[nodiscard]] ui::Color background() const noexcept {
+    [[nodiscard]] constexpr ui::Color background() const noexcept {
         return _style.background_color;
     }
 
     /// @brief Set Background color
-    void background(ui::Color color) noexcept {
+    constexpr void background(ui::Color color) noexcept {
         _style.background_color = color;
     }
 

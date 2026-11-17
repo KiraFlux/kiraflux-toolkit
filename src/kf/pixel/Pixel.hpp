@@ -1,11 +1,15 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    pixel/Pixel.hpp
+/// @brief   CRTP base for pixel formats with buffer size, set/fill/copy.
 
 #pragma once
 
 #include "kf/Slice.hpp"
-#include "kf/algorithm.hpp"
-#include "kf/primitives.hpp"
+#include "kf/core.hpp"
+#include "kf/math.hpp"
 
 namespace kf::pixel {
 
@@ -22,26 +26,26 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
 
     static constexpr auto bits_per_pixel{bits};
 
-    [[nodiscard]] static constexpr usize bufferSize(usize width, usize height) noexcept {
-        return Impl::getBufferSizeImpl(width, height);
+    [[nodiscard]] static constexpr usize buffer_size(usize width, usize height) noexcept {
+        return Impl::get_buffer_size_impl(width, height);
     }
 
     // conventions
 
-    [[nodiscard]] static constexpr ColorType fromRgb(u8 r, u8 g, u8 b) noexcept {
-        return Impl::fromRgbImpl(r, g, b);
+    [[nodiscard]] static constexpr ColorType from_rgb(u8 r, u8 g, u8 b) noexcept {
+        return Impl::from_rgb_impl(r, g, b);
     }
 
     // draw
 
     /// @brief set pixel color
-    static void setPixel(
+    static void set_pixel(
         Slice<BufferType> buffer,
         PositionType stride,
         PositionType abs_x,
         PositionType abs_y,
         ColorType color) noexcept {
-        Impl::setPixelImpl(
+        Impl::set_pixel_impl(
             buffer, stride,
             abs_x, abs_y,
             color);
@@ -56,7 +60,7 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
         PositionType width,
         PositionType height,
         ColorType color) noexcept {
-        Impl::fillImpl(
+        Impl::fill_impl(
             buffer, stride,
             offset_x, offset_y,
             width, height,
@@ -65,7 +69,7 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
 
     /// @brief Copy rectangular region from source to destination buffer
     static void copy(
-        Slice<const BufferType> source_buffer,
+        Slice<BufferType const> source_buffer,
         PositionType source_width,
         PositionType source_height,
         Slice<BufferType> dest_buffer,
@@ -74,7 +78,7 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
         PositionType dest_y) noexcept {
         if (source_width <= 0 or source_height <= 0 or dest_stride <= 0) { return; }
 
-        const auto dst_total_h = dest_buffer.size() / dest_stride;
+        auto const dst_total_h = dest_buffer.length() / dest_stride;
         if (dest_y >= dst_total_h) { return; }
 
         auto copy_width = source_width;
@@ -91,18 +95,14 @@ template<typename Impl, typename Tb, typename Tc, u8 bits> struct Pixel : PixelT
 
         if (copy_width <= 0 or copy_height <= 0) { return; }
 
-        const usize src_pixels = source_buffer.size();
+        usize const src_pixels = source_buffer.length();
         if (static_cast<usize>(source_width) * source_height > src_pixels) {
-            copy_height = kf::min(copy_height, static_cast<PositionType>(src_pixels / source_width));
+            copy_height = math::min(copy_height, static_cast<PositionType>(src_pixels / source_width));
             if (copy_height <= 0) { return; }
         }
 
-        Impl::copyImpl(source_buffer, source_width, source_height, dest_buffer, dest_stride, dest_x, dest_y, copy_width, copy_height);
+        Impl::copy_impl(source_buffer, source_width, source_height, dest_buffer, dest_stride, dest_x, dest_y, copy_width, copy_height);
     }
-
-    // CRTP
-
-    friend Impl;
 
 protected:
     using Base = Pixel;

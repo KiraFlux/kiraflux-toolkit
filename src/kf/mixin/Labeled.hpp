@@ -1,9 +1,13 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    mixin/Labeled.hpp
+/// @brief   Adds a label (StringView) to an object.
 
 #pragma once
 
-#include "kf/memory/StringView.hpp"
+#include "kf/StringView.hpp"
 
 namespace kf::mixin {
 
@@ -12,19 +16,19 @@ struct LabeledTag {};
 /// @brief Adds Label
 struct Labeled : LabeledTag {
 
-    explicit constexpr Labeled(memory::StringView label = {}) noexcept :
+    explicit constexpr Labeled(StringView label = {}) noexcept :
         _label{label} {}
 
-    [[nodiscard]] constexpr memory::StringView label() const noexcept {
+    [[nodiscard]] constexpr StringView label() const noexcept {
         return _label;
     }
 
-    void label(memory::StringView new_label) noexcept {
+    constexpr void label(StringView new_label) noexcept {
         _label = new_label;
     }
 
 private:
-    memory::StringView _label;
+    StringView _label;
 };
 
 }// namespace kf::mixin

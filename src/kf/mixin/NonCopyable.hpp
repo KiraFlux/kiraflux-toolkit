@@ -1,5 +1,9 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    mixin/NonCopyable.hpp
+/// @brief   Deleted copy constructor and assignment.
 
 #pragma once
 
@@ -8,10 +12,10 @@ namespace kf::mixin {
 struct NonCopyable {
 
     /// @brief Deleted copy constructor (non-copyable)
-    NonCopyable(const NonCopyable &) = delete;
+    NonCopyable(NonCopyable const &) = delete;
 
     /// @brief Deleted copy assignment operator (non-copyable)
-    NonCopyable &operator=(const NonCopyable &) = delete;
+    NonCopyable &operator=(NonCopyable const &) = delete;
 
     // Movable
 

@@ -1,5 +1,8 @@
-// Copyright (c) 2026 KiraFlux
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 KiraFlux
+// SPDX-License-Identifier: GPL-3.0-or-later
+// KiraFlux Toolkit - https://github.com/KiraFlux/kiraflux-toolkit
+
+/// @file    Function.hpp
 
 #pragma once
 
@@ -8,49 +11,62 @@
 #include <type_traits>
 #include <utility>
 
+#include "kf/core.hpp"
+
 #include "kf/mixin/NonCopyable.hpp"
-#include "kf/primitives.hpp"
 
 namespace kf {
 
-template<typename> struct Option;// optional function forward declaration
+namespace internal {
+
+struct OptionHelper;
+
+template<typename> struct SentinelStorage;
+
+}// namespace internal
 
 template<typename> struct Function;
 
-/// @brief Type‑erased callable with small buffer optimisation (2 words). Never empty.
+/// @brief Type‑erased callable with small buffer optimisation (4 words)
+/// @note Never empty.
 /// @tparam R Return type
 /// @tparam Args Argument types
 template<typename R, typename... Args> struct Function<R(Args...)> : mixin::NonCopyable {
-    friend struct Option<Function<R(Args...)>>;
+    friend struct ::kf::internal::OptionHelper;
+    friend struct ::kf::internal::SentinelStorage<Function<R(Args...)>>;
+
+    using ReturnType = R;
 
     explicit Function(std::nullptr_t) = delete;
 
-    template<typename _F> Function(_F &&f) noexcept {
-        using Decayed = std::decay_t<_F>;
+    Function(auto &&f) noexcept {
+        using Decayed = std::decay_t<decltype(f)>;
         static_assert(not std::is_same_v<Decayed, Function>, "Cannot construct Function from another Function (use move)");
         static_assert(sizeof(Impl<Decayed>) <= (buffer_size - 1), "Callable object too large for Function buffer");
         static_assert(alignof(Impl<Decayed>) <= alignment, "Callable alignment too strict");
-        static_assert(std::is_invocable_r<R, _F, Args...>::value, "Callable not invocable with given arguments");
+        static_assert(std::is_invocable_r<R, decltype(f), Args...>::value, "Callable not invocable with given arguments");
 
-        new (static_cast<void *>(_storage)) Impl<Decayed>{std::forward<_F>(f)};
-        isSome(true);
+        new (static_cast<void *>(_storage)) Impl<Decayed>{std::forward<decltype(f)>(f)};
+        is_some(true);
     }
 
     Function(Function &&other) noexcept {
-        moveFrom(std::move(other));
+        move_from(std::move(other));
     }
 
     Function &operator=(Function &&other) noexcept {
         if (this != &other) {
             destroy();
-            moveFrom(std::move(other));
+            move_from(std::move(other));
         }
         return *this;
     }
 
-    ~Function() noexcept { destroy(); }
+    ~Function() noexcept {
+        destroy();
+    }
 
-    /// @brief Invoke the stored callable.
+    /// @brief Invoke the stored callable
     template<typename... CallArgs> R operator()(CallArgs &&...args) const noexcept {
         if constexpr (std::is_void_v<R>) {
             func().invoke(std::forward<CallArgs>(args)...);
@@ -65,19 +81,20 @@ private:
 
         virtual R invoke(Args... args) const noexcept = 0;
 
-        virtual void moveTo(void *dest) noexcept = 0;
+        virtual void move_to(void *dest) noexcept = 0;
     };
 
     template<typename _F> struct Impl final : Base {
         _F f;
 
-        template<typename G> explicit Impl(G &&func) noexcept : f(std::forward<G>(func)) {}
+        explicit Impl(auto &&func) noexcept :
+            f(std::forward<decltype(func)>(func)) {}
 
         R invoke(Args... args) const noexcept override {
             return f(std::forward<Args>(args)...);
         }
 
-        void moveTo(void *dest) noexcept override {
+        void move_to(void *dest) noexcept override {
             new (dest) Impl{std::move(f)};
         }
     };
@@ -86,39 +103,39 @@ private:
 
     alignas(alignment) u8 _storage[buffer_size]{};
 
-    // access to default contructor only for Option
+    // access to default constructor only for SentinelStorage
     constexpr Function() noexcept {
-        isSome(false);
+        is_some(false);
     }
 
-    [[nodiscard]] bool isSome() const noexcept {
+    [[nodiscard]] bool is_some() const noexcept {
         return static_cast<bool>(_storage[buffer_size - 1]);
     }
 
-    void isSome(bool is_isSome) noexcept {
-        _storage[buffer_size - 1] = static_cast<u8>(is_isSome);
+    void is_some(bool is_some) noexcept {
+        _storage[buffer_size - 1] = static_cast<u8>(is_some);
     }
 
     [[nodiscard]] Base &func() noexcept {
         return *reinterpret_cast<Base *>(_storage);
     }
 
-    [[nodiscard]] const Base &func() const noexcept {
-        return *reinterpret_cast<const Base *>(_storage);
+    [[nodiscard]] Base const &func() const noexcept {
+        return *reinterpret_cast<Base const *>(_storage);
     }
 
     void destroy() noexcept {
-        if (isSome()) {
+        if (is_some()) {
             func().~Base();
-            isSome(false);
+            is_some(false);
         }
     }
 
-    void moveFrom(Function &&other) noexcept {
-        if (other.isSome()) {
-            other.func().moveTo(static_cast<void *>(_storage));
-            isSome(true);
-            other.isSome(false);
+    void move_from(Function &&other) noexcept {
+        if (other.is_some()) {
+            other.func().move_to(static_cast<void *>(_storage));
+            is_some(true);
+            other.is_some(false);
         }
     }
 };
